@@ -1,4 +1,4 @@
-# CS 410 Senior Seminar
+# 2024 CS 410 Senior Seminar
 
 ## Stream Temperature Modeling
 
