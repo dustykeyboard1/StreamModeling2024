@@ -43,10 +43,9 @@ def create_heatmap():
     return fig
 
 def plot_random_lines():
-    
     '''
-    Create a figure with 6 random line plots
     Params: None
+    Functionality: Create a figure with 6 random line plots
     Returns: Figure with 6 lines plots
     '''
 
@@ -67,10 +66,9 @@ def plot_random_lines():
     return fig
 
 def plot_random_bar_chart():
-    
     '''
-    Create a random bar chart with positive and negative values
     Params: None
+    Functionality: Create a random bar chart with positive and negative values
     Returns: Figure with bar chart
     '''
     
@@ -92,8 +90,8 @@ def plot_random_bar_chart():
 
 def plot_random_cosine_sine():
     '''
-    Create a single plot with multiple trig functions.
     Params: None
+    Functionality: Create a single plot with multiple trig functions.
     Returns: Figure with plot
     '''
     fig, ax = plt.subplots(figsize=(7,5))
@@ -126,8 +124,8 @@ def plot_random_cosine_sine():
 
 def plot_random_decreasing_scatter_and_trig():
     '''
-    Create a random decreasing scatter plot with a line of best fit
     Params: None
+    Functionality: Create a random decreasing scatter plot with a line of best fit
     Returns: Figure with plot
     '''
     
@@ -169,7 +167,6 @@ def main():
     
     heatmap = create_heatmap()
     pdf.savefig(heatmap)
-    
     
     lineplots = plot_random_lines()
     pdf.savefig(lineplots)
