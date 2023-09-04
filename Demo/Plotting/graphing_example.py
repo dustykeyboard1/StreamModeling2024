@@ -25,22 +25,27 @@ from PyPDF2 import PdfMerger
 def create_heatmap():
     '''
     Parameters: none
-    Functionality: Creates a random continous heatmap
+    Functionality: Creates a random continuous heatmap
     Return: Figure with heatmap
     '''
-
     random.seed()
     
     harvest = np.random.rand(100, 100)
-    fig = px.imshow(harvest, title='Random Heatmap', labels=dict(x='x-axis', y='y-axis'))
     
+    fig, ax = plt.subplots(figsize=(7, 4))
+    cax = ax.matshow(harvest, cmap='viridis')
+    fig.colorbar(cax)
+    
+    ax.set_title('Random Heatmap')
+    ax.set_xlabel('x-axis')
+    ax.set_ylabel('y-axis')
+
     return fig
 
 def plot_random_lines():
-    
     '''
-    Create a figure with 6 random line plots
     Params: None
+    Functionality: Create a figure with 6 random line plots
     Returns: Figure with 6 lines plots
     '''
 
@@ -61,10 +66,9 @@ def plot_random_lines():
     return fig
 
 def plot_random_bar_chart():
-    
     '''
-    Create a random bar chart with positive and negative values
     Params: None
+    Functionality: Create a random bar chart with positive and negative values
     Returns: Figure with bar chart
     '''
     
@@ -86,8 +90,8 @@ def plot_random_bar_chart():
 
 def plot_random_cosine_sine():
     '''
-    Create a single plot with multiple trig functions.
     Params: None
+    Functionality: Create a single plot with multiple trig functions.
     Returns: Figure with plot
     '''
     fig, ax = plt.subplots(figsize=(7,5))
@@ -120,8 +124,8 @@ def plot_random_cosine_sine():
 
 def plot_random_decreasing_scatter_and_trig():
     '''
-    Create a random decreasing scatter plot with a line of best fit
     Params: None
+    Functionality: Create a random decreasing scatter plot with a line of best fit
     Returns: Figure with plot
     '''
     
@@ -159,12 +163,10 @@ def plot_random_decreasing_scatter_and_trig():
 
 def main():
     filepath = '/Users/michaelscoleri/Desktop/Coding/School/SeniorSem/StreamModeling2024/Demo/Plotting/PDF_folder/pdfdemo.pdf'
+    pdf = PdfPages(filepath)
     
     heatmap = create_heatmap()
-    heatmap.write_image(filepath)
-    
-    temppath = '/Users/michaelscoleri/Desktop/Coding/School/SeniorSem/StreamModeling2024/Demo/Plotting/PDF_folder/temp.pdf'
-    pdf = PdfPages(temppath)
+    pdf.savefig(heatmap)
     
     lineplots = plot_random_lines()
     pdf.savefig(lineplots)
@@ -179,13 +181,6 @@ def main():
     pdf.savefig(scatter_plot)
     
     pdf.close()
-    
-    merger = PdfMerger()
-    merger.append(filepath)
-    merger.append(temppath)
-    
-    merger.write(filepath)
-    merger.close()
 
 if __name__ == '__main__':
     main()
