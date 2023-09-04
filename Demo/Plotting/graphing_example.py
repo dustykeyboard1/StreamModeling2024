@@ -32,7 +32,7 @@ def create_heatmap():
     random.seed()
     
     harvest = np.random.rand(100, 100)
-    fig = px.imshow(harvest)
+    fig = px.imshow(harvest, title='Random Heatmap', labels=dict(x='x-axis', y='y-axis'))
     
     return fig
 
