@@ -19,6 +19,8 @@ import pandas as pd
 import random
 import matplotlib.pyplot as plt
 import numpy as np
+from matplotlib.backends.backend_pdf import PdfPages
+from PyPDF2 import PdfMerger
 
 def create_heatmap():
     '''
@@ -28,39 +30,11 @@ def create_heatmap():
     '''
 
     random.seed()
-
-    harvest = [[0.8, 2.4, 2.5, 3.9, 0.0, 4.0, 0.0, 0.8, 2.4, 2.5, 3.9, 0.0, 4.0, 0.0, 0.8, 2.4, 2.5, 3.9, 0.0, 4.0, 0.0],
-                    [2.4, 0.0, 4.0, 1.0, 2.7, 0.0, 0.0, 0.8, 2.4, 2.5, 3.9, 0.0, 4.0, 0.0, 0.8, 2.4, 2.5, 3.9, 0.0, 4.0, 0.0],
-                    [1.1, 2.4, 0.8, 4.3, 1.9, 4.4, 0.0, 0.8, 2.4, 2.5, 3.9, 0.0, 4.0, 0.0, 0.8, 2.4, 2.5, 3.9, 0.0, 4.0, 0.0],
-                    [0.6, 0.0, 0.3, 0.0, 3.1, 0.0, 0.0, 0.8, 2.4, 2.5, 3.9, 0.0, 4.0, 0.0, 0.8, 2.4, 2.5, 3.9, 0.0, 4.0, 0.0],
-                    [0.8, 2.4, 2.5, 3.9, 0.0, 4.0, 0.0, 0.8, 2.4, 2.5, 3.9, 0.0, 4.0, 0.0, 0.8, 2.4, 2.5, 3.9, 0.0, 4.0, 0.0],
-                    [2.4, 0.0, 4.0, 1.0, 2.7, 0.0, 0.0, 0.8, 2.4, 2.5, 3.9, 0.0, 4.0, 0.0, 0.8, 2.4, 2.5, 3.9, 0.0, 4.0, 0.0],
-                    [1.1, 2.4, 0.8, 4.3, 1.9, 4.4, 0.0, 0.8, 2.4, 2.5, 3.9, 0.0, 4.0, 0.0, 0.8, 2.4, 2.5, 3.9, 0.0, 4.0, 0.0],
-                    [0.6, 0.0, 0.3, 0.0, 3.1, 0.0, 0.0, 0.8, 2.4, 2.5, 3.9, 0.0, 4.0, 0.0, 0.8, 2.4, 2.5, 3.9, 0.0, 4.0, 0.0],
-                    [0.8, 2.4, 2.5, 3.9, 0.0, 4.0, 0.0, 0.8, 2.4, 2.5, 3.9, 0.0, 4.0, 0.0, 0.8, 2.4, 2.5, 3.9, 0.0, 4.0, 0.0],
-                    [2.4, 0.0, 4.0, 1.0, 2.7, 0.0, 0.0, 0.8, 2.4, 2.5, 3.9, 0.0, 4.0, 0.0, 0.8, 2.4, 2.5, 3.9, 0.0, 4.0, 0.0],
-                    [1.1, 2.4, 0.8, 4.3, 1.9, 4.4, 0.0, 0.8, 2.4, 2.5, 3.9, 0.0, 4.0, 0.0, 0.8, 2.4, 2.5, 3.9, 0.0, 4.0, 0.0],
-                    [0.6, 0.0, 0.3, 0.0, 3.1, 0.0, 0.0, 0.8, 2.4, 2.5, 3.9, 0.0, 4.0, 0.0, 0.8, 2.4, 2.5, 3.9, 0.0, 4.0, 0.0],
-                    [0.8, 2.4, 2.5, 3.9, 0.0, 4.0, 0.0, 0.8, 2.4, 2.5, 3.9, 0.0, 4.0, 0.0, 0.8, 2.4, 2.5, 3.9, 0.0, 4.0, 0.0],
-                    [2.4, 0.0, 4.0, 1.0, 2.7, 0.0, 0.0, 0.8, 2.4, 2.5, 3.9, 0.0, 4.0, 0.0, 0.8, 2.4, 2.5, 3.9, 0.0, 4.0, 0.0],
-                    [1.1, 2.4, 0.8, 4.3, 1.9, 4.4, 0.0, 0.8, 2.4, 2.5, 3.9, 0.0, 4.0, 0.0, 0.8, 2.4, 2.5, 3.9, 0.0, 4.0, 0.0],
-                    [0.6, 0.0, 0.3, 0.0, 3.1, 0.0, 0.0, 0.8, 2.4, 2.5, 3.9, 0.0, 4.0, 0.0, 0.8, 2.4, 2.5, 3.9, 0.0, 4.0, 0.0],
-                    [0.8, 2.4, 2.5, 3.9, 0.0, 4.0, 0.0, 0.8, 2.4, 2.5, 3.9, 0.0, 4.0, 0.0, 0.8, 2.4, 2.5, 3.9, 0.0, 4.0, 0.0],
-                    [2.4, 0.0, 4.0, 1.0, 2.7, 0.0, 0.0, 0.8, 2.4, 2.5, 3.9, 0.0, 4.0, 0.0, 0.8, 2.4, 2.5, 3.9, 0.0, 4.0, 0.0],
-                    [1.1, 2.4, 0.8, 4.3, 1.9, 4.4, 0.0, 0.8, 2.4, 2.5, 3.9, 0.0, 4.0, 0.0, 0.8, 2.4, 2.5, 3.9, 0.0, 4.0, 0.0],
-                    [0.6, 0.0, 0.3, 0.0, 3.1, 0.0, 0.0, 0.8, 2.4, 2.5, 3.9, 0.0, 4.0, 0.0, 0.8, 2.4, 2.5, 3.9, 0.0, 4.0, 0.0]]
-        
-    harvest = []
-    for x in range(1000):
-        newlist = []
-        for i in range(1000):
-            newlist.append(random.random())
-        harvest.append(newlist)
-
+    
+    harvest = np.random.rand(100, 100)
     fig = px.imshow(harvest)
-    # fig.show()
+    
     return fig
-
 
 def plot_random_lines():
     
@@ -70,7 +44,7 @@ def plot_random_lines():
     Returns: Figure with 6 lines plots
     '''
 
-    fig, axs = plt.subplots(3, 2, figsize=(6, 4))
+    fig, axs = plt.subplots(3, 2, figsize=(7, 4))
     axs = axs.flatten()
     
     # Generate 6 random line plots
@@ -86,10 +60,6 @@ def plot_random_lines():
     
     return fig
 
-
-import matplotlib.pyplot as plt
-import numpy as np
-
 def plot_random_bar_chart():
     
     '''
@@ -98,8 +68,7 @@ def plot_random_bar_chart():
     Returns: Figure with bar chart
     '''
     
-    fig, ax = plt.subplots()
-
+    fig, ax = plt.subplots(figsize=(7,5))
     labels = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K']
     values = np.random.randint(-10, 11, len(labels))  
 
@@ -115,14 +84,13 @@ def plot_random_bar_chart():
 
     return fig
 
-
 def plot_random_cosine_sine():
     '''
     Create a single plot with multiple trig functions.
     Params: None
     Returns: Figure with plot
     '''
-    fig, ax = plt.subplots()
+    fig, ax = plt.subplots(figsize=(7,5))
 
     # Generate x-values
     x = np.linspace(0, 2*np.pi, 100)
@@ -150,11 +118,15 @@ def plot_random_cosine_sine():
 
     return fig
 
-
 def plot_random_decreasing_scatter_and_trig():
-    fig, axs = plt.subplots(2, 1, figsize=(12, 6))
+    '''
+    Create a random decreasing scatter plot with a line of best fit
+    Params: None
+    Returns: Figure with plot
+    '''
     
-    # Create a random decreasing scatter plot with a line of best fit
+    fig, axs = plt.subplots(2, 1, figsize=(7,5))
+    
     x1 = np.linspace(0, 10, 100)
     y1 = -2 * x1 + 5 + np.random.normal(scale=2, size=len(x1))
     
@@ -186,12 +158,34 @@ def plot_random_decreasing_scatter_and_trig():
     return fig
 
 def main():
+    filepath = '/Users/michaelscoleri/Desktop/Coding/School/SeniorSem/StreamModeling2024/Demo/Plotting/PDF_folder/pdfdemo.pdf'
+    
     heatmap = create_heatmap()
+    heatmap.write_image(filepath)
+    
+    temppath = '/Users/michaelscoleri/Desktop/Coding/School/SeniorSem/StreamModeling2024/Demo/Plotting/PDF_folder/temp.pdf'
+    pdf = PdfPages(temppath)
+    
     lineplots = plot_random_lines()
+    pdf.savefig(lineplots)
+    
     barchart = plot_random_bar_chart()
+    pdf.savefig(barchart)
+    
     trig_plots = plot_random_cosine_sine()
+    pdf.savefig(trig_plots)
+    
     scatter_plot = plot_random_decreasing_scatter_and_trig()
-    write_to_pdf(heatmap, lineplots, barchart, trig_plots, scatter_plot)
+    pdf.savefig(scatter_plot)
+    
+    pdf.close()
+    
+    merger = PdfMerger()
+    merger.append(filepath)
+    merger.append(temppath)
+    
+    merger.write(filepath)
+    merger.close()
 
 if __name__ == '__main__':
     main()
