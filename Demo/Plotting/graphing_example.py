@@ -25,15 +25,21 @@ from PyPDF2 import PdfMerger
 def create_heatmap():
     '''
     Parameters: none
-    Functionality: Creates a random continous heatmap
+    Functionality: Creates a random continuous heatmap
     Return: Figure with heatmap
     '''
-
     random.seed()
     
     harvest = np.random.rand(100, 100)
-    fig = px.imshow(harvest, title='Random Heatmap', labels=dict(x='x-axis', y='y-axis'))
     
+    fig, ax = plt.subplots(figsize=(7, 4))
+    cax = ax.matshow(harvest, cmap='viridis')
+    fig.colorbar(cax)
+    
+    ax.set_title('Random Heatmap')
+    ax.set_xlabel('x-axis')
+    ax.set_ylabel('y-axis')
+
     return fig
 
 def plot_random_lines():
@@ -159,12 +165,11 @@ def plot_random_decreasing_scatter_and_trig():
 
 def main():
     filepath = '/Users/michaelscoleri/Desktop/Coding/School/SeniorSem/StreamModeling2024/Demo/Plotting/PDF_folder/pdfdemo.pdf'
+    pdf = PdfPages(filepath)
     
     heatmap = create_heatmap()
-    heatmap.write_image(filepath)
+    pdf.savefig(heatmap)
     
-    temppath = '/Users/michaelscoleri/Desktop/Coding/School/SeniorSem/StreamModeling2024/Demo/Plotting/PDF_folder/temp.pdf'
-    pdf = PdfPages(temppath)
     
     lineplots = plot_random_lines()
     pdf.savefig(lineplots)
@@ -179,13 +184,6 @@ def main():
     pdf.savefig(scatter_plot)
     
     pdf.close()
-    
-    merger = PdfMerger()
-    merger.append(filepath)
-    merger.append(temppath)
-    
-    merger.write(filepath)
-    merger.close()
 
 if __name__ == '__main__':
     main()
