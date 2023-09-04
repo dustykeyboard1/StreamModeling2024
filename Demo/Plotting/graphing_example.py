@@ -10,7 +10,7 @@ Filename: graphing_example.py
 
 Function: 
 Demonstrates graphing capabilities of software and saves to a PDF. 
-Includes a coninuous heatmap,
+Includes a coninuous heatmap, scatter plot, bar chart, line chart
 '''
 
 #Imports
