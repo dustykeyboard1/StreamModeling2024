@@ -25,6 +25,7 @@ class MainWindow(QMainWindow):
         widget = QWidget()
         widget.setLayout(vlayout)
         self.setCentralWidget(widget)
+        
 
 
     '''
