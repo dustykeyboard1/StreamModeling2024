@@ -14,6 +14,7 @@ Demonstrates the 3-dimensional graphing capabilities.
 
 import numpy as np
 import matplotlib.pyplot as plt
+from matplotlib.backends.backend_pdf import PdfPages
 
 fig = plt.figure()
 ax = plt.axes(projection='3d')
@@ -38,3 +39,7 @@ ax.plot_surface(X, Y, Z, rstride=1, cstride=1,
 ax.set_title('Demo 3D Plot')
 
 plt.show()
+filepath = '/Users/michaelscoleri/Desktop/Coding/School/SeniorSem/StreamModeling2024/Demo/Plotting/PDF_folder/3dgraphdemo.pdf'
+pdf = PdfPages(filepath)
+pdf.savefig(fig)
+pdf.close()

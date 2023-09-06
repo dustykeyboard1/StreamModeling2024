@@ -14,13 +14,10 @@ Includes a coninuous heatmap, scatter plot, bar chart, line chart
 '''
 
 #Imports
-import plotly.express as px
-import pandas as pd
 import random
 import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib.backends.backend_pdf import PdfPages
-from PyPDF2 import PdfMerger
 
 def create_heatmap():
     '''

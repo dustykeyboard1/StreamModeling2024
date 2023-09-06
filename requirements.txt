@@ -1,3 +1,7 @@
 pandas=2.1.0
 scipy=1.11.2
 pyside6=6.5.2
+kaleido=0.2.1
+PyPDF2=3.1.0
+matplotlib=3.5.2
+numpy=1.23.1
