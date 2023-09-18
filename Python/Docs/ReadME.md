@@ -2,11 +2,11 @@
 
 ## Overview
 
-This repository contains the Python implementation of the Stream Modeling 2024 project. The code is organized into various modules focusing on heat flux calculations, data input/output, and utility functions.
+This repository contains the Python implementation of the Stream Modeling 2024 project. The code is organized into various modules including heat flux calculations, data input/output, and utility functions.
 
 ## Directory Structure
 
-    StreamModeling2024_Python/
+    StreamModeling2024/Python/
     ├── src/
     │   ├── Core/
     │   ├── Heat_Flux/
@@ -27,7 +27,7 @@ Contains the core functionalities for heat flux calculations.
 
 ### Heat_Flux
 
-Includes various Python scripts for calculating different types of heat fluxes.
+Includes various Python files for calculating different types of heat fluxes.
 
 ### Utilities
 
