@@ -1,6 +1,16 @@
+import sys
+import os
 import pytest
 import numpy as np
-from src.Core.hflux_errors import handle_errors
+
+
+root_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
+sys.path.append(root_dir)
+
+print(root_dir)
+
+from Python.src.Core.hflux_errors import handle_errors
+
 
 def test_valid_arguments():
     time_mod = np.array([[1], [2], [3]])
