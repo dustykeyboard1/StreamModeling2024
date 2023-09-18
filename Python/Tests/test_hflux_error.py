@@ -1,6 +1,6 @@
 import pytest
 import numpy as np
-from hflux_errors import handle_errors
+from src.Core.hflux_errors import handle_errors
 
 def test_valid_arguments():
     time_mod = np.array([[1], [2], [3]])
