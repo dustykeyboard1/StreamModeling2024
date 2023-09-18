@@ -38,5 +38,3 @@ def handle_errors(*args):
         raise TypeError("Dist_temp must be a column vector")
 
 
-
-handle_errors(1,2,3,4,5)
