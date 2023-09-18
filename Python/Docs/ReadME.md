@@ -42,7 +42,7 @@ Stores utility functions like data input/output and interpolation methods.
 
 ## Testing
 
-Tests are located in the `Tests/` directory. Run them to ensure the code's integrity.
+Tests are located in the `Tests/` directory. CircleCI is set up to run tests and limit bugs introduced into main branch. 
 
 ## Data
 
