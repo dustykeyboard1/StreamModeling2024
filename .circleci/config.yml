@@ -19,8 +19,10 @@ jobs:
     # You can specify an image from Dockerhub or use one of the convenience images from CircleCI's Developer Hub
     # A list of available CircleCI Docker convenience images are available here: https://circleci.com/developer/images/image/cimg/python
     # The executor is the environment in which the steps below will be executed - below will use a python 3.11 container
+    # The executor is the environment in which the steps below will be executed - below will use a python 3.11 container
     # Change the version below to your required version of python
     docker:
+      - image: cimg/python:3.11.0  # Updated Python version to 3.11
       - image: cimg/python:3.11.0  # Updated Python version to 3.11
     # Checkout the code as the first step. This is a dedicated CircleCI step.
     # The python orb's install-packages step will install the dependencies from a Pipfile via Pipenv by default.
