@@ -38,7 +38,7 @@ Stores utility functions like data input/output and interpolation methods.
 1. Clone the repository.
 2. Navigate to the project directory.
 3. Install the required packages using `pip install -r requirements.txt`.
-4. Run `main.py` to execute the program.
+4. *To be implemented* Run `main.py` to execute the program.
 
 ## Testing
 
