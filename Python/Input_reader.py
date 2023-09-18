@@ -27,6 +27,3 @@ def formatChecking(colNum, sheet_name):
     elif sheet_name in ("site_info", "time_mod", "dist_mod", "sed_type") and colNum != 1: #what is a cell array? Column vector?
         print(sheet_name + " must contain 1 columns of data!")
 
-       
-readFromFile("example_data.xlsx")
-
