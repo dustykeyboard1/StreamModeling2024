@@ -25,8 +25,6 @@ def test_longwave():
     
     longwave, atm_rad, back_rad, land_rad = hflux_longwave(air_temp, rel_hum, water_temp, vts, cl)
 
-    print("No errors in calculation!")
-
     matlab_output = [-47.7850425827384,
 -47.9064947905216,
 -48.0279469983048,
@@ -59,10 +57,11 @@ def test_longwave():
 
     for i in range(len(longwave)):
         ours = str(round(longwave[i], 10))
-        matlab = str(round(longwave[i], 10))
+        matlab = str(round(matlab_output[i], 10))
         if ours != matlab:
             correct = False
     
     assert correct
     
+test_longwave()
     

@@ -13,14 +13,7 @@ import math
 #          case2 calculates sensible heat transfer based on temperature differences,
 #                Dingman, 1994
 #                *This switch is set in hflux_flux.m
-def hflux_sensible(water_temp, air_temp, rel_hum, wind_speed, z, latent, eq3):
-    z = 150
-    eq3 = 1
-    air_temp = np.array([20, 20, 20, 20])
-    rel_hum = np.array([55, 55, 55, 55])
-    water_temp = np.array([17.443, 17.443, 17.443, 17.443])
-    wind_speed = np.array([0, 0, 0, 0])
-    latent = np.array([6.9973, 6.9973, 6.9973, 6.9973])
+def hflux_sensible(air_temp, rel_hum, water_temp, wind_speed, z, latent, eq3):
     
     match eq3:
         case 1:
@@ -84,5 +77,3 @@ def case2_sensible(kh, wind_speed, water_temp, air_temp):
         val = -kh * wind_speed[i] * (water_temp[i] - air_temp[i])
         result = np.append(result, [val])
     return result
-
-hflux_sensible([], [], [], [], [], [], [])
