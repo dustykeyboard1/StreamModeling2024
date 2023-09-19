@@ -16,7 +16,7 @@ dist = input_data["temp_t0_data"][0]
 temp_t0 = input_data["temp_t0_data"][1]
 
 dist_stdim = input_data["dim_data"][0]
-area = input_data["dim_data"][1]
+# area = input_data["dim_data"][1] commented out in the original Matlab file
 width = input_data["dim_data"][2]
 depth = input_data["dim_data"][3]
 discharge_stdim = input_data["dim_data"][4]
