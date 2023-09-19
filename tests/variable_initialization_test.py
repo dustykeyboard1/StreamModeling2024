@@ -1,3 +1,3 @@
-from Python import hflux
+import Python.hflux
 def check_lat():
-    assert hflux.lat == 43.0300
+    assert Python.hflux.lat == 43.0300
