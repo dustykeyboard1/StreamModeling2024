@@ -58,12 +58,9 @@ def test_latent():
 38.6834574718465,
 38.7806520886100,
 38.8778467053734]
-    
-    # print(shortwave, longwave)
-        
+            
     latent = hflux_latent(shortwave, longwave, rel_hum, water_temp, wind_speed, air_temp, z, eq2)
-    # print(latent)
-    
+
     matlab_output = [6.99729041271735,
 7.01399363313129,
 7.03069685354526,
