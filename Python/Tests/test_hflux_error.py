@@ -19,10 +19,10 @@ def test_valid_arguments():
     """Test if `handle_errors` accepts 6 or 7 arguments without raising exceptions."""
     time_mod = np.array([[1], [2], [3]])
     dist_mod = np.array([[1], [2], [3]])
-    temp_mod = np.array([[1, 2], [3, 4], [5, 6]])
+    temp_mod = np.matrix([[1, 2], [3, 4], [5, 6]])
     dist_temp = np.array([[1], [2], [3]])
     time_temp = np.array([[1], [2], [3]])
-    temp = np.array([[1, 2], [3, 4], [5, 6]])
+    temp = np.matrix([[1, 2], [3, 4], [5, 6]])
 
     handle_errors(time_mod, dist_mod, temp_mod, dist_temp, time_temp, temp)
 
@@ -37,10 +37,10 @@ def test_invalid_column_vector():
     """Test if handle_errors will raise a TypeError exception when given the incorrect shape of Array"""
     time_mod = np.array([1, 2, 3])
     dist_mod = np.array([[1], [2], [3]])
-    temp_mod = np.array([[1, 2], [3, 4], [5, 6]])
+    temp_mod = np.matrix([[1, 2], [3, 4], [5, 6]])
     dist_temp = np.array([[1], [2], [3]])
     time_temp = np.array([[1], [2], [3]])
-    temp = np.array([[1, 2], [3, 4], [5, 6]])
+    temp = np.matrix([[1, 2], [3, 4], [5, 6]])
 
     with pytest.raises(TypeError):
         handle_errors(time_mod, dist_mod, temp_mod, dist_temp, time_temp, temp)
