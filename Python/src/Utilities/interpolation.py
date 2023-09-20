@@ -44,7 +44,7 @@ We can use scipy's interp1d function to accomplish the same thing as Matlab's in
 An equivalent interpolation function to matlab
 Returns a 1-D array of interpolated values
 '''
-def interpolation(x, y, xq, method):
+def interpolation_func(x, y, xq, method):
     f = scipy.interpolate.interp1d(x, y, method)
     result = []
     for value in xq:
