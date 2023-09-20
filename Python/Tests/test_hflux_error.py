@@ -44,3 +44,21 @@ def test_invalid_column_vector():
 
     with pytest.raises(TypeError):
         handle_errors(time_mod, dist_mod, temp_mod, dist_temp, time_temp, temp)
+
+def test_check_matrix_type():
+    """Test if handle_errors will raise a TypeError exception when given non-matrix types for temp_mod and temp."""
+    time_mod = np.array([[1], [2], [3]])
+    dist_mod = np.array([[1], [2], [3]])
+    temp_mod = np.array([[1, 2], [3, 4], [5, 6]])  # Not a matrix
+    dist_temp = np.array([[1], [2], [3]])
+    time_temp = np.array([[1], [2], [3]])
+    temp = np.array([[1, 2], [3, 4], [5, 6]])  # Not a matrix
+
+    with pytest.raises(TypeError):
+        handle_errors(time_mod, dist_mod, temp_mod, dist_temp, time_temp, temp)
+
+    temp_mod = np.matrix([[1, 2], [3, 4], [5, 6]])  # Is a matrix
+    temp = np.matrix([[1, 2], [3, 4], [5, 6]])  # Is a matrix
+
+    # Should not raise an exception
+    handle_errors(time_mod, dist_mod, temp_mod, dist_temp, time_temp, temp)

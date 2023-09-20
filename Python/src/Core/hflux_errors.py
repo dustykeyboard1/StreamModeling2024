@@ -40,12 +40,16 @@ def handle_errors(*args):
 
     #Type check variables to ensure they are column vectors. 
     if time_mod.ndim != 2 or time_mod.shape[1] != 1:
-        raise TypeError("Time_m must be a column vector")
+        raise TypeError("Time_m must be a column vector.")
     if dist_mod.ndim != 2 or dist_mod.shape[1] != 1:
-        raise TypeError("Dist_m must be a column vector")
+        raise TypeError("Dist_m must be a column vector.")
     if time_temp.ndim != 2 or time_temp.shape[1] != 1:
-        raise TypeError("Time_temp must be a column vector")
+        raise TypeError("Time_temp must be a column vector.")
     if dist_temp.ndim != 2 or dist_temp.shape[1] != 1:
-        raise TypeError("Dist_temp must be a column vector")
+        raise TypeError("Dist_temp must be a column vector.")
 
 
+    if not isinstance(temp_mod, np.matrix): 
+        raise TypeError("Temp_mod must be a matrix.")
+    if not isinstance(temp, np.matrix):
+        raise TypeError("Temp must be a matrix.")
