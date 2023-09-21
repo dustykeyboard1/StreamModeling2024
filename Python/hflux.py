@@ -1,9 +1,10 @@
-import pandas as pd
 import numpy as np
 from input_reader import *
+from hflux_bed_sed import *
 
 # read from excel sheet
-input_data = readFromFile("example_data.xlsx")
+filename = os.getcwd() + "/example_data_formatted.xlsx"
+input_data = readFromFile(filename)
 
 # initialize variables
 time_mod = input_data["time_mod"][0]
@@ -16,7 +17,7 @@ dist = input_data["temp_t0_data"][0]
 temp_t0 = input_data["temp_t0_data"][1]
 
 dist_stdim = input_data["dim_data"][0]
-# area = input_data["dim_data"][1] commented out in the original Matlab file
+# area = input_data["dim_data"][1]  p.s. commented out in the original Matlab file
 width = input_data["dim_data"][2]
 depth = input_data["dim_data"][3]
 discharge_stdim = input_data["dim_data"][4]
@@ -60,3 +61,6 @@ lat = input_data["site_info"][0, 0]
 lon = input_data["site_info"][0, 1]
 t_zone = input_data["site_info"][0, 2]
 z = input_data["site_info"][0, 3]
+
+sed = hflux_bed_sed(sed_type, dist_bed, dist_mod)
+print(sed)
