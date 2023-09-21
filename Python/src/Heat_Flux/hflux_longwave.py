@@ -27,56 +27,49 @@ def hflux_longwave(air_temp, rel_hum, water_temp, vts, cl):
 
 ### The saturation vapor pressure equation
 def saturation_vp(air_temp):
-    result = np.empty(0)
-    for x in air_temp:
-        val = .611 * math.exp((17.27 * x) / (237.2 + x))
-        result = np.append(result, [val])
+    result = np.zeros(len(air_temp))
+    for i in range(len(air_temp)):
+        result[i] = .611 * math.exp((17.27 * air_temp[i]) / (237.2 + air_temp[i]))
     return result
 
 ### The actual vapor pressure equation
 def actual_vp(rel_hum, e_s):
-    result = np.empty(0)
+    result = np.zeros(len(rel_hum))
     for i in range(len(rel_hum)):
-        val = (rel_hum[i] / 100) * e_s[i]
-        result = np.append(result, [val])
+        result[i] = (rel_hum[i] / 100) * e_s[i]
     return result
 
 ### Emissivity of atmosphere
 def emissivity_atm(e_a, air_temp, cl):
-    result = np.empty(0)
+    result = np.zeros(len(e_a))
     for i in range(len(e_a)):
-        val = 1.72 * ((e_a[i] / (air_temp[i] + 273.2)) ** (1/7)) * (1 + .22 * cl[i] ** 2)
-        result = np.append(result, [val])
+        result[i] = 1.72 * ((e_a[i] / (air_temp[i] + 273.2)) ** (1/7)) * (1 + .22 * cl[i] ** 2)
     return result
 
 ### Atmospheric Radiation
 def atmospheric_radiation(e_atm, vts, s_b, air_temp):
-    result = np.empty(0)
+    result = np.zeros(len(e_atm))
     for i in range(len(e_atm)):
-        val = .96 * e_atm[i] * vts[i] * s_b * ((air_temp[i] + 273.2) ** 4)
-        result = np.append(result, [val])
+        result[i] = .96 * e_atm[i] * vts[i] * s_b * ((air_temp[i] + 273.2) ** 4)
     return result
 
 ### Back Radiation from Water Column
 def back_radiation(s_b, water_temp):
-    result = np.empty(0)
+    result = np.zeros(len(water_temp))
     for i in range(len(water_temp)):
-        val = -.96 * s_b * ((water_temp[i] + 273.2) ** 4)
-        result = np.append(result, [val])
+        result[i] = -.96 * s_b * ((water_temp[i] + 273.2) ** 4)
     return result
 
 ### Land Cover Radiation
 def land_radiation(vts, s_b, air_temp):
-    result = np.empty(0)
+    result = np.zeros(len(vts))
     for i in range(len(vts)):
-        val = .96 * (1 - vts[i]) * .96 * s_b * ((air_temp[i] + 273.2) ** 4)
-        result = np.append(result, [val])
+        result[i] = .96 * (1 - vts[i]) * .96 * s_b * ((air_temp[i] + 273.2) ** 4)
     return result
 
 ### Longwave Radiation
 def longwave_radiation(atm_rad, back_rad, land_rad):
-    result = np.empty(0)
+    result = np.zeros(len(atm_rad))
     for i in range(len(atm_rad)):
-        val = atm_rad[i] + back_rad[i] + land_rad[i]
-        result = np.append(result, [val])
+        result[i] = atm_rad[i] + back_rad[i] + land_rad[i]
     return result

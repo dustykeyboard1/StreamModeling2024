@@ -426,6 +426,7 @@ def test_hflux_bed():
     for i in range(len(bed)):
         ours = str(round(bed[i], 10))
         matlab = str(round(matlab_output[i], 10))
+        print(ours, matlab)
         if ours != matlab:
             print(ours, matlab)
             correct = False
