@@ -40,40 +40,35 @@ def hflux_sensible(air_temp, rel_hum, water_temp, wind_speed, z, latent, eq3):
 
 ### Saturated vapor pressire using stream temp
 def saturated_vp(water_temp):
-    result = np.empty(0)
-    for x in water_temp:
-        val = .61275 * math.exp((17.27 * x) / (237.3 + x))
-        result = np.append(result, [val])
+    result = np.zeros(len(water_temp))
+    for i in range(len(water_temp)):
+        result[i] = .61275 * math.exp((17.27 * water_temp[i]) / (237.3 + water_temp[i]))
     return result
 
 ### Actual vapor pressure
 def actual_vp(rel_hum, ews):
-    result = np.empty(0)
+    result = np.zeros(len(rel_hum))
     for i in range(len(rel_hum)):
-        val = (rel_hum[i] / 100) * ews[i]
-        result = np.append(result, [val])
+        result[i] = (rel_hum[i] / 100) * ews[i]
     return result
 
 ### Bowen's ratio calculation
 def bowens_ratio(air_pressure, water_temp, air_temp, ews, ewa):
-    result = np.empty(0)
+    result = np.zeros(len(water_temp))
     for i in range(len(water_temp)):
-        val = .00061 * air_pressure * ((water_temp[i] - air_temp[i]) / (ews[i] - ewa[i]))
-        result = np.append(result, [val])
+        result[i] = .00061 * air_pressure * ((water_temp[i] - air_temp[i]) / (ews[i] - ewa[i]))
     return result
 
 ### Sensible case1 calulation
 def case1_sensible(br, latent):
-    result = np.empty(0)
+    result = np.zeros(len(latent))
     for i in range(len(latent)):
-        val = br[i] * latent[i]
-        result = np.append(result, [val])
+        result[i] = br[i] * latent[i]
     return result
 
 ### Sensible case2 calulation
 def case2_sensible(kh, wind_speed, water_temp, air_temp):
-    result = np.empty(0)
+    result = np.zeros(len(wind_speed))
     for i in range(len(wind_speed)):
-        val = -kh * wind_speed[i] * (water_temp[i] - air_temp[i])
-        result = np.append(result, [val])
+        result[i] = -kh * wind_speed[i] * (water_temp[i] - air_temp[i])
     return result

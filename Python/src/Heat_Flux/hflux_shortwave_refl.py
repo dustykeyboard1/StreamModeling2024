@@ -2,7 +2,6 @@ import pandas as pd
 import numpy as np
 import math
 import datetime 
-from ..Utilities.interpolation import interpolation
 
 # % Input:
 # %   Note: must all be for the same time period and distance (ie same size)
