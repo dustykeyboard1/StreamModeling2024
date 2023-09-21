@@ -21,25 +21,22 @@ def hflux_shortwave(solar_rad, shade, sol_refl, eq1):
     return shortwave
 
 def solar_in(shade, solar_rad):
-    result = np.empty(0)
+    result = np.zeros(len(shade))
     for i in range(len(shade)):
-        val = (1 - shade[i]) * solar_rad[i]
-        result = np.append(result, [val])
+        result[i] = (1 - shade[i]) * solar_rad[i]
     return result
 
 def case1_shortwave(sol_in, sol_refl):
-    result = np.empty(0)
+    result = np.zeros(len(sol_in))
     for i in range(len(sol_in)):
-        val = sol_in[i] - (sol_refl * sol_in[i])
-        result = np.append(result, [val])
+        result[i] = sol_in[i] - (sol_refl * sol_in[i])
     return result
 
 def case2_shortwave(shade, solar_rad):
-    result = np.empty(0)
+    result = np.zeros(len(shade))
     albedo = 0.05
     for i in range(len(shade)):
-        val = (1 - albedo) * ((1 - shade[i]) * solar_rad[i])
-        result = np.append(result, [val])
+        result[i] = (1 - albedo) * ((1 - shade[i]) * solar_rad[i])
     return result
 
     
