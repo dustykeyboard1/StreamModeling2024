@@ -54,9 +54,9 @@ def handle_errors(*args):
         raise TypeError("Dist_temp must be a column vector.")
 
     #Isinstance - https://docs.python.org/3/library/functions.html#isinstance
-    if not isinstance(temp_mod, np.array): 
+    if not isinstance(temp_mod, np.ndarray): 
         raise TypeError("Temp_mod must be a numpy array representing a matrix.")
-    if not isinstance(temp, np.array):
+    if not isinstance(temp, np.ndarray):
         raise TypeError("Temp must be a numpy array representing a matrix.")
     
     if unattend:
