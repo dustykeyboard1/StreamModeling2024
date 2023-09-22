@@ -12,20 +12,20 @@ from Python.src.Utilities.Input_reader import readFromFile
 def test_shortwave_refl():
     return True
 
-    input = readFromFile(os.getcwd() + "\\Python\\src\\Utilities" + "\\example_data.xlsx")
-    year = input["met_data"][0]
-    month = input["met_data"][1]
-    day = input["met_data"][2]
-    hour = input["met_data"][3]
-    minute = input["met_data"][4]
-    time_met = input["met_data"][5]
-    time_mod = input["time_mod"][0]
+    # input = readFromFile(os.getcwd() + "\\Python\\src\\Utilities" + "\\example_data.xlsx")
+    # year = input["met_data"][0]
+    # month = input["met_data"][1]
+    # day = input["met_data"][2]
+    # hour = input["met_data"][3]
+    # minute = input["met_data"][4]
+    # time_met = input["met_data"][5]
+    # time_mod = input["time_mod"][0]
 
     t_zone = 5
     lon = -76.067000000000000
     lat = 43.030000000000000
 
-    sol_refl = hflux_shortwave_relf(year, month, day, hour, minute, lat, lon, t_zone, time_met, time_mod)
+    # sol_refl = hflux_shortwave_relf(year, month, day, hour, minute, lat, lon, t_zone, time_met, time_mod)
     matlab_output = [0.0830696531751561,
 0.0842738509457202,
 0.0855026910279460,
@@ -227,8 +227,8 @@ def test_shortwave_refl():
 1,
 1]    
 
-    for i in range(len(sol_refl[:200])):
-        if round(sol_refl[i], 12) != round(matlab_output[i], 12):
-            print(sol_refl[i], matlab_output[i])
+    # for i in range(len(sol_refl[:200])):
+    #     if round(sol_refl[i], 12) != round(matlab_output[i], 12):
+    #         print(sol_refl[i], matlab_output[i])
 
 test_shortwave_refl()
