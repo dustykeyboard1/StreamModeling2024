@@ -1,7 +1,14 @@
-import pandas as pd
 import numpy as np
 import math
 import datetime 
+import os
+import sys
+
+
+#Find the root directory dynmimically. https://stackoverflow.com/questions/73230007/how-can-i-set-a-root-directory-dynamically
+root_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
+sys.path.append(root_dir)
+from Python.src.Utilities.interpolation import pchipinterpolation
 
 # % Input:
 # %   Note: must all be for the same time period and distance (ie same size)
@@ -33,7 +40,8 @@ def hflux_shortwave_relf(year, month, day, hour, minute, lat, lon, t_zone, time_
             time_frac[i] += (1/24)
         sol_zen[i] = solar_position(time_frac[i], t_zone, year[i], month[i], day[i], hour[i], minute[i], lat, lon)
     
-    return fresnel_reflectivity(sol_zen)
+    ah = fresnel_reflectivity(sol_zen)
+    return pchipinterpolation(time_met, ah, time_mod)
 
 ### Calculate freznel's reflectivity
 def fresnel_reflectivity(alpha_rad):
@@ -47,7 +55,6 @@ def fresnel_reflectivity(alpha_rad):
             b_deg = ((math.tan(value + beta_rad)) ** 2) * (180 / math.pi)
             c_deg = ((math.sin(value - beta_rad)) ** 2) * (180 / math.pi)
             d_deg = ((math.sin(value + beta_rad)) ** 2) * (180 / math.pi)
-            print(a_deg, b_deg, c_deg, d_deg)
             ah[i] = .5 * ((a_deg / b_deg) + (c_deg / d_deg))
         else:
             ah[i] = 1

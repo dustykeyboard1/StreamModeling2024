@@ -12,6 +12,7 @@ Function:
 Provides an equivalent function in Python for Matlab's interp1 function.
 '''
 import scipy
+import numpy as np
 
 '''
 The interpolate function in matlab, which has the following structure:
@@ -45,15 +46,7 @@ An equivalent interpolation function to matlab
 Returns a 1-D array of interpolated values
 '''
 def interpolation(x, y, xq, method):
-    f = scipy.interpolate.interp1d(x, y, method)
-    result = []
-    for value in xq:
-        result.append(f(value))
-    return result
+    return scipy.interpolate.interp1d(x, y, method)(xq)
 
-def main():
-    x, y, xq, method = None
-    interpolation(x, y, xq, method)
-
-if __name__=="__main__":
-    main()
+def pchipinterpolation(x, y, xq):
+    return scipy.interpolate.PchipInterpolator(x, y)(xq)
