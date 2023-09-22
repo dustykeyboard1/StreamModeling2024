@@ -81,3 +81,54 @@ def handle_errors(*args):
         print('    ')
         print('Calculating error metrics...')
 
+
+    #Start Calculating error metrics
+
+    #Percent Relative Error
+    rel_err = ((temp - temp_dt) / temp) * 100
+
+    #Mean Residual Error
+    me = np.sum(temp - temp_dt) / np.size(temp)
+
+    #Mean absolute Resiudal Error
+    mae = np.sum(np.abs(temp - temp_dt)) / np.size(temp)
+
+    #Mean Squared Error
+    mse = np.sum((temp - temp_dt)**2) / np.size(temp)
+
+    #Root Mean Squared Error
+    rmse = np.sqrt(np.sum((temp - temp_dt)**2) / np.size(temp))
+
+    #Normalized Root Mean Square 
+    nrmse = (rmse / (np.max(temp) - np.min(temp)))*100
+
+    if unattend:
+        print('...Done!')
+        print('     ')
+
+    if unattend: 
+        plt.figure()
+        residuals = temp - temp_dt
+        plt.imshow(residuals)
+
+        plt.figure()
+        plt.subplot(2, 1, 1)
+
+        plt.plot(dist_temp[:, 0], np.mean(temp, axis = 1))
+        plt.plot(dist_mod, np.mean(temp_mod, axis = 1))
+
+        plt.subplot(2,1, 2)
+        plt.plot(dist_temp[:, 0], np.mean(temp, axis=1))
+        plt.plot(dist_mod, np.mean(temp_mod, axis=1))
+
+        plt.subplot(2, 1, 2)
+        plt.plot(time_temp[:, 0], np.mean(temp, axis=0))
+        plt.plot(time_mod, np.mean(temp_mod, axis=0))
+
+        plt.show()
+
+        return rel_err, me, mae, mse, rmse, nrmse 
+
+                 
+
+

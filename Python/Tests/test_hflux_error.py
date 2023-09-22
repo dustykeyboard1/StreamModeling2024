@@ -58,8 +58,10 @@ def test_check_matrix_type():
     with pytest.raises(TypeError):
         handle_errors(time_mod, dist_mod, temp_mod, dist_temp, time_temp, temp)
 
-    temp_mod = np.array([[1, 2], [3, 4], [5, 6]])  # Is a matrix
-    temp = np.array([[1, 2], [3, 4], [5, 6]])  # Is a matrix
+    temp_mod = np.array([[1, 2], [3, 4], [5, 6]])
+    temp = np.array([[1, 2], [3, 4], [5, 6]])  
 
     # Should not raise an exception
     handle_errors(time_mod, dist_mod, temp_mod, dist_temp, time_temp, temp)
+
+    
