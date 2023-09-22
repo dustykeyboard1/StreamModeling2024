@@ -40,8 +40,7 @@ def hflux_shortwave_relf(year, month, day, hour, minute, lat, lon, t_zone, time_
             time_frac[i] += (1/24)
         sol_zen[i] = solar_position(time_frac[i], t_zone, year[i], month[i], day[i], hour[i], minute[i], lat, lon)
     
-    ah = fresnel_reflectivity(sol_zen)
-    return pchipinterpolation(time_met, ah, time_mod)
+    return pchipinterpolation(time_met, fresnel_reflectivity(sol_zen), time_mod)
 
 ### Calculate freznel's reflectivity
 def fresnel_reflectivity(alpha_rad):
