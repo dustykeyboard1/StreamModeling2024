@@ -4,8 +4,7 @@ import os
 
 root_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
 sys.path.append(root_dir)
-
-from ..Python import hflux
+from Python.src.Core.hflux import hflux
 
 matlab_sed = [
     3,

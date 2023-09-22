@@ -1,10 +1,16 @@
 import numpy as np
-from input_reader import *
-from hflux_bed_sed import *
+import os
+import sys
+
+#Find the root directory dynmimically. https://stackoverflow.com/questions/73230007/how-can-i-set-a-root-directory-dynamically
+root_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
+sys.path.append(root_dir)
+from Python.src.Utilities import Input_reader
+from Python.src.Heat_Flux.hflux_bed_sed import hflux_bed_sed
 
 # read from excel sheet
 filename = os.getcwd() + "/example_data_formatted.xlsx"
-input_data = readFromFile(filename)
+input_data = Input_reader.readFromFile(filename)
 
 # initialize variables
 time_mod = input_data["time_mod"][0]

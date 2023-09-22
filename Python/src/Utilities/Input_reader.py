@@ -1,6 +1,7 @@
 import pandas as pd
 import numpy as np
 import os
+
 def readFromFile(filename):
     data = pd.ExcelFile(filename)
     sheet_names = data.sheet_names
@@ -8,7 +9,7 @@ def readFromFile(filename):
 
     input_data = {}
     for i in range(0, sheet_num):
-        d = pd.read_excel(filename, sheet_names[i]).values.transpose()
+        d = pd.read_excel(data, sheet_names[i]).values.transpose()
         formatChecking(len(d), sheet_names[i])
         input_data[sheet_names[i]] = d
 
@@ -26,4 +27,8 @@ def formatChecking(colNum, sheet_name):
         print(sheet_name + " must contain 3 columns of data!")
     elif sheet_name in ("site_info", "time_mod", "dist_mod", "sed_type") and colNum != 1: #what is a cell array? Column vector?
         print(sheet_name + " must contain 1 columns of data!")
+
+
+filename = os.getcwd() + "\\Python\\src\\Utilities" + "\\example_data.xlsx"
+readFromFile(filename)
 
