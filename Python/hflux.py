@@ -63,4 +63,3 @@ t_zone = input_data["site_info"][0, 2]
 z = input_data["site_info"][0, 3]
 
 sed = hflux_bed_sed(sed_type, dist_bed, dist_mod)
-print(sed)
