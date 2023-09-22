@@ -60,13 +60,13 @@ def handle_errors(*args):
 
     result_list = []
     for i in range(time_mod.shape[1]):
-        result = interpolation_func(dist_mod[0, :], temp_mod[:, i], dist_temp[0, :])
+        result = interpolation_func(dist_mod[0, :], temp_mod[:, i], dist_temp[0, :], 'linear')
         result_list.append(result)
     temp_dx = np.array(result_list)
 
     result_list = []
     for i in range(dist_temp.shape[1]):
-        result = interpolation_func(time_mod[0, :], temp_dx[i, :], time_temp[0, :])
+        result = interpolation_func(time_mod[0, :], temp_dx[i, :], time_temp[0, :], 'linear')
         result_list.append(result)
     temp_dt = np.array(result_list)
 
