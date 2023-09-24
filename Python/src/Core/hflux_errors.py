@@ -66,12 +66,16 @@ def handle_errors(*args):
 
     result_list = []
     for i in range(len(time_mod)):
-       result = interpolation_func(dist_mod[:,0], temp_mod[:,i], dist_temp[:,0], 'linear')
-       result_list.append(result)
+        if i >= temp_mod.shape[1]:
+           raise IndexError("Index out of range.")
+        result = interpolation_func(dist_mod[:,0], temp_mod[:,i], dist_temp[:,0], 'linear')
+        result_list.append(result)
     temp_dx = np.array(result_list)
 
     result_list = []
     for i in range(len(dist_temp)):
+        if i >= dist_temp.shape[1]:
+            raise IndexError("Index out of range.")
         result = interpolation_func(time_mod[:,0], temp_dx[i,:], time_temp[:,0], 'linear')
         result_list.append(result)
     temp_dt = np.array(result_list)
@@ -127,7 +131,7 @@ def handle_errors(*args):
 
         plt.show()
 
-        return rel_err, me, mae, mse, rmse, nrmse 
+    return rel_err, me, mae, mse, rmse, nrmse 
 
                  
 
