@@ -8,7 +8,7 @@ import sys
 #Find the root directory dynmimically. https://stackoverflow.com/questions/73230007/how-can-i-set-a-root-directory-dynamically
 root_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
 sys.path.append(root_dir)
-from Python.src.Utilities.interpolation import pchipinterpolation
+from src.Utilities.interpolation import pchipinterpolation
 
 # % Input:
 # %   Note: must all be for the same time period and distance (ie same size)
