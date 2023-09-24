@@ -14,7 +14,7 @@ import sys
 
 root_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
 sys.path.append(root_dir)
-from src.Utilities.interpolation import interpolation_func
+from src.Utilities.interpolation import interpolation
 
 def handle_errors(*args):
     """
@@ -66,13 +66,13 @@ def handle_errors(*args):
 
     result_list = []
     for i in range(len(time_mod)):
-        result = interpolation_func(dist_mod[:,0], temp_mod[:,i], dist_temp[:,0], 'linear')
+        result = interpolation(dist_mod[:,0], temp_mod[:,i], dist_temp[:,0], 'linear')
         result_list.append(result)
     temp_dx = np.array(result_list)
 
     result_list = []
     for i in range(len(dist_temp)):
-        result = interpolation_func(time_mod[:,0], temp_dx[i,:], time_temp[:,0], 'linear')
+        result = interpolation(time_mod[:,0], temp_dx[i,:], time_temp[:,0], 'linear')
         result_list.append(result)
     temp_dt = np.array(result_list)
 
@@ -109,22 +109,47 @@ def handle_errors(*args):
     if unattend: 
         plt.figure()
         residuals = temp - temp_dt
-        plt.imshow(residuals)
+        #Matplotlib Imshow - https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.imshow.html
+        plt.imshow(residuals, aspect='auto', cmap='jet', origin='lower')
+        #Matplotlib Color Bar - https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.colorbar.html
+        plt.colorbar(label='Model Residuals (°C)')
+        plt.axis('square')
+        plt.title('Modeled Temperature Residuals', fontsize=11, fontweight='bold')
+        plt.xlabel('Time (min)', fontsize=9, fontweight='bold')
+        plt.ylabel('Distance (m)', fontsize=9, fontweight='bold')
 
         plt.figure()
         plt.subplot(2, 1, 1)
+        plt.plot(dist_temp[:, 0], np.mean(temp, axis = 1), '--ko', linewidth=1.5, markerfacecolor='b', markersize=8)
+        plt.plot(dist_mod, np.mean(temp_mod, axis = 1), 'r', linewidth=1.5)
 
-        plt.plot(dist_temp[:, 0], np.mean(temp, axis = 1))
-        plt.plot(dist_mod, np.mean(temp_mod, axis = 1))
+        #Xlim - https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.xlim.html
+        #Ylim - https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.ylim.html
+        mean_temp_axis1 = np.mean(temp, axis=1)
+        mean_temp_mod_axis1 = np.mean(temp_mod, axis=1)
+        plt.xlim([np.min(dist_temp), np.max(dist_temp)])
+        plt.ylim([min(mean_temp_axis1.min(), mean_temp_mod_axis1.min()), max(mean_temp_axis1.max(), mean_temp_mod_axis1.max())])
 
-        plt.subplot(2,1, 2)
-        plt.plot(dist_temp[:, 0], np.mean(temp, axis=1))
-        plt.plot(dist_mod, np.mean(temp_mod, axis=1))
+        plt.title('Stream Temperature Along the Reach', fontsize=11, fontweight='bold')
+        plt.xlabel('Distance Downstream (m)', fontsize=9)
+        plt.ylabel('Temperature (°C)', fontsize=9)
+        plt.legend(['Measured', 'Modeled'], loc='best')
 
         plt.subplot(2, 1, 2)
-        plt.plot(time_temp[:, 0], np.mean(temp, axis=0))
-        plt.plot(time_mod, np.mean(temp_mod, axis=0))
+        plt.plot(dist_temp[:, 0], np.mean(temp, axis=1), 'b', linewidth=1.5)
+        plt.plot(dist_mod, np.mean(temp_mod, axis=1), 'r', linewidth = 1.5)
 
+        mean_temp = np.mean(temp, axis=0)
+        mean_temp_mod = np.mean(temp_mod, axis=0)
+        plt.xlim([np.min(time_temp), np.max(time_temp)])
+        plt.ylim([min(mean_temp.min(), mean_temp_mod.min()) - 1, max(mean_temp.max(), mean_temp_mod.max()) + 1])
+
+        plt.title('Stream Temperature Over Time', fontsize=11, fontweight='bold')
+        plt.xlabel('Time (min)', fontsize=9)
+        plt.ylabel('Temperature (°C)', fontsize=9)
+        plt.legend(['Measured', 'Modeled'], loc='best')
+        
+        plt.tight_layout()
         plt.show()
 
     return rel_err, me, mae, mse, rmse, nrmse 
