@@ -50,10 +50,10 @@ def test_check_matrix_type():
     """Test if handle_errors will raise a TypeError exception when given non-matrix types for temp_mod and temp."""
     time_mod = np.array([[1], [2], [3]])
     dist_mod = np.array([[1], [2], [3]])
-    temp_mod = np.matrix([[1, 2], [3, 4], [5, 6]])  # Not an array
+    temp_mod = np.datetime64(10, 'Y')  # Not an array
     dist_temp = np.array([[1], [2], [3]])
     time_temp = np.array([[1], [2], [3]])
-    temp = np.matrix([[1, 2], [3, 4], [5, 6]])  # Not a array
+    temp = np.datetime64(10, 'Y')  # Not a array
 
     with pytest.raises(TypeError):
         handle_errors(time_mod, dist_mod, temp_mod, dist_temp, time_temp, temp)
@@ -64,4 +64,4 @@ def test_check_matrix_type():
     # Should not raise an exception
     handle_errors(time_mod, dist_mod, temp_mod, dist_temp, time_temp, temp)
 
-    
+test_valid_arguments()
