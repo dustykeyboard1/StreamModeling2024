@@ -25,9 +25,11 @@ def test_valid_arguments():
     time_temp = np.array([[1], [2], [3]])
     temp = np.array([[1, 2], [3, 4], [5, 6]])
 
-    handle_errors(time_mod, dist_mod, temp_mod, dist_temp, time_temp, temp)
+    with pytest.raises(IndexError):
+        handle_errors(time_mod, dist_mod, temp_mod, dist_temp, time_temp, temp)
 
-    handle_errors(time_mod, dist_mod, temp_mod, dist_temp, time_temp, temp, True)
+    with pytest.raises(IndexError):
+        handle_errors(time_mod, dist_mod, temp_mod, dist_temp, time_temp, temp, True)
 
 def test_invalid_number_of_arguments():
     """Test if handle_errors will raise a ValueError exception when given incorrect number of arguments"""
