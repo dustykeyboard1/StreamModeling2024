@@ -18,9 +18,5 @@ from Python.src.Core.hflux_errors import handle_errors
 
 input_data = readFromFile('Python/Data/example_data.xlsx')
 
-print((input_data['time_mod'][0]))
-
-temp_mod = np.array([[1, 2, 7], [3, 4, 8], [5, 6, 9]])
-
 rel_err, me, mae, mse, rmse, nrmse = handle_errors(input_data['time_mod'], input_data['dist_mod'], temp_mod, input_data['temp_t0_data'][:, 0], 
                                                    input_data['temp_x0_data'][:, 0], input_data['temp'])
