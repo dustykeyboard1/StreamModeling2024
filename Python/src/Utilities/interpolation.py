@@ -53,7 +53,7 @@ def interpolation_func(x, y, xq, method):
 
 def main():
     x, y, xq, method = None
-    interpolation(x, y, xq, method)
+    interpolation_func(x, y, xq, method)
 
 if __name__=="__main__":
     main()
