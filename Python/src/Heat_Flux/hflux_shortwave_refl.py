@@ -1,7 +1,14 @@
-import pandas as pd
 import numpy as np
 import math
 import datetime 
+import os
+import sys
+
+
+#Find the root directory dynmimically. https://stackoverflow.com/questions/73230007/how-can-i-set-a-root-directory-dynamically
+root_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
+sys.path.append(root_dir)
+from src.Utilities.interpolation import pchipinterpolation
 
 # % Input:
 # %   Note: must all be for the same time period and distance (ie same size)
@@ -33,8 +40,7 @@ def hflux_shortwave_relf(year, month, day, hour, minute, lat, lon, t_zone, time_
             time_frac[i] += (1/24)
         sol_zen[i] = solar_position(time_frac[i], t_zone, year[i], month[i], day[i], hour[i], minute[i], lat, lon)
     
-    ah = fresnel_reflectivity(sol_zen)
-    return ah
+    return pchipinterpolation(time_met, fresnel_reflectivity(sol_zen), time_mod)
 
 ### Calculate freznel's reflectivity
 def fresnel_reflectivity(alpha_rad):
@@ -48,7 +54,9 @@ def fresnel_reflectivity(alpha_rad):
             b_deg = ((math.tan(value + beta_rad)) ** 2) * (180 / math.pi)
             c_deg = ((math.sin(value - beta_rad)) ** 2) * (180 / math.pi)
             d_deg = ((math.sin(value + beta_rad)) ** 2) * (180 / math.pi)
+
             # print(a_deg, b_deg, c_deg, d_deg)
+
             ah[i] = .5 * ((a_deg / b_deg) + (c_deg / d_deg))
         else:
             ah[i] = 1
@@ -64,8 +72,8 @@ def solar_position(t_dst, t_zone, year, month, day, hour, minute, lat, lon):
     t_jdc = (t_jd + t_gmt - 2451545) / 36525
     
     # Solar position relative to Earth
-    S = 21.448 - t_jdc * (46.815 + t_jdc * (.00059 - (t_jdc * .001813)))
-    o_ob_mean = 23 + ((26 + (S / 60)) / 60)
+    s = 21.448 - t_jdc * (46.815 + t_jdc * (.00059 - (t_jdc * .001813)))
+    o_ob_mean = 23 + ((26 + (s / 60)) / 60)
     o_ob = o_ob_mean + .00256 * math.cos(125.04 - 1934.136 * t_jdc * math.pi / 180)
     e_c = .016708634 - t_jdc * (.000042037 + .0000001267 * t_jdc)
     o_ls_mean = (280.46646 + t_jdc * (36000.76983 + .0003032 * t_jdc)) % 360
@@ -103,7 +111,7 @@ def daylight_saving_time(year, month, day):
         if year < 2007:   
             if month > 4 and month < 10: #if the months are between April and October, true
                 return True
-            elif month < 3 or month == 12: # if the months are January, Fenruary, or December, False
+            elif month < 4 or month > 10: # if the months are January, Fenruary, March, November, or December, False
                 return False
             if month == 4: # if the month is April
                 ### Want the first Sunday 
@@ -111,19 +119,25 @@ def daylight_saving_time(year, month, day):
         
             elif month == 10: # if the month is October
                 ### Want the last Sunday
-                return sunday_dst_calculator(year, month, day, -1)
+                ### The "not" is here to account for the function returning "True" if we are before or
+                ### on the last sunday in october. Since we want to check whether we are after that sunday
+                ### we can negate it to get a correct value
+                return not sunday_dst_calculator(year, month, day, -1)
 
         else:
-            if month >= 4 and month <= 10: #if the months are between April and October, true
+            if month > 3 and month < 11: #if the months are between April and October, true
                 return True
-            elif month < 3 or month == 12: # if the months are January, Fenruary, or December, False
+            elif month < 3 or month > 11: # if the months are January, Fenruary, or December, False
                 return False
            
             elif month == 3: #if the month is March
                 return sunday_dst_calculator(year, month, day, 1)
            
             elif month == 11: # if the month is November
-                return sunday_dst_calculator(year, month, day, 0)
+                ### The "not" is here to account for the function returning "True" if we are before or
+                ### on the first sunday in novermber. Since we want to check whether we are after that sunday
+                ### we can negate it to get a correct value
+                return not sunday_dst_calculator(year, month, day, 0)
 
 
 ### Returns whether your day is after the sunday cutoff for DST

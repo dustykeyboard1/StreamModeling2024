@@ -13,6 +13,7 @@ from src.Utilities.interpolation import interpolation
 
 def hflux():
     # read from excel sheet
+
     filename = os.getcwd() + "/Data" + "/example_data.xlsx"
     input_data = Input_reader.readFromFile(filename)
 
@@ -90,7 +91,7 @@ def hflux():
     ### As discharge_m in Matlab. I do not know why, but this works
     ### And the values are correct
     discharge_m = interpolation(dist_dis, discharge, dist_mod)
-
+  
     width_m = interpolation(dist_stdim, width, dist_mod)
     depth_m = interpolation(dist_stdim, depth, dist_mod)
     depth_of_meas_m = interpolation(dist_bed, depth_of_meas, dist_mod)
@@ -99,6 +100,7 @@ def hflux():
 
     ### This works, would be cool if there was a more elegant solution
     ### I could not find one, however
+    
     # checked!
     bed_temp_m = [0] * len(time_bed)
     for i in range(len(time_bed)):
@@ -152,10 +154,5 @@ def hflux():
         for j in range(r):
             wp_m[j, i] = 2 * (depth_m[j, i] / math.cos(theta[j]))
 
-
-
-    
-
-    
 
 hflux()

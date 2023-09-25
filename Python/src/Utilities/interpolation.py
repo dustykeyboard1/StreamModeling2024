@@ -45,6 +45,7 @@ We can use scipy's interp1d function to accomplish the same thing as Matlab's in
 An equivalent interpolation function to matlab
 Returns a 1-D array of interpolated values
 '''
+
 def interpolation(x, y, xq, method="linear"):
     f = scipy.interpolate.interp1d(x, y, method)
     
@@ -60,9 +61,6 @@ def interpolation(x, y, xq, method="linear"):
         
     return result
 
-def main():
-    x, y, xq, method = None
-    interpolation(x, y, xq, method)
+def pchipinterpolation(x, y, xq):
+    return scipy.interpolate.PchipInterpolator(x, y)(xq)
 
-if __name__=="__main__":
-    main()

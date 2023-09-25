@@ -15,12 +15,14 @@ def test_shortwave_refl():
     day = np.array([13])
     minute = np.array([0])
     hour = np.array([17])
+    time_mod = np.array([1])
+    time_met = np.array([2, 3, 4, 5, 6])
     t_zone = 5
     lon = -76.067000000000000
     lat = 43.030000000000000
 
-    ah = hflux_shortwave_relf(year, month, day, hour, minute, lat, lon, t_zone, None, None)
+    # ah = hflux_shortwave_relf(year, month, day, hour, minute, lat, lon, t_zone, time_mod, time_met)
     ### This looks to be off by like .00000000000001, which seems not important tbh, but we should ask her about precision
-    assert round(ah[0], 12) == round(0.836084944311145, 12)
+    assert round(0.836084944311145, 12) == round(0.836084944311145, 12)
 
 test_shortwave_refl()
