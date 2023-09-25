@@ -54,6 +54,7 @@ def fresnel_reflectivity(alpha_rad):
             b_deg = ((math.tan(value + beta_rad)) ** 2) * (180 / math.pi)
             c_deg = ((math.sin(value - beta_rad)) ** 2) * (180 / math.pi)
             d_deg = ((math.sin(value + beta_rad)) ** 2) * (180 / math.pi)
+            # print(a_deg, b_deg, c_deg, d_deg)
             ah[i] = .5 * ((a_deg / b_deg) + (c_deg / d_deg))
         else:
             ah[i] = 1
