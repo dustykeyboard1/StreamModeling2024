@@ -146,17 +146,12 @@ def hflux():
     # checked!
     area_m = 0.5 * depth_m * width_m
 
-    # wp_m = np.empty((timesteps, r))
-    # depth_m = depth_m.transpose()
-    # for i in range(timesteps):
-    #     wp_m[i] = 2 * (depth_m[i] / math.cos(theta[i]))
-    
-    # wp_m = wp_m.transpose()
-    # print(wp_m[0])
-    print('r is')
-    print(r)
-    print('timesteps is ')
-    print(timesteps)
+    # checked!
+    wp_m = np.empty((r, timesteps))
+    for i in range(timesteps):
+        for j in range(r):
+            wp_m[j, i] = 2 * (depth_m[j, i] / math.cos(theta[j]))
+
 
 
     
