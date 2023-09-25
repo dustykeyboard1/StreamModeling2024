@@ -89,7 +89,7 @@ def hflux():
     ### Need to transpose discharge_m to make sure it has the same shape
     ### As discharge_m in Matlab. I do not know why, but this works
     ### And the values are correct
-    discharge_m = interpolation(dist_dis, discharge, dist_mod)
+    discharge_m = interpolation(dist_dis, discharge, dist_mod).transpose()
 
     width_m = interpolation(dist_stdim, width, dist_mod)
     depth_m = interpolation(dist_stdim, depth, dist_mod)
@@ -109,7 +109,9 @@ def hflux():
     ### Values at every step
 
     # checked!
-    discharge_m = interpolation(time_dis, discharge_m, time_mod).transpose()
+    print(time_dis.shape, discharge_m.shape, time_mod.shape)
+    discharge_m = interpolation(time_dis, discharge_m, time_mod)
+    print(discharge_m.shape)
 
     ### Calculate width-depth-discharge relationship
     r = len(dist_mod)
@@ -151,6 +153,8 @@ def hflux():
     for i in range(timesteps):
         for j in range(r):
             wp_m[j, i] = 2 * (depth_m[j, i] / math.cos(theta[j]))
+
+    
 
 
 hflux()
