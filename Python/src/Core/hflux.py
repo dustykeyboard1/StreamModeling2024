@@ -13,7 +13,8 @@ from src.Utilities.interpolation import interpolation
 
 def hflux():
     # read from excel sheet
-    filename = os.getcwd() + "\\Python\\src\\Utilities" + "\\example_data.xlsx"
+
+    filename = os.getcwd() + "/Data" + "/example_data.xlsx"
     input_data = Input_reader.readFromFile(filename)
 
     method = input_data["settings"][0][0]
@@ -89,9 +90,8 @@ def hflux():
     ### Need to transpose discharge_m to make sure it has the same shape
     ### As discharge_m in Matlab. I do not know why, but this works
     ### And the values are correct
-    discharge_m = interpolation(dist_dis, discharge, dist_mod).transpose()
-
-    print(discharge_m)
+    discharge_m = interpolation(dist_dis, discharge, dist_mod)
+  
     width_m = interpolation(dist_stdim, width, dist_mod)
     depth_m = interpolation(dist_stdim, depth, dist_mod)
     depth_of_meas_m = interpolation(dist_bed, depth_of_meas, dist_mod)
@@ -100,33 +100,59 @@ def hflux():
 
     ### This works, would be cool if there was a more elegant solution
     ### I could not find one, however
+    
+    # checked!
     bed_temp_m = [0] * len(time_bed)
     for i in range(len(time_bed)):
         bed_temp_m[i] = interpolation(dist_bed, bed_temp[i], dist_mod)
     bed_temp_m = np.array(bed_temp_m).transpose()
-    print(bed_temp_m, bed_temp_m.shape)
 
     ### Interpolate all data given through time so that there are 
     ### Values at every step
 
+    # checked!
     discharge_m = interpolation(time_dis, discharge_m, time_mod).transpose()
-    ### Since we already transposed discharge_m, we do not have to do it 
-    ### Again. Strange quicks converting to numpy, but the bottom line,
-    ### (And I HAVE NOT) checked this, is that by this point,
-    ### Every variable we create should have exactly the same dimensions
-    ### As the variables in MatLab that we created these from
 
     ### Calculate width-depth-discharge relationship
     r = len(dist_mod)
-    theta = np.zeros(r)
+    # checked!
+    theta = np.empty(r)
     for i in range(r):
         theta[i] = math.atan((.5 * width_m[i]) / depth_m[i])
     
+    # checked!
     dim_q = interpolation(dist_stdim, discharge_stdim, dist_mod)
-    n_s = np.zeros(r)
+    n_s = np.empty(r)
     for i in range(r):
         n_s[i] = ((.25 ** (2/3)) * (2 ** (5/3)) * (math.cos(theta[i]) ** (2/3)) * (math.tan(theta[i]) ** (5/3)) * (depth_m[i] ** (8/3))) / (2 * dim_q[i])
-
     
+    # checked!
+    depth_m = np.empty((r, timesteps)) 
+    for i in range(r):
+        for j in range(timesteps):
+            depth_m[i, j] = ((2 * n_s[i] * discharge_m[i,j])/
+                             ((0.25**(2/3))*(2**(5/3)) * 
+                              (math.cos(theta[i])**(2/3)) *
+                              (math.tan(theta[i])**(5/3))))**(3/8)
+
+    # checked! 
+    width_m = np.empty((r, timesteps)) 
+    for i in range(r):
+        for j in range(timesteps):
+            width_m[i, j] = (2 * 
+                             math.tan(theta[i]) * 
+                             (((2 * n_s[i] * discharge_m[i, j]) / 
+                               ((0.25**(2/3)) * (2**(5/3)) * 
+                                (math.cos(theta[i])**(2/3)) *
+                                (math.tan(theta[i])**(5/3))))**(3/8)))
+    # checked!
+    area_m = 0.5 * depth_m * width_m
+
+    # checked!
+    wp_m = np.empty((r, timesteps))
+    for i in range(timesteps):
+        for j in range(r):
+            wp_m[j, i] = 2 * (depth_m[j, i] / math.cos(theta[j]))
+
 
 hflux()
