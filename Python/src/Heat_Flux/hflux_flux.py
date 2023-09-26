@@ -1,8 +1,8 @@
-from hflux_shortwave import hflux_shortwave
-from hflux_longwave import hflux_longwave
-from hflux_bed import hflux_bed
-from hflux_latent import hflux_latent
-from hflux_sensible import hflux_sensible
+from src.Heat_Flux.hflux_shortwave import hflux_shortwave
+from src.Heat_Flux.hflux_longwave import hflux_longwave
+from src.Heat_Flux.hflux_bed import hflux_bed
+from src.Heat_Flux.hflux_latent import hflux_latent
+from src.Heat_Flux.hflux_sensible import hflux_sensible
 
 # %   hflux_flux calculates the total heat entering and leaving a stream 
 # %   for a width of stream section over time in a way that can be called by 
