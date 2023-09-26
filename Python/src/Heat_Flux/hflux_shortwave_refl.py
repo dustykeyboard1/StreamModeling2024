@@ -8,7 +8,9 @@ import sys
 #Find the root directory dynmimically. https://stackoverflow.com/questions/73230007/how-can-i-set-a-root-directory-dynamically
 root_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
 sys.path.append(root_dir)
+
 from src.Utilities.interpolation import interpolation
+
 
 # % Input:
 # %   Note: must all be for the same time period and distance (ie same size)
@@ -42,6 +44,7 @@ def hflux_shortwave_relf(year, month, day, hour, minute, lat, lon, t_zone, time_
     
     return interpolation(time_met, fresnel_reflectivity(sol_zen), time_mod, 'pchip')
 
+
 ### Calculate freznel's reflectivity
 def fresnel_reflectivity(alpha_rad):
     n = 1.333
@@ -54,7 +57,9 @@ def fresnel_reflectivity(alpha_rad):
             b_deg = ((math.tan(value + beta_rad)) ** 2) * (180 / math.pi)
             c_deg = ((math.sin(value - beta_rad)) ** 2) * (180 / math.pi)
             d_deg = ((math.sin(value + beta_rad)) ** 2) * (180 / math.pi)
+
             # print(a_deg, b_deg, c_deg, d_deg)
+
             ah[i] = .5 * ((a_deg / b_deg) + (c_deg / d_deg))
         else:
             ah[i] = 1

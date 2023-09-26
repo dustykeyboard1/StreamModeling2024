@@ -14,6 +14,7 @@ from src.Utilities.interpolation import interpolation
 
 def hflux():
     # read from excel sheet
+
     filename = os.getcwd() + "/Data" + "/example_data.xlsx"
     input_data = Input_reader.readFromFile(filename)
 
@@ -90,6 +91,7 @@ def hflux():
     ### Need to transpose discharge_m to make sure it has the same shape
     ### As discharge_m in Matlab. I do not know why, but this works
     ### And the values are correct
+
     discharge_m = interpolation(dist_dis, discharge, dist_mod).transpose()
 
     width_m = interpolation(dist_stdim, width, dist_mod)
@@ -100,6 +102,7 @@ def hflux():
 
     ### This works, would be cool if there was a more elegant solution
     ### I could not find one, however
+    
     # checked!
     bed_temp_m = [0] * len(time_bed)
     for i in range(len(time_bed)):
@@ -210,6 +213,5 @@ def hflux():
     q_half_min = q_half * 60
     q_l_min = q_l * 60
    
-
 
 hflux()

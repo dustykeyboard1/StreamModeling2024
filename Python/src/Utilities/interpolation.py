@@ -45,8 +45,10 @@ We can use scipy's interp1d function to accomplish the same thing as Matlab's in
 An equivalent interpolation function to matlab
 Returns a 1-D array of interpolated values
 '''
+
 def interpolation(x, y, xq, method="linear"):
     if method == 'pchip':
         return scipy.interpolate.PchipInterpolator(x, y)(xq)
     else:
         return scipy.interpolate.interp1d(x, y, method)(xq)
+

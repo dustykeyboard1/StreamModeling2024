@@ -1,5 +1,13 @@
 import pandas as pd
 import numpy as np
+
+import sys 
+import os
+
+#Find the root directory dynmimically. https://stackoverflow.com/questions/73230007/how-can-i-set-a-root-directory-dynamically
+root_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
+sys.path.append(root_dir)
+
 from src.Utilities.interpolation import interpolation
 
 def hflux_bed_sed(sed_type, dist_bed, dist_mod):
@@ -34,4 +42,5 @@ def hflux_bed_sed(sed_type, dist_bed, dist_mod):
                 sed_type[index] = -1 # error value, we can change later if we want
     
     # print(sed_type)
+
     return interpolation(dist_bed, sed_type, dist_mod, "nearest")
