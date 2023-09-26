@@ -16,7 +16,7 @@ print(root_dir)
 from Python.src.Utilities.Input_reader import readFromFile
 from Python.src.Core.hflux_errors import handle_errors
 from Python.src.Core.hflux import hflux
-
+# from Python.src.Utilities import sens
 input_data = readFromFile(root_dir + '/Python/Data/example_data.xlsx')
 
 # temp_mod, matrix_data, node_data, flux_data = hflux()
@@ -36,3 +36,4 @@ unattend = True
 
 # Call the handle_errors function
 rel_err, me, mae, mse, rmse, nrmse = handle_errors(time_mod, dist_mod, temp_mod, dist_temp, time_temp, temp, unattend)
+sens = sens(input_data, )

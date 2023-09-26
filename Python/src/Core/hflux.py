@@ -12,10 +12,11 @@ from src.Heat_Flux.hflux_bed_sed import hflux_bed_sed
 from src.Heat_Flux.hflux_shortwave_refl import hflux_shortwave_relf
 from src.Utilities.interpolation import interpolation
 
-def hflux():
+def hflux(input_data = None):
     # read from excel sheet
-    filename = os.getcwd() + "/Python/Data/example_data.xlsx"
-    input_data = Input_reader.readFromFile(filename)
+    if input_data is None:
+        filename = os.getcwd() + "/Python/Data/example_data.xlsx"
+        input_data = Input_reader.readFromFile(filename)
 
     method = input_data["settings"][0][0]
     unattend = input_data["settings"][0][4]
@@ -90,15 +91,9 @@ def hflux():
     ### Need to transpose discharge_m to make sure it has the same shape
     ### As discharge_m in Matlab. I do not know why, but this works
     ### And the values are correct
-<<<<<<< HEAD
-    discharge_m = interpolation(dist_dis, discharge, dist_mod).transpose()
-
-    # print(discharge_m)
-=======
 
     discharge_m = interpolation(dist_dis, discharge, dist_mod).transpose()
 
->>>>>>> main
     width_m = interpolation(dist_stdim, width, dist_mod)
     depth_m = interpolation(dist_stdim, depth, dist_mod)
     depth_of_meas_m = interpolation(dist_bed, depth_of_meas, dist_mod)
@@ -115,28 +110,6 @@ def hflux():
 
     ### Interpolate all data given through time so that there are 
     ### Values at every step
-<<<<<<< HEAD
-
-    discharge_m = interpolation(time_dis, discharge_m, time_mod).transpose()
-    ### Since we already transposed discharge_m, we do not have to do it 
-    ### Again. Strange quicks converting to numpy, but the bottom line,
-    ### (And I HAVE NOT) checked this, is that by this point,
-    ### Every variable we create should have exactly the same dimensions
-    ### As the variables in MatLab that we created these from
-
-    ### Calculate width-depth-discharge relationship
-    r = len(dist_mod)
-    theta = np.zeros(r)
-    for i in range(r):
-        theta[i] = math.atan((.5 * width_m[i]) / depth_m[i])
-    
-    dim_q = interpolation(dist_stdim, discharge_stdim, dist_mod)
-    n_s = np.zeros(r)
-    for i in range(r):
-        n_s[i] = ((.25 ** (2/3)) * (2 ** (5/3)) * (math.cos(theta[i]) ** (2/3)) * (math.tan(theta[i]) ** (5/3)) * (depth_m[i] ** (8/3))) / (2 * dim_q[i])
-
-    
-=======
     # checked!
     discharge_m = interpolation(time_dis, discharge_m, time_mod)
 
@@ -239,6 +212,5 @@ def hflux():
     q_half_min = q_half * 60
     q_l_min = q_l * 60
    
->>>>>>> main
 
 hflux()
