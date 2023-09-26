@@ -13,7 +13,7 @@ from src.Utilities.interpolation import interpolation
 
 def hflux():
     # read from excel sheet
-    filename = os.getcwd() + "/Python/Data/example_data.xlsx"
+    filename = os.getcwd() + "\\Python\\src\\Utilities" + "\\example_data.xlsx"
     input_data = Input_reader.readFromFile(filename)
 
     method = input_data["settings"][0][0]
@@ -91,7 +91,7 @@ def hflux():
     ### And the values are correct
     discharge_m = interpolation(dist_dis, discharge, dist_mod).transpose()
 
-    # print(discharge_m)
+    print(discharge_m)
     width_m = interpolation(dist_stdim, width, dist_mod)
     depth_m = interpolation(dist_stdim, depth, dist_mod)
     depth_of_meas_m = interpolation(dist_bed, depth_of_meas, dist_mod)
@@ -104,7 +104,7 @@ def hflux():
     for i in range(len(time_bed)):
         bed_temp_m[i] = interpolation(dist_bed, bed_temp[i], dist_mod)
     bed_temp_m = np.array(bed_temp_m).transpose()
-    # print(bed_temp_m, bed_temp_m.shape)
+    print(bed_temp_m, bed_temp_m.shape)
 
     ### Interpolate all data given through time so that there are 
     ### Values at every step

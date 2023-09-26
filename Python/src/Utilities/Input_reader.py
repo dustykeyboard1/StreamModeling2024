@@ -29,6 +29,6 @@ def formatChecking(colNum, sheet_name):
         print(sheet_name + " must contain 1 columns of data!")
 
 
-# filename = os.getcwd() + "\\Python\\src\\Utilities" + "\\example_data.xlsx"
-# readFromFile(filename)
+filename = os.getcwd() + "\\Python\\src\\Utilities" + "\\example_data.xlsx"
+readFromFile(filename)
 
