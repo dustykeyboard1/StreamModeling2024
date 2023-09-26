@@ -46,18 +46,7 @@ An equivalent interpolation function to matlab
 Returns a 1-D array of interpolated values
 '''
 def interpolation(x, y, xq, method="linear"):
-    return scipy.interpolate.interp1d(x, y, method)(xq)
-    
-    # first_result = f(xq[0])
-    # output_size = len(first_result)
-    # zero_dimention = first_result.ndim == 0
-    # xq_size = len(xq)
-    # result = np.empty((xq_size, output_size))
-    # for i in range(xq_size): 
-    #     for j in range(output_size):
-    #         result[i, j] = f(xq[i])
-
-    # return result
-
-def pchipinterpolation(x, y, xq):
-    return scipy.interpolate.PchipInterpolator(x, y)(xq)
+    if method == 'pchip':
+        return scipy.interpolate.PchipInterpolator(x, y)(xq)
+    else:
+        return scipy.interpolate.interp1d(x, y, method)(xq)

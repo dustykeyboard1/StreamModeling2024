@@ -8,7 +8,7 @@ import sys
 #Find the root directory dynmimically. https://stackoverflow.com/questions/73230007/how-can-i-set-a-root-directory-dynamically
 root_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
 sys.path.append(root_dir)
-from src.Utilities.interpolation import pchipinterpolation
+from src.Utilities.interpolation import interpolation
 
 # % Input:
 # %   Note: must all be for the same time period and distance (ie same size)
@@ -40,7 +40,7 @@ def hflux_shortwave_relf(year, month, day, hour, minute, lat, lon, t_zone, time_
             time_frac[i] += (1/24)
         sol_zen[i] = solar_position(time_frac[i], t_zone, year[i], month[i], day[i], hour[i], minute[i], lat, lon)
     
-    return pchipinterpolation(time_met, fresnel_reflectivity(sol_zen), time_mod)
+    return interpolation(time_met, fresnel_reflectivity(sol_zen), time_mod, 'pchip')
 
 ### Calculate freznel's reflectivity
 def fresnel_reflectivity(alpha_rad):
