@@ -46,9 +46,9 @@ An equivalent interpolation function to matlab
 Returns a 1-D array of interpolated values
 '''
 
-### Default method is linear
-def interpolation(x, y, xq, method = "linear"):
-    return scipy.interpolate.interp1d(x, y, method)(xq)
+def interpolation(x, y, xq, method="linear"):
+    if method == 'pchip':
+        return scipy.interpolate.PchipInterpolator(x, y)(xq)
+    else:
+        return scipy.interpolate.interp1d(x, y, method)(xq)
 
-def pchipinterpolation(x, y, xq):
-    return scipy.interpolate.PchipInterpolator(x, y)(xq)
