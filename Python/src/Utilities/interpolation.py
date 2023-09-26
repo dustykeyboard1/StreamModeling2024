@@ -47,20 +47,8 @@ Returns a 1-D array of interpolated values
 '''
 
 def interpolation(x, y, xq, method="linear"):
-    f = scipy.interpolate.interp1d(x, y, method)
-    
-    first_result = f(xq[0])
-    zero_dimention = first_result.ndim == 0
-    result = np.array([first_result])
-    xq_size = len(xq)
-    for i in range(1, xq_size): 
-        result = np.insert(result, result.size, f(xq[i]))
-
-    if not zero_dimention:
-        result = result.reshape(xq_size, len(first_result))
-        
-    return result
-
-def pchipinterpolation(x, y, xq):
-    return scipy.interpolate.PchipInterpolator(x, y)(xq)
+    if method == 'pchip':
+        return scipy.interpolate.PchipInterpolator(x, y)(xq)
+    else:
+        return scipy.interpolate.interp1d(x, y, method)(xq)
 

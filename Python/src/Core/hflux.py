@@ -2,6 +2,7 @@ import numpy as np
 import os
 import sys
 import math
+from datetime import datetime
 
 #Find the root directory dynmimically. https://stackoverflow.com/questions/73230007/how-can-i-set-a-root-directory-dynamically
 root_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
@@ -90,8 +91,9 @@ def hflux():
     ### Need to transpose discharge_m to make sure it has the same shape
     ### As discharge_m in Matlab. I do not know why, but this works
     ### And the values are correct
-    discharge_m = interpolation(dist_dis, discharge, dist_mod)
-  
+
+    discharge_m = interpolation(dist_dis, discharge, dist_mod).transpose()
+
     width_m = interpolation(dist_stdim, width, dist_mod)
     depth_m = interpolation(dist_stdim, depth, dist_mod)
     depth_of_meas_m = interpolation(dist_bed, depth_of_meas, dist_mod)
@@ -109,50 +111,107 @@ def hflux():
 
     ### Interpolate all data given through time so that there are 
     ### Values at every step
-
     # checked!
-    discharge_m = interpolation(time_dis, discharge_m, time_mod).transpose()
+    discharge_m = interpolation(time_dis, discharge_m, time_mod)
 
     ### Calculate width-depth-discharge relationship
     r = len(dist_mod)
     # checked!
-    theta = np.empty(r)
-    for i in range(r):
-        theta[i] = math.atan((.5 * width_m[i]) / depth_m[i])
     
+    # theta = np.empty(r)
+    theta = np.arctan((.5 * width_m) / depth_m)
+    
+    cos_theta = np.cos(theta)
+    tan_theta = np.tan(theta)
+
     # checked!
     dim_q = interpolation(dist_stdim, discharge_stdim, dist_mod)
-    n_s = np.empty(r)
-    for i in range(r):
-        n_s[i] = ((.25 ** (2/3)) * (2 ** (5/3)) * (math.cos(theta[i]) ** (2/3)) * (math.tan(theta[i]) ** (5/3)) * (depth_m[i] ** (8/3))) / (2 * dim_q[i])
-    
+    n_s = ((.25 ** (2/3)) * (2 ** (5/3)) * 
+           (cos_theta ** (2/3)) * 
+           (tan_theta ** (5/3)) * (depth_m ** (8/3))) / (2 * dim_q)
+
+    # transpose discharge_m for calculation purpose
+    # depends on how the calculations go later on in the steps
+    # can possibly stay in the transpose position
+    # for now, discharge_m is transposed back on line 158
+    discharge_m = discharge_m.transpose()
+
     # checked!
-    depth_m = np.empty((r, timesteps)) 
-    for i in range(r):
-        for j in range(timesteps):
-            depth_m[i, j] = ((2 * n_s[i] * discharge_m[i,j])/
-                             ((0.25**(2/3))*(2**(5/3)) * 
-                              (math.cos(theta[i])**(2/3)) *
-                              (math.tan(theta[i])**(5/3))))**(3/8)
+    depth_m = ((2 * n_s * discharge_m)/
+               ((0.25**(2/3))*(2**(5/3)) * 
+                (cos_theta**(2/3)) *
+                (tan_theta**(5/3))))**(3/8)
 
     # checked! 
-    width_m = np.empty((r, timesteps)) 
-    for i in range(r):
-        for j in range(timesteps):
-            width_m[i, j] = (2 * 
-                             math.tan(theta[i]) * 
-                             (((2 * n_s[i] * discharge_m[i, j]) / 
-                               ((0.25**(2/3)) * (2**(5/3)) * 
-                                (math.cos(theta[i])**(2/3)) *
-                                (math.tan(theta[i])**(5/3))))**(3/8)))
+    width_m = (2 * 
+               tan_theta * 
+               (((2 * n_s * discharge_m) / 
+                ((0.25**(2/3)) * (2**(5/3)) * 
+                (cos_theta**(2/3)) *
+                (tan_theta**(5/3))))**(3/8)))
+    
     # checked!
     area_m = 0.5 * depth_m * width_m
+    area_m = area_m.transpose()
 
     # checked!
-    wp_m = np.empty((r, timesteps))
-    for i in range(timesteps):
-        for j in range(r):
-            wp_m[j, i] = 2 * (depth_m[j, i] / math.cos(theta[j]))
+    wp_m = 2 * (depth_m / cos_theta)
 
+    # tranpose discharge_m back to its original shape
+    discharge_m = discharge_m.transpose()
+
+    # all checked!
+    solar_rad_dt = interpolation(time_met, solar_rad_in, time_mod)
+    air_temp_dt = interpolation(time_met, air_temp_in, time_mod)
+    rel_hum_dt = interpolation(time_met, rel_hum_in, time_mod)
+    wind_speed_dt = interpolation(time_met, wind_speed_in, time_mod)
+    c_dt = interpolation(time_cloud, c_in, time_mod)
+    temp_x0_dt = interpolation(time_temp, temp_x0, time_mod, 'pchip').transpose()
+
+    # checked!
+    bed_temp_dt = [0] * r
+    for i in range(r):
+        bed_temp_dt[i] = interpolation(time_bed, bed_temp_m[i], time_mod)
+    bed_temp_dt = np.array(bed_temp_dt)
+
+    # Probably could be deleted, depends on later calculations. 
+    # solar_rad_mat = solar_rad_dt.reshape((r,timesteps))
+    # air_temp_mat= air_temp_dt.reshape((r,timesteps))
+    # rel_hum_mat = rel_hum_dt.reshape((r,timesteps))
+    # wind_speed_mat = wind_speed_dt((r,timesteps))
+    # cl = c_dt.reshape((r,timesteps))
+
+    ###############################################################
+    # STEP 1: compute volumes of each reservoir (node) in the model
+    # checked!
+    volume = np.empty((r, timesteps))
+    volume[0] = (dist_mod[1] - dist_mod[0]) * area_m[0]
+    volume[1: r-1] = (area_m[1:r-1].transpose() * 
+                      (((dist_mod[2:] + dist_mod[1:r-1]) / 2) - 
+                       ((dist_mod[1:r-1] + dist_mod[:r-2]) / 2))).transpose()
+    volume[r-1] = area_m[r-1] * (dist_mod[r-1]-dist_mod[r-2])
+
+    ###############################################################
+    # STEP 2: compute discharge rates at reservoir edges using linear
+    # interpolation (n-values are upstream of node n values)
+    # checked!
+    q_half = np.empty((r+1, timesteps))
+    q_half[0] = (2 * discharge_m[0] - discharge_m[1] + discharge_m[0]) / 2
+    q_half[1:r] = (discharge_m[1:r]+discharge_m[0:r-1]) / 2
+    q_half[r] = (2 * discharge_m[r-1] - discharge_m[r-2] + discharge_m[r-1]) / 2
+
+    ###############################################################
+    # STEP 3: compute lateral groundwater discharge rates to each node based on
+    # longtudinal changes in streamflow
+    # checked!
+    q_l = q_half[1:r + 1] - q_half[:r]
+
+    ###############################################################
+    # STEP 4: unit conversions so all discharge rates are in m3/min
+    # note that all inputs are x are in m, T are in deg C, and Q or Q_L are in m3/s
+    # checked!
+    q_half_min = q_half * 60
+    q_l_min = q_l * 60
+   
 
 hflux()
