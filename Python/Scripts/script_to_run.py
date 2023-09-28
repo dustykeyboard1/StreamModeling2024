@@ -16,7 +16,7 @@ print(root_dir)
 from Python.src.Utilities.Input_reader import readFromFile
 from Python.src.Core.hflux_errors import handle_errors
 from Python.src.Core.hflux import hflux
-# from Python.src.Utilities import sens
+from Python.src.Utilities import sens
 input_data = readFromFile(root_dir + '/Python/Data/example_data.xlsx')
 
 # temp_mod, matrix_data, node_data, flux_data = hflux()
