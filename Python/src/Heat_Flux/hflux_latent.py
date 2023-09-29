@@ -14,7 +14,7 @@ import math
 # %         case2 uses the Mass Transfer Method to calculate latent heat flux
 # %               *This switch is set in hflux_flux.m
 
-def hflux_latent(shortwave, longwave, rel_hum, water_temp, wind_speed, air_temp, z, eq2):
+def hflux_latent(water_temp, air_temp, rel_hum, wind_speed, shortwave, longwave, z, eq2):
     c_air = 1004 # heat capacity of the air (J/kg deg C)
     rho_water = 1000 # Density of water (kg/m^3)
     rho_air = 1.2041 # Density of air at 20 deg C (kg/m^3)
