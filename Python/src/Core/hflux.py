@@ -296,8 +296,8 @@ def hflux():
                                              cl[:, 0], sol_refl[0], wp_m[:r, 0], width_m[:, 0])
     
     # print(sed)
-    for x in heat_flux[:, 0]:
-        print(x)
+    print(heat_flux[:, 0])
+
         #   , shortwave[:11, 0], longwave[:11, 0], atm[:11, 0], back[:11, 0], land[:11, 0], latent[:11, 0], sensible[:11, 0], bed[:11, 0])
 
 hflux()
