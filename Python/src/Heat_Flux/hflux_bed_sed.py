@@ -29,14 +29,14 @@ def hflux_bed_sed(sed_type, dist_bed, dist_mod):
     ## cobbles -> 4
     for index in range(len(sed_type)):
         match sed_type[index].lower():
-            case "cobbles":
-                sed_type[index] = 4
-            case "sand":
-                sed_type[index] = 2
             case "clay":
                 sed_type[index] = 1
+            case "sand":
+                sed_type[index] = 2
             case "gravel":
                 sed_type[index] = 3
+            case "cobbles":
+                sed_type[index] = 4
             case _:
                 print("Invalid sediment:" , sed_type[index] , "detected at index" , index , ".")
                 sed_type[index] = -1 # error value, we can change later if we want

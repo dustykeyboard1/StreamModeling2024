@@ -1,3 +1,9 @@
+import sys
+import os
+#Find the root directory dynmimically. https://stackoverflow.com/questions/73230007/how-can-i-set-a-root-directory-dynamically
+root_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
+sys.path.append(root_dir)
+
 from src.Heat_Flux.hflux_shortwave import hflux_shortwave
 from src.Heat_Flux.hflux_longwave import hflux_longwave
 from src.Heat_Flux.hflux_bed import hflux_bed
@@ -30,7 +36,7 @@ from src.Heat_Flux.hflux_sensible import hflux_sensible
 # %  [net shortwave longwave atm back land latent sensible bed] = 
 # %  heat fluxes to be employed by hflux
 
-def hflux_flux(settings, solar_rad, air_temp, rel_hum, water_temp, wind_speed, z, sed_type, bed_temp, depth_of_meas, shade, vts, cl, sol_refl, WP_m, width_m):
+def hflux_flux(settings, solar_rad, air_temp, rel_hum, water_temp, wind_speed, z, sed_type, bed_temp, depth_of_meas, shade, vts, cl, sol_refl, wP_m, width_m):
     eq1 = settings[0][0] #Shortwave radiation equation method
     ## 1 = Equation [3] in text, includes correction for reflection
     ## 2 = Equation [4] in text, includes albedo correction
@@ -63,7 +69,7 @@ def hflux_flux(settings, solar_rad, air_temp, rel_hum, water_temp, wind_speed, z
 
     ### STREAMBED CONDUCTION
     # Calculate the heat flux through the streambed
-    bed = hflux_bed(sed_type,water_temp,bed_temp,depth_of_meas,width_m,WP_m)
+    bed = hflux_bed(sed_type,water_temp,bed_temp,depth_of_meas,width_m,wP_m)
 
     net = (shortwave + longwave + latent + sensible + bed) * 60
     return net, shortwave, longwave, atm_rad, back_rad, land_rad, latent, sensible, bed 

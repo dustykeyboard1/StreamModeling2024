@@ -16,7 +16,7 @@ from src.Utilities.interpolation import interpolation
 def hflux():
     # read from excel sheet
 
-    filename = os.getcwd() + "/Data" + "/example_data.xlsx"
+    filename = os.path.join(os.getcwd(), 'Python','Data', 'example_data.xlsx')
     input_data = Input_reader.readFromFile(filename)
 
     print('Assigning variable names...')
@@ -297,6 +297,7 @@ def hflux():
     
     # print(sed)
     print(heat_flux[:, 0])
+
         #   , shortwave[:11, 0], longwave[:11, 0], atm[:11, 0], back[:11, 0], land[:11, 0], latent[:11, 0], sensible[:11, 0], bed[:11, 0])
 
 hflux()
