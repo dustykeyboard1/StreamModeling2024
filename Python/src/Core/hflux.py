@@ -288,14 +288,14 @@ def hflux():
     sensible = np.empty((r, timesteps))
     bed = np.empty((r, timesteps))
 
-    # print(sed)
+    print(sed)
     heat_flux[:, 0], shortwave[:, 0], longwave[:, 0], atm[:, 0], back[:, 0], land[:, 0], latent[:, 0], sensible[:, 0], bed[:, 0] = hflux_flux(input_data["settings"], solar_rad_mat[:, 0],
                                              air_temp_mat[:, 0], rel_hum_mat[:, 0], temp_t0_m,
                                              wind_speed_mat[:, 0], z, sed, bed_temp_dt[:, 0],
                                              depth_of_meas_m, shade_m, vts_m,
                                              cl[:, 0], sol_refl[0], wp_m[:r, 0], width_m[:, 0])
     
-    # print(sed)
+    print(sed)
     for x in heat_flux[:, 0]:
         print(x)
         #   , shortwave[:11, 0], longwave[:11, 0], atm[:11, 0], back[:11, 0], land[:11, 0], latent[:11, 0], sensible[:11, 0], bed[:11, 0])
