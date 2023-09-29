@@ -16,7 +16,7 @@ from src.Utilities.interpolation import interpolation
 def hflux():
     # read from excel sheet
 
-    filename = os.getcwd() + "\\Python\\Data" + "\\example_data.xlsx"
+    filename = os.path.join(os.getcwd(), 'Python','Data', 'example_data.xlsx')
     input_data = Input_reader.readFromFile(filename)
 
     print('Assigning variable names...')
