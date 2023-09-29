@@ -74,7 +74,7 @@ def test_sensible():
 -1.27680520727056,
 -1.27968791548425]
 
-    sensible = hflux_sensible(air_temp, rel_hum, water_temp, wind_speed, z, latent, eq3)
+    sensible = hflux_sensible(water_temp, air_temp, rel_hum, wind_speed, z, latent, eq3)
 
     ### round to 10 digits for consistency across programs
 

@@ -10,13 +10,16 @@ sys.path.append(root_dir)
 from src.Utilities import Input_reader
 from src.Heat_Flux.hflux_bed_sed import hflux_bed_sed
 from src.Heat_Flux.hflux_shortwave_refl import hflux_shortwave_relf
+from src.Heat_Flux.hflux_flux import hflux_flux
 from src.Utilities.interpolation import interpolation
 
 def hflux():
     # read from excel sheet
 
-    filename = os.getcwd() + "/Data" + "/example_data.xlsx"
+    filename = os.path.join(os.getcwd(), 'Python','Data', 'example_data.xlsx')
     input_data = Input_reader.readFromFile(filename)
+
+    print('Assigning variable names...')
 
     method = input_data["settings"][0][0]
     unattend = input_data["settings"][0][4]
@@ -80,11 +83,20 @@ def hflux():
     z = input_data["site_info"][0, 3]
 
     sed = hflux_bed_sed(sed_type, dist_bed, dist_mod)
-    sol_relf = hflux_shortwave_relf(year, month, day, hour, minute, lat, lon, t_zone, time_met, time_mod)
+    # print(sed)
+    
+    sol_refl = hflux_shortwave_relf(year, month, day, hour, minute, lat, lon, t_zone, time_met, time_mod)
+
+    print('...done!')
+    print('Determining time steps and nodes...')
 
     timesteps = len(time_mod)
     dt = max(time_mod) / (len(time_mod) - 1)
     
+    print('...done!')
+
+    print('Interpolating longitudinal data in space...')
+
     ### Interpolate Data
     t_l_m = interpolation(dist_T_L, t_L, dist_mod)
     temp_t0_m = interpolation(dist, temp_t0, dist_mod)
@@ -109,6 +121,9 @@ def hflux():
         bed_temp_m[i] = interpolation(dist_bed, bed_temp[i], dist_mod)
     bed_temp_m = np.array(bed_temp_m).transpose()
 
+    print('...done!')
+
+    print('Interpolating temporal data in time...')
     ### Interpolate all data given through time so that there are 
     ### Values at every step
     # checked!
@@ -137,10 +152,10 @@ def hflux():
     discharge_m = discharge_m.transpose()
 
     # checked!
-    depth_m = ((2 * n_s * discharge_m)/
+    depth_m = (((2 * n_s * discharge_m)/
                ((0.25**(2/3))*(2**(5/3)) * 
                 (cos_theta**(2/3)) *
-                (tan_theta**(5/3))))**(3/8)
+                (tan_theta**(5/3))))**(3/8))
 
     # checked! 
     width_m = (2 * 
@@ -153,9 +168,10 @@ def hflux():
     # checked!
     area_m = 0.5 * depth_m * width_m
     area_m = area_m.transpose()
-
     # checked!
-    wp_m = 2 * (depth_m / cos_theta)
+    wp_m = (2 * (depth_m / cos_theta)).transpose()
+    width_m = width_m.transpose()
+    depth_m = depth_m.transpose()
 
     # tranpose discharge_m back to its original shape
     discharge_m = discharge_m.transpose()
@@ -166,7 +182,7 @@ def hflux():
     rel_hum_dt = interpolation(time_met, rel_hum_in, time_mod)
     wind_speed_dt = interpolation(time_met, wind_speed_in, time_mod)
     c_dt = interpolation(time_cloud, c_in, time_mod)
-    temp_x0_dt = interpolation(time_temp, temp_x0, time_mod, 'pchip').transpose()
+    temp_x0_dt = interpolation(time_temp, temp_x0, time_mod, 'pchip')
 
     # checked!
     bed_temp_dt = [0] * r
@@ -174,16 +190,19 @@ def hflux():
         bed_temp_dt[i] = interpolation(time_bed, bed_temp_m[i], time_mod)
     bed_temp_dt = np.array(bed_temp_dt)
 
-    # Probably could be deleted, depends on later calculations. 
-    # solar_rad_mat = solar_rad_dt.reshape((r,timesteps))
-    # air_temp_mat= air_temp_dt.reshape((r,timesteps))
-    # rel_hum_mat = rel_hum_dt.reshape((r,timesteps))
-    # wind_speed_mat = wind_speed_dt((r,timesteps))
-    # cl = c_dt.reshape((r,timesteps))
+    # checked!
+    solar_rad_mat = np.array([solar_rad_dt] * r)
+    air_temp_mat= np.array([air_temp_dt] * r)
+    rel_hum_mat = np.array([rel_hum_dt] * r)
+    wind_speed_mat = np.array([wind_speed_dt] * r)
+    cl = np.array([c_dt] * r)
+
+    print('...done!')
 
     ###############################################################
     # STEP 1: compute volumes of each reservoir (node) in the model
     # checked!
+    print('Computing volumes of nodes, discharge rates and groundwater inflow rates...')
     volume = np.empty((r, timesteps))
     volume[0] = (dist_mod[1] - dist_mod[0]) * area_m[0]
     volume[1: r-1] = (area_m[1:r-1].transpose() * 
@@ -212,6 +231,73 @@ def hflux():
     # checked!
     q_half_min = q_half * 60
     q_l_min = q_l * 60
-   
+
+    print('...done!')
+
+    ###############################################################
+    # STEP 5: Calculate coefficients of the tridiagonal matrix (a, b, c)
+    # and set coefficients at the boundaries. Use a, b and c to create the A
+    # matrix.  Note that a, b and c are constant in time as long as Q,
+    # volume, and Q_L are constant with time.
+    # checked!
+    double_volume = 2 * volume[:, 0]
+    quad_volume = 4 * volume[:, 0]
+    a = np.empty((r, timesteps))
+    a[:, :timesteps-1] = ((-dt * q_half_min[:r, 1:]).transpose() / quad_volume).transpose()
+    a[:, timesteps-1] = (-dt * q_half_min[:r, timesteps-1]) / quad_volume
+    
+    # checked!
+    b = np.empty((r, timesteps))
+    o1 = (dt * q_half_min[:r, 1:]).transpose() / quad_volume
+    p1 = (dt * q_half_min[1:, 1:]).transpose() / quad_volume
+    q1 = (dt * q_l_min[:,:timesteps-1]).transpose() / double_volume
+    o2 = (dt * q_half_min[:r, timesteps-1]).transpose() / quad_volume
+    p2 = (dt * q_half_min[1:, timesteps-1]).transpose() / quad_volume
+    q2 = (dt * q_l_min[:r, timesteps-1]).transpose() / double_volume
+    b[:, :timesteps-1] = (1 + o1 - p1 + q1).transpose()
+    b[:, timesteps-1] = (1 + o2 - p2 + q2).transpose()
+    
+    # checked!
+    c = np.empty((r, timesteps))
+    c[:, :timesteps-1] = ((dt * q_half_min[1:, 1:]).transpose() / quad_volume).transpose()
+    c[:, timesteps-1] = (dt * q_half_min[1:, timesteps-1]) / quad_volume
+
+    # all checked!
+    a_c = ((-dt * q_half_min[:r]).transpose() / quad_volume).transpose()
+    o_c = (dt * q_half_min[:r]).transpose() / quad_volume
+    p_c = (dt * q_half_min[1:,:]).transpose() / quad_volume
+    q_c = (dt * q_l_min).transpose() / double_volume
+    b_c = (1 + o_c - p_c + q_c).transpose()
+    c_c = ((dt * q_half_min[1:,:]).transpose() / quad_volume).transpose()
+
+    ###############################################################
+    # STEP 6: Calculate right hand side (d).
+    # The values for d are temperature-dependent, so they change each time step.
+    # Once d is computed, use that d value and the
+    # matrix A to solve for the temperature for each time step.
+    print('Computing d-values, heat fluxes and solving for stream temperatures...')
+    d = np.empty((r, timesteps))
+    t = np.empty((r, timesteps))
+    heat_flux = np.empty((r, timesteps))
+    shortwave = np.empty((r, timesteps))
+    longwave = np.empty((r, timesteps))
+    atm = np.empty((r, timesteps))
+    back = np.empty((r, timesteps))
+    land = np.empty((r, timesteps))
+    latent = np.empty((r, timesteps))
+    sensible = np.empty((r, timesteps))
+    bed = np.empty((r, timesteps))
+
+    # print(sed)
+    heat_flux[:, 0], shortwave[:, 0], longwave[:, 0], atm[:, 0], back[:, 0], land[:, 0], latent[:, 0], sensible[:, 0], bed[:, 0] = hflux_flux(input_data["settings"], solar_rad_mat[:, 0],
+                                             air_temp_mat[:, 0], rel_hum_mat[:, 0], temp_t0_m,
+                                             wind_speed_mat[:, 0], z, sed, bed_temp_dt[:, 0],
+                                             depth_of_meas_m, shade_m, vts_m,
+                                             cl[:, 0], sol_refl[0], wp_m[:r, 0], width_m[:, 0])
+    
+    # print(sed)
+    for x in heat_flux[:, 0]:
+        print(x)
+        #   , shortwave[:11, 0], longwave[:11, 0], atm[:11, 0], back[:11, 0], land[:11, 0], latent[:11, 0], sensible[:11, 0], bed[:11, 0])
 
 hflux()

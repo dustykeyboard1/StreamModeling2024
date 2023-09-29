@@ -23,7 +23,7 @@ def test_longwave():
     ### the above simulates all the possibilites for values provided in 
     ### the example data. I am pretty pleased with this range
     
-    longwave, atm_rad, back_rad, land_rad = hflux_longwave(air_temp, rel_hum, water_temp, vts, cl)
+    longwave, atm_rad, back_rad, land_rad = hflux_longwave(air_temp, water_temp, rel_hum, cl, vts)
 
     matlab_output = [-47.7850425827384,
 -47.9064947905216,
