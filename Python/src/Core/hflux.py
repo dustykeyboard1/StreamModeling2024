@@ -83,6 +83,8 @@ def hflux():
     z = input_data["site_info"][0, 3]
 
     sed = hflux_bed_sed(sed_type, dist_bed, dist_mod)
+    # print(sed)
+    
     sol_refl = hflux_shortwave_relf(year, month, day, hour, minute, lat, lon, t_zone, time_met, time_mod)
 
     print('...done!')
@@ -150,10 +152,10 @@ def hflux():
     discharge_m = discharge_m.transpose()
 
     # checked!
-    depth_m = ((2 * n_s * discharge_m)/
+    depth_m = (((2 * n_s * discharge_m)/
                ((0.25**(2/3))*(2**(5/3)) * 
                 (cos_theta**(2/3)) *
-                (tan_theta**(5/3))))**(3/8)
+                (tan_theta**(5/3))))**(3/8))
 
     # checked! 
     width_m = (2 * 
@@ -166,9 +168,10 @@ def hflux():
     # checked!
     area_m = 0.5 * depth_m * width_m
     area_m = area_m.transpose()
-
     # checked!
-    wp_m = 2 * (depth_m / cos_theta)
+    wp_m = (2 * (depth_m / cos_theta)).transpose()
+    width_m = width_m.transpose()
+    depth_m = depth_m.transpose()
 
     # tranpose discharge_m back to its original shape
     discharge_m = discharge_m.transpose()
@@ -284,13 +287,16 @@ def hflux():
     latent = np.empty((r, timesteps))
     sensible = np.empty((r, timesteps))
     bed = np.empty((r, timesteps))
-    (heat_flux[:, 0], shortwave[:, 0], longwave[:, 0], 
-     atm[:, 0], back[:, 0], land[:, 0], latent[:, 0], 
-     sensible[:, 0], bed[:, 0]) = hflux_flux(input_data["settings"], solar_rad_dt[:r],
-                                             air_temp_dt[:r], rel_hum_dt[:r], temp_t0_m[:r],
-                                             wind_speed_dt[:r], z, sed[:r], bed_temp_dt[:r],
-                                             depth_of_meas_m[:r], shade_m[:r], vts_m[:r],
-                                             c_dt[:r], sol_refl[0], wp_m[:r, 0], width_m[:r])
 
+    # print(sed)
+    heat_flux[:, 0], shortwave[:, 0], longwave[:, 0], atm[:, 0], back[:, 0], land[:, 0], latent[:, 0], sensible[:, 0], bed[:, 0] = hflux_flux(input_data["settings"], solar_rad_mat[:, 0],
+                                             air_temp_mat[:, 0], rel_hum_mat[:, 0], temp_t0_m,
+                                             wind_speed_mat[:, 0], z, sed, bed_temp_dt[:, 0],
+                                             depth_of_meas_m, shade_m, vts_m,
+                                             cl[:, 0], sol_refl[0], wp_m[:r, 0], width_m[:, 0])
+    
+    # print(sed)
+    print(heat_flux[:, 0])
+        #   , shortwave[:11, 0], longwave[:11, 0], atm[:11, 0], back[:11, 0], land[:11, 0], latent[:11, 0], sensible[:11, 0], bed[:11, 0])
 
 hflux()
