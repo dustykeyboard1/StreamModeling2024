@@ -41,6 +41,5 @@ def hflux_bed_sed(sed_type, dist_bed, dist_mod):
                 print("Invalid sediment:" , sed_type[index] , "detected at index" , index , ".")
                 sed_type[index] = -1 # error value, we can change later if we want
     
-    # print(sed_type)
 
     return interpolation(dist_bed, sed_type, dist_mod, "nearest")

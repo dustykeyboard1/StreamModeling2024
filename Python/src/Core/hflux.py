@@ -295,6 +295,7 @@ def hflux():
                                              depth_of_meas_m, shade_m, vts_m,
                                              cl[:, 0], sol_refl[0], wp_m[:r, 0], width_m[:, 0])
     
+
     print(sed)
     for x in heat_flux[:, 0]:
         print(x)
