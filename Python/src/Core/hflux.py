@@ -234,71 +234,121 @@ def hflux():
 
     print('...done!')
 
-    ###############################################################
-    # STEP 5: Calculate coefficients of the tridiagonal matrix (a, b, c)
-    # and set coefficients at the boundaries. Use a, b and c to create the A
-    # matrix.  Note that a, b and c are constant in time as long as Q,
-    # volume, and Q_L are constant with time.
-    # checked!
-    double_volume = 2 * volume[:, 0]
-    quad_volume = 4 * volume[:, 0]
-    a = np.empty((r, timesteps))
-    a[:, :timesteps-1] = ((-dt * q_half_min[:r, 1:]).transpose() / quad_volume).transpose()
-    a[:, timesteps-1] = (-dt * q_half_min[:r, timesteps-1]) / quad_volume
-    
-    # checked!
-    b = np.empty((r, timesteps))
-    o1 = (dt * q_half_min[:r, 1:]).transpose() / quad_volume
-    p1 = (dt * q_half_min[1:, 1:]).transpose() / quad_volume
-    q1 = (dt * q_l_min[:,:timesteps-1]).transpose() / double_volume
-    o2 = (dt * q_half_min[:r, timesteps-1]).transpose() / quad_volume
-    p2 = (dt * q_half_min[1:, timesteps-1]).transpose() / quad_volume
-    q2 = (dt * q_l_min[:r, timesteps-1]).transpose() / double_volume
-    b[:, :timesteps-1] = (1 + o1 - p1 + q1).transpose()
-    b[:, timesteps-1] = (1 + o2 - p2 + q2).transpose()
-    
-    # checked!
-    c = np.empty((r, timesteps))
-    c[:, :timesteps-1] = ((dt * q_half_min[1:, 1:]).transpose() / quad_volume).transpose()
-    c[:, timesteps-1] = (dt * q_half_min[1:, timesteps-1]) / quad_volume
+    match method:
+        case 1:
+            ###############################################################
+            # STEP 5: Calculate coefficients of the tridiagonal matrix (a, b, c)
+            # and set coefficients at the boundaries. Use a, b and c to create the A
+            # matrix.  Note that a, b and c are constant in time as long as Q,
+            # volume, and Q_L are constant with time.
+            # checked!
+            double_volume = 2 * volume[:, 0]
+            quad_volume = 4 * volume[:, 0]
+            a = np.empty((r, timesteps))
+            a[:, :timesteps-1] = ((-dt * q_half_min[:r, 1:]).transpose() / quad_volume).transpose()
+            a[:, timesteps-1] = (-dt * q_half_min[:r, timesteps-1]) / quad_volume
+            
+            # checked!
+            b = np.empty((r, timesteps))
+            o1 = (dt * q_half_min[:r, 1:]).transpose() / quad_volume
+            p1 = (dt * q_half_min[1:, 1:]).transpose() / quad_volume
+            q1 = (dt * q_l_min[:,:timesteps-1]).transpose() / double_volume
+            o2 = (dt * q_half_min[:r, timesteps-1]).transpose() / quad_volume
+            p2 = (dt * q_half_min[1:, timesteps-1]).transpose() / quad_volume
+            q2 = (dt * q_l_min[:r, timesteps-1]).transpose() / double_volume
+            b[:, :timesteps-1] = (1 + o1 - p1 + q1).transpose()
+            b[:, timesteps-1] = (1 + o2 - p2 + q2).transpose()
+            
+            # checked!
+            c = np.empty((r, timesteps))
+            c[:, :timesteps-1] = ((dt * q_half_min[1:, 1:]).transpose() / quad_volume).transpose()
+            c[:, timesteps-1] = (dt * q_half_min[1:, timesteps-1]) / quad_volume
 
-    # all checked!
-    a_c = ((-dt * q_half_min[:r]).transpose() / quad_volume).transpose()
-    o_c = (dt * q_half_min[:r]).transpose() / quad_volume
-    p_c = (dt * q_half_min[1:,:]).transpose() / quad_volume
-    q_c = (dt * q_l_min).transpose() / double_volume
-    b_c = (1 + o_c - p_c + q_c).transpose()
-    c_c = ((dt * q_half_min[1:,:]).transpose() / quad_volume).transpose()
+            # all checked!
+            a_c = ((-dt * q_half_min[:r]).transpose() / quad_volume).transpose()
+            o_c = ((dt * q_half_min[:r]).transpose() / quad_volume).transpose()
+            p_c = ((dt * q_half_min[1:,:]).transpose() / quad_volume).transpose()
+            q_c = ((dt * q_l_min).transpose() / double_volume).transpose()
+            b_c = (1 + o_c - p_c + q_c).transpose()
+            c_c = ((dt * q_half_min[1:,:]).transpose() / quad_volume).transpose()
 
-    ###############################################################
-    # STEP 6: Calculate right hand side (d).
-    # The values for d are temperature-dependent, so they change each time step.
-    # Once d is computed, use that d value and the
-    # matrix A to solve for the temperature for each time step.
-    print('Computing d-values, heat fluxes and solving for stream temperatures...')
-    d = np.empty((r, timesteps))
-    t = np.empty((r, timesteps))
-    heat_flux = np.empty((r, timesteps))
-    shortwave = np.empty((r, timesteps))
-    longwave = np.empty((r, timesteps))
-    atm = np.empty((r, timesteps))
-    back = np.empty((r, timesteps))
-    land = np.empty((r, timesteps))
-    latent = np.empty((r, timesteps))
-    sensible = np.empty((r, timesteps))
-    bed = np.empty((r, timesteps))
+            ###############################################################
+            # STEP 6: Calculate right hand side (d).
+            # The values for d are temperature-dependent, so they change each time step.
+            # Once d is computed, use that d value and the
+            # matrix A to solve for the temperature for each time step.
+            print('Computing d-values, heat fluxes and solving for stream temperatures...')
+            d = np.empty((r, timesteps))
+            t = np.empty((r, timesteps))
+            t[:,0] = temp_t0_m
+            heat_flux = np.empty((r, timesteps))
+            shortwave = np.empty((r, timesteps))
+            longwave = np.empty((r, timesteps))
+            atm = np.empty((r, timesteps))
+            back = np.empty((r, timesteps))
+            land = np.empty((r, timesteps))
+            latent = np.empty((r, timesteps))
+            sensible = np.empty((r, timesteps))
+            bed = np.empty((r, timesteps))
 
-    print(sed)
-    heat_flux[:, 0], shortwave[:, 0], longwave[:, 0], atm[:, 0], back[:, 0], land[:, 0], latent[:, 0], sensible[:, 0], bed[:, 0] = hflux_flux(input_data["settings"], solar_rad_mat[:, 0],
-                                             air_temp_mat[:, 0], rel_hum_mat[:, 0], temp_t0_m,
-                                             wind_speed_mat[:, 0], z, sed, bed_temp_dt[:, 0],
-                                             depth_of_meas_m, shade_m, vts_m,
-                                             cl[:, 0], sol_refl[0], wp_m[:r, 0], width_m[:, 0])
-    
+            # print(sed)
+            heat_flux[:, 0], shortwave[:, 0], longwave[:, 0], atm[:, 0], back[:, 0], land[:, 0], latent[:, 0], sensible[:, 0], bed[:, 0] = hflux_flux(input_data["settings"], solar_rad_mat[:, 0],
+                                                    air_temp_mat[:, 0], rel_hum_mat[:, 0], temp_t0_m,
+                                                    wind_speed_mat[:, 0], z, sed, bed_temp_dt[:, 0],
+                                                    depth_of_meas_m, shade_m, vts_m,
+                                                    cl[:, 0], sol_refl[0], wp_m[:r, 0], width_m[:, 0])
+            
 
-    print(sed)
-    for x in heat_flux[:, 0]:
-        print(x)
-        #   , shortwave[:11, 0], longwave[:11, 0], atm[:11, 0], back[:11, 0], land[:11, 0], latent[:11, 0], sensible[:11, 0], bed[:11, 0])
+            # print(sed)
+            # for x in heat_flux[:, 0]:
+            #     print(x)
+                #   , shortwave[:11, 0], longwave[:11, 0], atm[:11, 0], back[:11, 0], land[:11, 0], latent[:11, 0], sensible[:11, 0], bed[:11, 0])
+            
+            rho_water = 1000
+            c_water = 4182
+
+            print("Calculating...")
+
+                #   , shortwave[:11, 0], longwave[:11, 0], atm[:11, 0], back[:11, 0], land[:11, 0], latent[:11, 0], sensible[:11, 0], bed[:11, 0])
+            g = 1 + a_c + c_c - q_c
+
+            # Could be done better potentially, leave it for alpha for now
+            k = np.empty((r, timesteps))
+            for i in range(r):
+                for j in range(timesteps):
+                    if q_l_min[i, j] < 0:
+                        k[i, j] = 0
+                    else:
+                        k[i, j] = (dt * q_l_min[i,j]) / (volume[i, 0])
+
+            m = np.zeros(width_m.shape)
+            d = np.zeros(width_m.shape)
+
+            ### THIS TAKES 8 MINUTES
+            for i in range(timesteps - 1):
+                m[:,i] = (dt * (width_m[:,i] * heat_flux[:,i]) / ((rho_water * c_water)) / area_m[:,i])
+                d[0,i] = ((g[0,i] * t[0,i]) + (o_c[0,i] * temp_x0_dt[i]) - (p_c[0,i] * t[1,i]) + (k[0,i] * t_l_m[0]) + m[0,i]) - (a_c[0,i] * temp_x0_dt[i+1])
+                d[r - 1,i] = (g[r - 1,i] * t[r - 1,i]) + (o_c[r - 1,i] * t[r-2, i]) - (p_c[r - 1,i] * t[r - 1,i]) + (k[r - 1,i] * t_l_m[r - 1]) + m[r - 1,i]
+                d[1:r-1,i]=(g[1:r-1,i] * t[1:r-1,i]) + (o_c[1:r-1,i] * t[0:r-2,i]) - (p_c[1:r-1,i] * t[2:r,i]) + (k[1:r-1,i] * t_l_m[1:r-1]) + m[1:r-1,i]
+                
+                loop_array = np.zeros((r, r))
+                for j in range(r - 1):
+                    loop_array[j + 1, j] = a[j+1, i]
+                    loop_array[j, j] = b[j, i]
+                    loop_array[j, j + 1] = c[j, i]
+                    loop_array[r - 1, r - 1] = b[r - 1, i] + c[r - 1, i]
+
+                t[:, i + 1] = np.linalg.solve(loop_array, d[:,i])
+
+                heat_flux[:,i+1], shortwave[:,i+1], longwave[:,i+1],atm[:,i+1], back[:,i+1], land[:,i+1], latent[:,i+1],sensible[:,i+1], bed[:,i+1] = hflux_flux(input_data["settings"],solar_rad_mat[:,i+1],air_temp_mat[:,i+1],
+                    rel_hum_mat[:,i+1],t[:,i+1],wind_speed_mat[:,i+1],z,
+                    sed,bed_temp_dt[:,i+1],depth_of_meas_m,
+                    shade_m,vts_m,cl[:,i+1],sol_refl[i+1],wp_m[:,i+1], width_m[:,i+1])
+
+            ### It APPEARS that BOTH t, d are correct, I will rigorously verify this tomorrow
+            print(t)
+            print(d)
+
+
 
 hflux()
