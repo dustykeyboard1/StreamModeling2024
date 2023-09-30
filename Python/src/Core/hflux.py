@@ -15,8 +15,7 @@ from src.Utilities.interpolation import interpolation
 
 def hflux():
     # read from excel sheet
-
-    filename = os.path.join(os.getcwd(), 'Python','Data', 'example_data.xlsx')
+    filename = os.path.join(os.getcwd(), 'Data', 'example_data.xlsx')
     input_data = Input_reader.readFromFile(filename)
 
     print('Assigning variable names...')
@@ -83,7 +82,7 @@ def hflux():
     z = input_data["site_info"][0, 3]
 
     sed = hflux_bed_sed(sed_type, dist_bed, dist_mod)
-    # print(sed)
+    # print(sed_type)
     
     sol_refl = hflux_shortwave_relf(year, month, day, hour, minute, lat, lon, t_zone, time_met, time_mod)
 
@@ -276,6 +275,7 @@ def hflux():
     # Once d is computed, use that d value and the
     # matrix A to solve for the temperature for each time step.
     print('Computing d-values, heat fluxes and solving for stream temperatures...')
+    
     d = np.empty((r, timesteps))
     t = np.empty((r, timesteps))
     heat_flux = np.empty((r, timesteps))
@@ -294,10 +294,21 @@ def hflux():
                                              wind_speed_mat[:, 0], z, sed, bed_temp_dt[:, 0],
                                              depth_of_meas_m, shade_m, vts_m,
                                              cl[:, 0], sol_refl[0], wp_m[:r, 0], width_m[:, 0])
+    rho_water = 1000
+    c_water = 4182
+
+    print("Calculating...")
+
+    g = 1 + a_c + c_c - q_c.transpose()
+
+    # Could be done better potentially, leave it for alpha for now
+    k = np.empty((r, timesteps))
+    for i in range(r):
+        for j in range(timesteps):
+            if q_l_min[i, j] < 0:
+                k[i, j] = 0
+            else:
+                k[i, j] = (dt * q_l_min[i,j]) / (volume[i, 0])
     
-    # print(sed)
-    print(heat_flux[:, 0])
-
-        #   , shortwave[:11, 0], longwave[:11, 0], atm[:11, 0], back[:11, 0], land[:11, 0], latent[:11, 0], sensible[:11, 0], bed[:11, 0])
-
+    print(k)
 hflux()
