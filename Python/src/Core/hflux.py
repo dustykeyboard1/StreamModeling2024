@@ -440,8 +440,9 @@ def hflux(input_data):
                 
         #     print(heat_flux)
 
-    #2D Plot of stream temperature
+    print("...done!")
 
+    #2D Plot of stream temperature
     # Create a figure
     fig, ax = plt.subplots()
 
@@ -540,6 +541,9 @@ def hflux(input_data):
     plt.xlabel('Time (min)', fontweight='bold')
     plt.axis([np.min(time_mod), np.max(time_mod), np.min(np.mean(sensible, axis=0)), np.max(np.mean(sensible, axis=0))])
 
+    # to avoid labels overlapping
+    # cite: https://saturncloud.io/blog/how-to-improve-label-placement-for-matplotlib-scatter-chart/#:~:text=Matplotlib%20provides%20a%20feature%20called,the%20labels%20to%20minimize%20overlap.
+    plt.tight_layout()
     plt.show(block = False)
 
     #Plot of heat fluxes: comparison 
@@ -554,7 +558,6 @@ def hflux(input_data):
     plt.plot(time_mod, np.mean(sensible, axis=0), 'm', label='Sensible Heat Flux')
 
     # Set axis properties
-    plt.axis('normal')
     plt.xlim([np.min(time_mod), np.max(time_mod)])
 
     # Add title and labels
@@ -565,7 +568,7 @@ def hflux(input_data):
     # Add legend
     plt.legend(loc='best')
 
-    plt.show(block = False)
+    plt.show()
 
 filename = os.path.join(os.getcwd(), 'Data', 'example_data.xlsx')
 input_data = Input_reader.readFromFile(filename)
