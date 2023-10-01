@@ -130,7 +130,7 @@ def hflux_sens(input_data,dis_high_low,T_L_high_low,vts_high_low,shade_high_low)
     lowshade = {'temp': temp_mod_lowshade, 'mean': np.mean(temp_mod_lowshade, axis=1)}
     highshade = {'temp': temp_mod_highshade, 'mean': np.mean(temp_mod_highshade, axis=1)}
 
-    # Write structures to output
+    # Store structures in dictionary
     sens = {
         'dis_l': dis_data_low,
         'dis_h': dis_data_high,
@@ -154,13 +154,15 @@ def hflux_sens(input_data,dis_high_low,T_L_high_low,vts_high_low,shade_high_low)
     print("...Done!")
     print("    ")
 
-    #Make sensitivity plots
+    #Make sensitivity plots.
+    #Following all axes, line, label and function parameters from MATLAB code.
     plt.figure()
     plt.subplot(2,2,1)
 
     plt.plot(input_data['dist_mod'], sens['lowdis']['mean'], '--b', linewidth=2)
     plt.plot(input_data['dist_mod'], sens['base']['mean'], 'k', linewidth=2)
     plt.plot(input_data['dist_mod'], sens['highdis']['mean'], '--r', linewidth=2)
+    #Follow X-Limits set by MATLAB code.
     plt.xlim = ([np.min(input_data['temp_t0_data'][:,0]), 
                  np.max(input_data['temp_t0_data'][:,0])])
     plt.title('Discharge', fontweight = 'bold')
@@ -174,6 +176,7 @@ def hflux_sens(input_data,dis_high_low,T_L_high_low,vts_high_low,shade_high_low)
     plt.plot(input_data['dist_mod'],sens['lowT_L']['mean'],'--b',linewidth=2)
     plt.plot(input_data['dist_mod'],sens['base']['mean'],'k',linewidth = 2)
     plt.plot(input_data['dist_mod'],sens['highT_L']['mean'],'--r', linewidth = 2)
+    #Follow X-Limits set by MATLAB code.
     plt.xlim = ([np.min(input_data['temp_t0_data'][:,0]), 
                  np.max(input_data['temp_t0_data'][:,0])])
     plt.title('Groundwater Temperature', fontweight='bold')
@@ -187,6 +190,7 @@ def hflux_sens(input_data,dis_high_low,T_L_high_low,vts_high_low,shade_high_low)
     plt.plot(input_data['dist_mod'],sens['lowvts']['mean'],'--b',linewidth=2)
     plt.plot(input_data['dist_mod'],sens['base']['mean'],'k',linewidth=2)
     plt.plot(input_data['dist_mod'],sens['highvts']['mean'],'--r',linewidth=2)
+    #Follow X-Limits set by MATLAB code.
     plt.xlim = ([np.min(input_data['temp_t0_data'][:,0]), 
                  np.max(input_data['temp_t0_data'][:,0])])
     plt.title('View to Sky Coefficient', fontweight="bold")
@@ -202,6 +206,7 @@ def hflux_sens(input_data,dis_high_low,T_L_high_low,vts_high_low,shade_high_low)
     plt.plot(input_data['dist_mod'],sens['highshade']['mean'],'--r',linewidth=2)
     plt.xlim = ([np.min(input_data['temp_t0_data'][:,0]), 
                  np.max(input_data['temp_t0_data'][:,0])])
+    #Follow X-Limits set by MATLAB code.
     plt.title('Shade', fontweight="bold")
     plt.xlabel('Distance Downstream (m)')
     plt.ylabel('Temperature (°C)')
@@ -221,6 +226,7 @@ def hflux_sens(input_data,dis_high_low,T_L_high_low,vts_high_low,shade_high_low)
     ])
 
     plt.figure()
+    #Bar Chart - https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.bar.html#matplotlib.pyplot.bar
     plt.bar(['Discharge', 'GW Temp', 'VTS', 'Shade'], change[:, 0], label='Decrease Value')
     plt.bar(['Discharge', 'GW Temp', 'VTS', 'Shade'], change[:, 1], label='Increase Value')
     plt.title('Change in Average Stream Temperature With Changing Variables', fontname='Arial', fontsize=14, fontweight='bold')
