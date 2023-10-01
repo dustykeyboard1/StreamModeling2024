@@ -7,6 +7,7 @@ Functionality: Implementation of hflux_sens.m
 
 import os
 import sys
+#Dynamically find and set the root directory.
 root_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
 sys.path.append(root_dir)
 
@@ -16,14 +17,17 @@ from src.Core.hflux import hflux
 import numpy as np
 import gc
 import matplotlib as plt
-# input_data 
+
 def hflux_sens(input_data,dis_high_low,T_L_high_low,vts_high_low,shade_high_low):
+    '''
+    Implementation of hflux_sens.m
+    Parameters: input_data,dis_high_low,T_L_high_low,vts_high_low,shade_high_low
+    Returns: Sens - dictionary
+    '''
+
     print("Calculating high and low values...")
 
-    #Set program option to suppress graphical output
-    input_data['settings'][4] = 1
-
-    #Create low and high values for each parameter
+    #Create low and high values for each parameter.
     dis_low = input_data['dis_data'][:, 1:] + dis_high_low[0]
     dis_high = input_data['dis_data'][:, 1:] + dis_high_low[1]
     T_L_low = input_data['T_L_data'][:, 1] + T_L_high_low[0]
@@ -34,24 +38,28 @@ def hflux_sens(input_data,dis_high_low,T_L_high_low,vts_high_low,shade_high_low)
     shade_high = input_data['shade_data'][:, 1] + shade_high_low[1]
 
     #Create hflux-ready arrays from the low and high values
+    #Use hstack to concatenate along the 2nd axis.
+    #Use newaxis to index arrays.
     #np.hstack - https://numpy.org/devdocs/reference/generated/numpy.hstack.html#numpy-hstack
-    #np.newaxis - https://stackoverflow.com/questions/22257836/numpy-hstack-valueerror-all-the-input-arrays-must-have-same-number-of-dimens
+    #np.newaxis - https://numpy.org/devdocs/reference/constants.html#numpy.newaxis
     dis_data_low = np.hstack((input_data['dis_data'][:, 0][:, np.newaxis], dis_low))
     dis_data_high = np.hstack((input_data['dis_data'][:, 0][:, np.newaxis], dis_high))
 
-    # Initialize T_L_data_low and T_L_data_high with zeros
+    # Initialize T_L_data_low and T_L_data_high with zeros.
     T_L_data_low = np.zeros(input_data['T_L_data'].shape)
     T_L_data_high = np.zeros(input_data['T_L_data'].shape)
 
+    #Set T_L_data_low and T_L_data_high values.
     T_L_data_low[:, 0] = input_data['T_L_data'][:, 0]
     T_L_data_low[:, 1] = T_L_low
     T_L_data_high[:, 0] = input_data['T_L_data'][:, 0]
     T_L_data_high[:, 1] = T_L_high
 
-    # Initialize vts_data_low and vts_data_high with zeros
+    # Initialize vts_data_low and vts_data_high with zeros. 
     vts_data_low = np.zeros(input_data['shade_data'].shape)
     vts_data_high = np.zeros(input_data['shade_data'].shape)
 
+    #Set vts_data_low and vts_data_high values.
     vts_data_low[:, 0] = input_data['shade_data'][:, 0]
     vts_data_low[:, 1] = input_data['shade_data'][:, 1]
     vts_data_low[:, 2] = vts_low
@@ -60,6 +68,7 @@ def hflux_sens(input_data,dis_high_low,T_L_high_low,vts_high_low,shade_high_low)
     vts_data_high[:, 1] = input_data['shade_data'][:, 1]
     vts_data_high[:, 2] = vts_high
 
+    #Initalize shade_data_low and shade_data_high with zeros. 
     shade_data_low = np.zeros(input_data['shade_data'].shape)
     shade_data_high = np.zeros(input_data['shade_data'].shape)
 
@@ -70,6 +79,7 @@ def hflux_sens(input_data,dis_high_low,T_L_high_low,vts_high_low,shade_high_low)
     shade_data_high[:, 1] = shade_high
     shade_data_high[:, 2] = input_data['shade_data'][:, 2]
 
+    #Create multiple copies of input_data for and modifying specifc keys. 
     input_data_base = input_data.copy()
     input_data_lowdis = input_data.copy()
     input_data_lowdis['dis_data'] = dis_data_low
@@ -109,7 +119,7 @@ def hflux_sens(input_data,dis_high_low,T_L_high_low,vts_high_low,shade_high_low)
     print('     ')
     print('Writing output data.')
 
-    #Write outputs from hflux to output structures
+    #Store outputs from hflux to dictionaries.
     base = {'temp': temp_mod_base, 'mean': np.mean(temp_mod_base, axis=1)}
     lowdis = {'temp': temp_mod_lowdis, 'mean': np.mean(temp_mod_lowdis, axis=1)}
     highdis = {'temp': temp_mod_highdis, 'mean': np.mean(temp_mod_highdis, axis=1)}
@@ -221,19 +231,6 @@ def hflux_sens(input_data,dis_high_low,T_L_high_low,vts_high_low,shade_high_low)
 
     plt.show(block=False)
 
-input_data = {
-        'settings': np.array([0, 0, 0, 0, 0]),
-        'dis_data': np.array([[1, 2], [3, 4], [5, 6]]),
-        'T_L_data': np.array([[7, 8], [9, 10]]),
-        'shade_data': np.array([[11, 12, 13], [14, 15, 16]])
-    }
+    return sens
 
-# Mock high and low values for parameters
-dis_high_low = np.array([-0.5, 0.5])
-T_L_high_low = np.array([-2, 2])
-vts_high_low = np.array([-0.2, 0.2])
-shade_high_low = np.array([-0.2, 0.2])
 
-# Call the function
-hflux_sens(input_data, dis_high_low, T_L_high_low, vts_high_low, shade_high_low)
-gc.collect()
