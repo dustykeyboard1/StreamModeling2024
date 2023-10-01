@@ -11,11 +11,8 @@ import sys
 root_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
 sys.path.append(root_dir)
 
-# from src.Utilities.hflux_format import hflux_format
 from src.Core.hflux import hflux
-
 import numpy as np
-import gc
 import matplotlib as plt
 
 def hflux_sens(input_data,dis_high_low,T_L_high_low,vts_high_low,shade_high_low):

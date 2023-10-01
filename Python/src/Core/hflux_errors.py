@@ -156,7 +156,7 @@ def handle_errors(*args):
 
         mean_temp = np.mean(temp, axis=0)
         mean_temp_mod = np.mean(temp_mod, axis=0)
-        #Set the X and Y limites according to matlab code.
+        #Set the X and Y limits according to matlab code.
         plt.xlim([np.min(time_temp), np.max(time_temp)])
         plt.ylim([min(mean_temp.min(), mean_temp_mod.min()) - 1, max(mean_temp.max(), mean_temp_mod.max()) + 1])
 
