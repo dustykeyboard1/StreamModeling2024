@@ -15,8 +15,7 @@ from src.Utilities.interpolation import interpolation
 
 def hflux():
     # read from excel sheet
-
-    filename = os.path.join(os.getcwd(), 'Python','Data', 'example_data.xlsx')
+    filename = os.path.join(os.getcwd(), 'Data', 'example_data.xlsx')
     input_data = Input_reader.readFromFile(filename)
 
     print('Assigning variable names...')
@@ -83,7 +82,7 @@ def hflux():
     z = input_data["site_info"][0, 3]
 
     sed = hflux_bed_sed(sed_type, dist_bed, dist_mod)
-    # print(sed)
+    # print(sed_type)
     
     sol_refl = hflux_shortwave_relf(year, month, day, hour, minute, lat, lon, t_zone, time_met, time_mod)
 
