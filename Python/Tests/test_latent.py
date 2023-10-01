@@ -31,7 +31,7 @@ def test_latent():
     
     ### here we use our hflux_longwave to get good longwave data. Pretty cool!
     
-    longwave, _, _, _ = hflux_longwave(air_temp, rel_hum, water_temp, vts, cl)
+    longwave, _, _, _ = hflux_longwave(air_temp, water_temp, rel_hum, cl, vts)
     shortwave = [36.4479812862875,
 36.5451759030510,
 36.6423705198144,
@@ -59,7 +59,7 @@ def test_latent():
 38.7806520886100,
 38.8778467053734]
             
-    latent = hflux_latent(shortwave, longwave, rel_hum, water_temp, wind_speed, air_temp, z, eq2)
+    latent = hflux_latent(water_temp, air_temp, rel_hum, wind_speed, shortwave, longwave, z, eq2)
 
     matlab_output = [6.99729041271735,
 7.01399363313129,

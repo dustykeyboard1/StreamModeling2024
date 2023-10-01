@@ -13,7 +13,7 @@ import math
 #          case2 calculates sensible heat transfer based on temperature differences,
 #                Dingman, 1994
 #                *This switch is set in hflux_flux.m
-def hflux_sensible(air_temp, rel_hum, water_temp, wind_speed, z, latent, eq3):
+def hflux_sensible(water_temp, air_temp, rel_hum, wind_speed, z, latent, eq3):
     
     match eq3:
         case 1:

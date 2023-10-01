@@ -11,7 +11,7 @@ import math
 # %   vts = view to sky coefficient (0-1)
 # %   cl = cloud cover (0-1)
 
-def hflux_longwave(air_temp, rel_hum, water_temp, vts, cl):
+def hflux_longwave(air_temp, water_temp, rel_hum, cl, vts):
     ### Stefan-Boltzman constant
     s_b = 5.67E-8
 

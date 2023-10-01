@@ -17,22 +17,23 @@ import math
 # % bed: the heat flux through the stream bed
 
 def hflux_bed(sed_type, water_temp, bed_temp, depth_of_measure, width_m, wp_m):
+    k_sed = np.empty(len(sed_type))
     for i in range(len(sed_type)):
         match sed_type[i]:
             case 1:
-                sed_type[i] = .84 #(W/m*C)
+                k_sed[i] = .84 #(W/m*C)
             case 2:
-                sed_type[i] = 1.2 #(W/m*C)
+                k_sed[i] = 1.2 #(W/m*C)
             case 3:
-                sed_type[i] = 1.4 #(W/m*C)
+                k_sed[i] = 1.4 #(W/m*C)
             case 4:
-                sed_type[i] = 2.5 #(W/m*C)
+                k_sed[i] = 2.5 #(W/m*C)
     
-    return heat_flux_bed(sed_type, water_temp, bed_temp, depth_of_measure, width_m, wp_m)
+    return heat_flux_bed(k_sed, water_temp, bed_temp, depth_of_measure, width_m, wp_m)
     
 ### Heat flux through the stream bed
 def heat_flux_bed(sed_type, water_temp, bed_temp, depth_of_measure, width_m, wp_m):
-    result = np.zeros(len(sed_type))
+    result = np.empty(len(sed_type))
     for i in range(len(sed_type)):
         result[i] = (wp_m[i] / width_m[i]) * (-sed_type[i] * ((water_temp[i] - bed_temp[i]) / depth_of_measure[i]))
     return result
