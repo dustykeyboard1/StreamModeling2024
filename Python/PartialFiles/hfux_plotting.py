@@ -16,10 +16,6 @@ cax = ax.imshow(T, aspect='auto', cmap='jet', origin='lower',
 cbar = plt.colorbar(cax)
 cbar.set_label('Temperature (°C)', fontsize=12, fontweight='bold')
 
-# Set axis to square   
-# ax.set_aspect() - https://matplotlib.org/stable/api/_as_gen/matplotlib.axes.Axes.set_aspect.html
-ax.set_aspect('equal', 'box')
-
 # Set title and labels
 plot_title = 'Modeled Stream Temperature'
 xlab = 'Time (min)'
@@ -28,7 +24,7 @@ ax.set_title(plot_title, fontsize=12, fontweight='bold')
 ax.set_xlabel(xlab, fontsize=11)
 ax.set_ylabel(ylab, fontsize=11)
 
-plt.show()
+plt.show(block = False)
 
 #3D plot of stream temperature
 fig = plt.figure()
@@ -37,20 +33,12 @@ fig = plt.figure()
 ax = fig.add_subplot(111, projection='3d')
 
 # Create a surface plot
-# ax.plot_surface() - https://matplotlib.org/stable/api/_as_gen/mpl_toolkits.mplot3d.axes3d.Axes3D.html#mpl_toolkits.mplot3d.axes3d.Axes3D.plot_surface
-surf = ax.plot_surface(time_mod, dist_mod, T, cmap='jet')
+# ax.plot_surface() - https://matplotlib.org/stable/plot_types/3D/surface3d_simple.html#plot-surface-x-y-z
+surface = ax.plot_surface(time_mod, dist_mod, T, cmap='jet')
 
 # Add a colorbar with label
-cbar = fig.colorbar(surf)
+cbar = fig.colorbar(surface)
 cbar.set_label('Temperature (°C)', fontsize=11, fontweight='bold')
-
-# Set shading to flat
-# surf.set_shading() - https://matplotlib.org/stable/api/_as_gen/mpl_toolkits.mplot3d.art3d.Poly3DCollection.html#mpl_toolkits.mplot3d.art3d.Poly3DCollection.set_shading
-surf.set_shading('flat')
-
-# Set axis to square
-# ax.set_box_aspect() - https://matplotlib.org/stable/api/_as_gen/mpl_toolkits.mplot3d.axes3d.Axes3D.html#mpl_toolkits.mplot3d.axes3d.Axes3D.set_box_aspect
-ax.set_box_aspect([1,1,1])
 
 # Set title and labels
 plot_title = 'Modeled Stream Temperature'
@@ -62,7 +50,7 @@ ax.set_xlabel(xlab, fontsize=11)
 ax.set_ylabel(ylab, fontsize=11)
 ax.set_zlabel(zlab, fontsize=11)
 
-plt.show()
+plt.show(block = False)
 
 #Plot of heat fluxes
 fig = plt.figure()
@@ -108,7 +96,7 @@ plt.title('Sensible Heat Flux', fontweight='bold')
 plt.xlabel('Time (min)', fontweight='bold')
 plt.axis([np.min(time_mod), np.max(time_mod), np.min(np.mean(sensible, axis=0)), np.max(np.mean(sensible, axis=0))])
 
-plt.show()
+plt.show(block = False)
 
 #Plot of heat fluxes: comparison 
 plt.figure()
@@ -133,4 +121,4 @@ plt.ylabel('Energy Flux (W/m^2)', fontsize=11, fontweight='bold')
 # Add legend
 plt.legend(loc='best')
 
-plt.show()
+plt.show(block = False)
