@@ -17,11 +17,7 @@ from src.Heat_Flux.hflux_shortwave_refl import hflux_shortwave_relf
 from src.Heat_Flux.hflux_flux import hflux_flux
 from src.Utilities.interpolation import interpolation
 
-def hflux():
-    # read from excel sheet
-    filename = os.path.join(os.getcwd(), 'Data', 'example_data.xlsx')
-    input_data = Input_reader.readFromFile(filename)
-
+def hflux(input_data):
     print('Assigning variable names...')
 
     method = input_data["settings"][0][0]
@@ -469,7 +465,7 @@ def hflux():
     # ax.invert_yaxis() - https://www.geeksforgeeks.org/how-to-reverse-axes-in-matplotlib/
     ax.invert_yaxis()
 
-    plt.show()
+    plt.show(block = False)
 
     #3D plot of stream temperature
     fig = plt.figure()
@@ -478,8 +474,10 @@ def hflux():
     ax = fig.add_subplot(111, projection='3d')
 
     # Create a surface plot
+    # Make x, y axis take different length - https://stackoverflow.com/questions/46607106/python-3d-plot-with-different-array-sizes
+    time_mod_sized, dist_mod_sized = np.meshgrid(time_mod, dist_mod)
     # ax.plot_surface() - https://matplotlib.org/stable/plot_types/3D/surface3d_simple.html#plot-surface-x-y-z
-    surface = ax.plot_surface(time_mod, dist_mod, t, cmap='jet')
+    surface = ax.plot_surface(time_mod_sized, dist_mod_sized, t, cmap='jet')
 
     # Add a colorbar with label
     cbar = fig.colorbar(surface)
@@ -494,7 +492,8 @@ def hflux():
     ax.set_xlabel(xlab, fontsize=11)
     ax.set_ylabel(ylab, fontsize=11)
     ax.set_zlabel(zlab, fontsize=11)
-
+    ax.invert_xaxis()
+    ax.invert_yaxis()
     plt.show(block = False)
 
     #Plot of heat fluxes
@@ -568,5 +567,6 @@ def hflux():
 
     plt.show(block = False)
 
-
-hflux()
+filename = os.path.join(os.getcwd(), 'Data', 'example_data.xlsx')
+input_data = Input_reader.readFromFile(filename)
+hflux(input_data)
