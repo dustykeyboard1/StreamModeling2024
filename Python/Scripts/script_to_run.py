@@ -17,7 +17,7 @@ sys.path.append(root_dir)
 from Python.src.Utilities.Input_reader import readFromFile
 from Python.src.Core.hflux_errors import handle_errors
 from Python.src.Core.hflux import hflux
-from Python.src.Utilities import sens
+from Python.src.Heat_Flux.hflux_sens import hflux_sens
 
 def script_to_run():
     '''
@@ -31,10 +31,10 @@ def script_to_run():
 
     #Use helper functions (hflux(), handle_errors() and sens())  to calculate values.
     # Helper functions will also plot and display results.
-    temp_mod, matrix_data, node_data, flux_data = hflux()
+    temp_mod, matrix_data, node_data, flux_data = hflux(input_data)
     rel_err, me, mae, mse, rmse, nrmse = handle_errors(input_data['time_mod'], input_data['dist_mod'], temp_mod, input_data['temp_t0_data'][:, 0], 
                                                        input_data['temp_x0_data'][:, 0], input_data['temp'])
-    sens = sens(input_data, [-0.01, 0.01],[-2, 2],[-0.1, 0.1],[-0.1, 0.1])
+    sens = hflux_sens(input_data, [-0.01, 0.01],[-2, 2],[-0.1, 0.1],[-0.1, 0.1])
 
 
     # Save output to CSV files using Numpy.
@@ -53,3 +53,5 @@ def script_to_run():
     np.savetxt(f"{path}evap_data.csv", flux_data['evap'], delimiter=",")
     np.savetxt(f"{path}sensible_data.csv", flux_data['sensible'], delimiter=",")
     np.savetxt(f"{path}conduction_data.csv", flux_data['conduction'], delimiter=",")
+
+script_to_run()

@@ -17,16 +17,8 @@ from src.Heat_Flux.hflux_shortwave_refl import hflux_shortwave_relf
 from src.Heat_Flux.hflux_flux import hflux_flux
 from src.Utilities.interpolation import interpolation
 
-<<<<<<< HEAD
-def hflux(input_data = None):
-    # read from excel sheet
-    if input_data is None:
-        filename = os.getcwd() + "/Python/Data/example_data.xlsx"
-        input_data = Input_reader.readFromFile(filename)
-=======
 def hflux(input_data):
     print('Assigning variable names...')
->>>>>>> f8b42cdac123826ed31ee8f2f4b2f7e45fb5460d
 
     method = input_data["settings"][0][0]
     unattend = input_data["settings"][0][4]
@@ -575,8 +567,6 @@ def hflux(input_data):
     # Add legend
     plt.legend(loc='best')
 
-    plt.show()
+    plt.show(block = False)
 
-filename = os.path.join(os.getcwd(), 'Data', 'example_data.xlsx')
-input_data = Input_reader.readFromFile(filename)
-hflux(input_data)
+    return temp_mod, matrix_data, node_data, flux_data
