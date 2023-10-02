@@ -231,6 +231,7 @@ def hflux(input_data):
     q_l_min = q_l * 60
 
     print('...done!')
+    # method 2 creates overflow and the example_data uses method 1
     method = 1
     match method:
         case 1:
@@ -248,14 +249,17 @@ def hflux(input_data):
             
             # checked!
             b = np.empty((r, timesteps))
-            o1 = (dt * q_half_min[:r, 1:]).transpose() / quad_volume
-            p1 = (dt * q_half_min[1:, 1:]).transpose() / quad_volume
-            q1 = (dt * q_l_min[:,:timesteps-1]).transpose() / double_volume
-            o2 = (dt * q_half_min[:r, timesteps-1]).transpose() / quad_volume
-            p2 = (dt * q_half_min[1:, timesteps-1]).transpose() / quad_volume
-            q2 = (dt * q_l_min[:r, timesteps-1]).transpose() / double_volume
-            b[:, :timesteps-1] = (1 + o1 - p1 + q1).transpose()
-            b[:, timesteps-1] = (1 + o2 - p2 + q2).transpose()
+            o = np.empty((r, timesteps))
+            p = np.empty((r, timesteps))
+            q = np.empty((r, timesteps))
+            o[:, :timesteps-1] = ((dt * q_half_min[:r, 1:]).transpose() / quad_volume).transpose()
+            p[:, :timesteps-1] = ((dt * q_half_min[1:, 1:]).transpose() / quad_volume).transpose()
+            q[:, :timesteps-1] = ((dt * q_l_min[:,:timesteps-1]).transpose() / double_volume).transpose()
+            o[:, timesteps-1] = ((dt * q_half_min[:r, timesteps-1]).transpose() / quad_volume).transpose()
+            p[:, timesteps-1] = ((dt * q_half_min[1:, timesteps-1]).transpose() / quad_volume).transpose()
+            q[:, timesteps-1] = ((dt * q_l_min[:r, timesteps-1]).transpose() / double_volume).transpose()
+            b[:, :timesteps-1] = 1 + o[:, :timesteps-1] - p[:, :timesteps-1] + q[:, :timesteps-1]
+            b[:, timesteps-1] = 1 + o[:, timesteps-1] - p[:, timesteps-1] + q[:, timesteps-1]
             
             # checked!
             c = np.empty((r, timesteps))
@@ -313,7 +317,6 @@ def hflux(input_data):
                     else:
                         k[i, j] = (dt * q_l_min[i,j]) / (volume[i, 0])
 
-
             m = np.zeros(width_m.shape)
             d = np.zeros(width_m.shape)     
             for i in range(timesteps - 1):
@@ -322,26 +325,21 @@ def hflux(input_data):
                 d[r - 1,i] = (g[r - 1,i] * t[r - 1,i]) + (o_c[r - 1,i] * t[r-2, i]) - (p_c[r - 1,i] * t[r - 1,i]) + (k[r - 1,i] * t_l_m[r - 1]) + m[r - 1,i]
                 d[1:r-1,i]=(g[1:r-1,i] * t[1:r-1,i]) + (o_c[1:r-1,i] * t[0:r-2,i]) - (p_c[1:r-1,i] * t[2:r,i]) + (k[1:r-1,i] * t_l_m[1:r-1]) + m[1:r-1,i]
                 
-                loop_array = np.zeros((r, r))
+                A = np.zeros((r, r))
                 for j in range(r - 1):
-                    loop_array[j + 1, j] = a[j+1, i]
-                    loop_array[j, j] = b[j, i]
-                    loop_array[j, j + 1] = c[j, i]
-                    loop_array[r - 1, r - 1] = b[r - 1, i] + c[r - 1, i]
+                    A[j + 1, j] = a[j+1, i]
+                    A[j, j] = b[j, i]
+                    A[j, j + 1] = c[j, i]
+                    A[r - 1, r - 1] = b[r - 1, i] + c[r - 1, i]
 
-                loop_array = csc_matrix(loop_array)
-                t[:, i + 1] = spsolve(loop_array, d[:,i])
+                A = csc_matrix(A)
+                t[:, i + 1] = spsolve(A, d[:,i])
 
                 heat_flux[:,i+1], shortwave[:,i+1], longwave[:,i+1],atm[:,i+1], back[:,i+1], land[:,i+1], latent[:,i+1],sensible[:,i+1], bed[:,i+1] = hflux_flux(input_data["settings"],solar_rad_mat[:,i+1],air_temp_mat[:,i+1],
                     rel_hum_mat[:,i+1],t[:,i+1],wind_speed_mat[:,i+1],z,
                     sed,bed_temp_dt[:,i+1],depth_of_meas_m,
                     shade_m,vts_m,cl[:,i+1],sol_refl[i+1],wp_m[:,i+1], width_m[:,i+1])
 
-            ### It APPEARS that BOTH t, d are correct, I will rigorously verify this tomorrow
-            # print("here")
-            # print(m.shape)
-            # print(t)
-            # print(d)
         # case 2:
         #     t = np.zeros((r, timesteps))
         #     t[:,0] = temp_t0_m
@@ -569,4 +567,56 @@ def hflux(input_data):
 
     plt.show(block = False)
 
-    return temp_mod, matrix_data, node_data, flux_data
+    if method == 1:
+        matrix_data = {}
+        matrix_data["a"] = a
+        matrix_data["b"] = b
+        matrix_data["c"] = c
+        matrix_data["A"] = A
+        matrix_data["o"] = o
+        matrix_data["p"] = p
+        matrix_data["q"] = q
+        matrix_data["g"] = g
+        matrix_data["k"] = k
+        matrix_data["m"] = m
+        matrix_data["d"] = d
+
+        matrix_data["a_c"] = a_c
+        matrix_data["b_c"] = b_c
+        matrix_data["c_c"] = c_c
+        matrix_data["o_c"] = o_c
+        matrix_data["p_c"] = p_c
+        matrix_data["q_c"] = q_c
+    # will come back to case2 after alpha!
+    # else: 
+    #     matrix_data["u1"] = u1
+    #     matrix_data["v1"] = v1
+    #     matrix_data["s1"] = s1
+    #     matrix_data["m1"] = m1
+    #     matrix_data["k1"] = k1
+    #     matrix_data["u2"] = u2
+    #     matrix_data["v2"] = v2
+    #     matrix_data["s2"] = s2
+    #     matrix_data["m2"] = m2
+    #     matrix_data["k2"] = k2
+
+    node_data = {}
+    node_data["v"] = volume
+    node_data["Q"] = q_half_min
+    node_data["ql"] = q_l_min
+    node_data["width"] = width_m
+    node_data["area"] = area_m
+
+    flux_data = {}
+    flux_data["heatflux"] = heat_flux / 60
+    flux_data["solarflux"] = shortwave
+    flux_data["solar_refl"] = sol_refl
+    flux_data["long"] = longwave
+    flux_data["atmflux"] = atm
+    flux_data["landflux"] = land
+    flux_data["backrad"] = back
+    flux_data["evap"] = latent
+    flux_data["sensible"] = sensible
+    flux_data["conduction"] = bed
+
+    return t, matrix_data, node_data, flux_data
