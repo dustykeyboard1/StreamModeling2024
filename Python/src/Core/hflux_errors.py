@@ -45,16 +45,20 @@ def handle_errors(*args):
     if unattend:
         print("Checking input arguments...")
 
+    print(time_mod.ndim)
+    print(dist_mod.ndim)
+    print(time_temp.shape)
+    print(dist_temp.shape)
     #Type check variables to ensure they are column vectors by checking number of dimnesions and shape. 
     # ndim - https://numpy.org/doc/stable/reference/generated/numpy.ndarray.ndim.html
     # shape - https://numpy.org/doc/stable/reference/generated/numpy.shape.html
-    if time_mod.ndim != 2 or time_mod.shape[1] != 1:
+    if time_mod.ndim != 1:
         raise TypeError("Time_m must be a column vector")
-    if dist_mod.ndim != 2 or dist_mod.shape[1] != 1:
+    if dist_mod.ndim != 1:
         raise TypeError("Dist_m must be a column vector")
-    if time_temp.ndim != 2 or time_temp.shape[1] != 1:
+    if time_temp.ndim != 1:
         raise TypeError("Time_temp must be a column vector")
-    if dist_temp.ndim != 2 or dist_temp.shape[1] != 1:
+    if dist_temp.ndim != 1:
         raise TypeError("Dist_temp must be a column vector.")
 
     #Ensure temp_mod and temp are ndarrays.
@@ -73,27 +77,28 @@ def handle_errors(*args):
     #Stores in temp_dx.
     result_list = []
     for i in range(len(time_mod)):
-        result = interpolation(dist_mod[:,0], temp_mod[:,i], dist_temp[:,0], 'linear')
+        result = interpolation(dist_mod, temp_mod[:,i], dist_temp)
         result_list.append(result)
-    temp_dx = np.array(result_list)
+    temp_dx = np.array(result_list).transpose()
 
     #Performs linear interpolation using time_mod, temp_dx, time_temp at each time step.
     #Stores in temp_dt.
     result_list = []
     for i in range(len(dist_temp)):
-        result = interpolation(time_mod[:,0], temp_dx[i,:], time_temp[:,0], 'linear')
+        result = interpolation(time_mod, temp_dx[i,:], time_temp)
         result_list.append(result)
     temp_dt = np.array(result_list)
 
+    print(temp.shape)
     if unattend:
         print('...Done!')
         print('    ')
         print('Calculating error metrics...')
 
-
     #Start Calculating error metrics according to MATLAB code...
 
     #Percent Relative Error
+    temp = temp.transpose()
     rel_err = ((temp - temp_dt) / temp) * 100
 
     #Mean Residual Error
