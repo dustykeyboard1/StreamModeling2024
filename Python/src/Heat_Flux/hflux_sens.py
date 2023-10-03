@@ -143,6 +143,7 @@ def hflux_sens(input_data, dis_high_low, t_l_high_low, vts_high_low, shade_high_
 
     #Make sensitivity plots.
     #Following all axes, line, label and function parameters from MATLAB code.
+    #Reshape used to align plotting structures - https://numpy.org/doc/stable/reference/generated/numpy.reshape.html
     plt.figure()
     plt.subplot(2,2,1)
 
