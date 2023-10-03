@@ -1,80 +1,73 @@
 """
-Author: Michael Scoleri
-Date: 09-26-23
-File: test_hflux_errors.py
+Author: Michael Scoleri, Violet Shi
+Date: 10-02-23
+File: hflux_sens.py
 Functionality: Implementation of hflux_sens.m
 """
 
 import os
 import sys
+from matplotlib.backends.backend_pdf import PdfPages
+
 #Dynamically find and set the root directory.
 root_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
 sys.path.append(root_dir)
 
 from src.Core.hflux import hflux
 import numpy as np
-import matplotlib as plt
+import matplotlib.pyplot as plt
 
-def hflux_sens(input_data,dis_high_low,T_L_high_low,vts_high_low,shade_high_low):
+def hflux_sens(input_data, dis_high_low, t_l_high_low, vts_high_low, shade_high_low):
     '''
     Implementation of hflux_sens.m
-    Parameters: input_data,dis_high_low,T_L_high_low,vts_high_low,shade_high_low
+    Parameters: input_data,dis_high_low,t_l_high_low,vts_high_low,shade_high_low
     Returns: Sens - dictionary
     '''
 
     print("Calculating high and low values...")
 
-    #Create low and high values for each parameter.
-    dis_low = input_data['dis_data'][:, 1:] + dis_high_low[0]
-    dis_high = input_data['dis_data'][:, 1:] + dis_high_low[1]
-    T_L_low = input_data['T_L_data'][:, 1] + T_L_high_low[0]
-    T_L_high = input_data['T_L_data'][:, 1] + T_L_high_low[1]
-    vts_low = input_data['shade_data'][:, 2] + vts_high_low[0]
-    vts_high = input_data['shade_data'][:, 2] + vts_high_low[1]
-    shade_low = input_data['shade_data'][:, 1] + shade_high_low[0]
-    shade_high = input_data['shade_data'][:, 1] + shade_high_low[1]
+    input_data["settings"][0][4] = 1
 
-    #Create hflux-ready arrays from the low and high values
-    #Use hstack to concatenate along the 2nd axis.
-    #Use newaxis to index arrays.
-    #np.hstack - https://numpy.org/devdocs/reference/generated/numpy.hstack.html#numpy-hstack
-    #np.newaxis - https://numpy.org/devdocs/reference/constants.html#numpy.newaxis
-    dis_data_low = np.hstack((input_data['dis_data'][:, 0][:, np.newaxis], dis_low))
-    dis_data_high = np.hstack((input_data['dis_data'][:, 0][:, np.newaxis], dis_high))
+    # Create low and high values for each parameter.
+    dis_data_1 = input_data['dis_data'][1:].transpose()
+    dis_low = dis_data_1 + dis_high_low[0]
+    dis_high = dis_data_1 + dis_high_low[1]
 
-    # Initialize T_L_data_low and T_L_data_high with zeros.
-    T_L_data_low = np.zeros(input_data['T_L_data'].shape)
-    T_L_data_high = np.zeros(input_data['T_L_data'].shape)
+    t_l_data_1 = input_data['T_L_data'][1]
+    t_l_low = t_l_data_1 + t_l_high_low[0]
+    t_l_high = t_l_data_1 + t_l_high_low[1]
 
-    #Set T_L_data_low and T_L_data_high values.
-    T_L_data_low[:, 0] = input_data['T_L_data'][:, 0]
-    T_L_data_low[:, 1] = T_L_low
-    T_L_data_high[:, 0] = input_data['T_L_data'][:, 0]
-    T_L_data_high[:, 1] = T_L_high
+    vts = input_data['shade_data'][2]
+    vts_low = vts + vts_high_low[0]
+    vts_high = vts + vts_high_low[1]
 
-    # Initialize vts_data_low and vts_data_high with zeros. 
-    vts_data_low = np.zeros(input_data['shade_data'].shape)
-    vts_data_high = np.zeros(input_data['shade_data'].shape)
+    shade_1 = input_data['shade_data'][1]
+    shade_low = shade_1 + shade_high_low[0]
+    shade_high = shade_1 + shade_high_low[1]
 
-    #Set vts_data_low and vts_data_high values.
-    vts_data_low[:, 0] = input_data['shade_data'][:, 0]
-    vts_data_low[:, 1] = input_data['shade_data'][:, 1]
-    vts_data_low[:, 2] = vts_low
+    # Create hflux-ready arrays from the low and high values
+    # Use hstack to concatenate along the 2nd axis.
+    # Use newaxis to index arrays.
+    # np.hstack - https://numpy.org/devdocs/reference/generated/numpy.hstack.html#numpy-hstack
+    # np.newaxis - https://numpy.org/devdocs/reference/constants.html#numpy.newaxis
+    dis_data_0 = input_data['dis_data'][0]
+    dis_data_low = np.hstack((dis_data_0[:, np.newaxis], dis_low)).transpose()
+    dis_data_high = np.hstack((dis_data_0[:, np.newaxis], dis_high)).transpose()
 
-    vts_data_high[:, 0] = input_data['shade_data'][:, 0]
-    vts_data_high[:, 1] = input_data['shade_data'][:, 1]
-    vts_data_high[:, 2] = vts_high
+    # Set t_l_data_low and t_l_data_high values.
+    t_l_data_0 = input_data['T_L_data'][0]
+    t_l_data_low = np.array([t_l_data_0, t_l_low])
+    t_l_data_high = np.array([t_l_data_0, t_l_high])
+
+    # Set vts_data_low and vts_data_high values.
+    shade_0 = input_data['shade_data'][0]
+    vts_data_low = np.array([shade_0, shade_1, vts_low])
+    vts_data_high = np.array([shade_0, shade_1, vts_high])
 
     #Initalize shade_data_low and shade_data_high with zeros. 
-    shade_data_low = np.zeros(input_data['shade_data'].shape)
-    shade_data_high = np.zeros(input_data['shade_data'].shape)
-
-    shade_data_low[:, 0] = input_data['shade_data'][:, 0]
-    shade_data_low[:, 1] = shade_low
-    shade_data_low[:, 2] = input_data['shade_data'][:, 2]
-    shade_data_high[:, 0] = input_data['shade_data'][:, 0]
-    shade_data_high[:, 1] = shade_high
-    shade_data_high[:, 2] = input_data['shade_data'][:, 2]
+    shade_2 = input_data['shade_data'][2]
+    shade_data_low = np.array([shade_0, shade_low, shade_2])
+    shade_data_high = np.array([shade_0, shade_high, shade_2])
 
     #Create multiple copies of input_data for and modifying specifc keys. 
     input_data_base = input_data.copy()
@@ -83,9 +76,9 @@ def hflux_sens(input_data,dis_high_low,T_L_high_low,vts_high_low,shade_high_low)
     input_data_highdis = input_data.copy()
     input_data_highdis['dis_data'] = dis_data_high
     input_data_lowT_L = input_data.copy()
-    input_data_lowT_L['T_L_data'] = T_L_data_low
+    input_data_lowT_L['T_L_data'] = t_l_data_low
     input_data_highT_L = input_data.copy()
-    input_data_highT_L['T_L_data'] = T_L_data_high
+    input_data_highT_L['T_L_data'] = t_l_data_high
     input_data_lowvts = input_data.copy()
     input_data_lowvts['shade_data'] = vts_data_low
     input_data_highvts = input_data.copy()
@@ -131,8 +124,8 @@ def hflux_sens(input_data,dis_high_low,T_L_high_low,vts_high_low,shade_high_low)
     sens = {
         'dis_l': dis_data_low,
         'dis_h': dis_data_high,
-        'TL_l': T_L_data_low,
-        'TL_h': T_L_data_high,
+        'TL_l': t_l_data_low,
+        'TL_h': t_l_data_high,
         'vts_l': vts_low,
         'vts_h': vts_high,
         'sh_l': shade_data_low,
@@ -148,17 +141,14 @@ def hflux_sens(input_data,dis_high_low,T_L_high_low,vts_high_low,shade_high_low)
         'highshade': highshade
     }
 
-    print("...Done!")
-    print("    ")
-
     #Make sensitivity plots.
     #Following all axes, line, label and function parameters from MATLAB code.
     plt.figure()
     plt.subplot(2,2,1)
 
-    plt.plot(input_data['dist_mod'], sens['lowdis']['mean'], '--b', linewidth=2)
-    plt.plot(input_data['dist_mod'], sens['base']['mean'], 'k', linewidth=2)
-    plt.plot(input_data['dist_mod'], sens['highdis']['mean'], '--r', linewidth=2)
+    plt.plot(input_data['dist_mod'].reshape(-1), sens['lowdis']['mean'], '--b', linewidth=2)
+    plt.plot(input_data['dist_mod'].reshape(-1), sens['base']['mean'], 'k', linewidth=2)
+    plt.plot(input_data['dist_mod'].reshape(-1), sens['highdis']['mean'], '--r', linewidth=2)
     #Follow X-Limits set by MATLAB code.
     plt.xlim = ([np.min(input_data['temp_t0_data'][:,0]), 
                  np.max(input_data['temp_t0_data'][:,0])])
@@ -166,13 +156,11 @@ def hflux_sens(input_data,dis_high_low,T_L_high_low,vts_high_low,shade_high_low)
     plt.xlabel('Distance Downstream(m)')
     plt.ylabel('Temperature (°C)')
     plt.legend(['Low', 'Base', 'High'])
-    plt.tight_layout()
 
-    plt.figure()
     plt.subplot(2,2,2)
-    plt.plot(input_data['dist_mod'],sens['lowT_L']['mean'],'--b',linewidth=2)
-    plt.plot(input_data['dist_mod'],sens['base']['mean'],'k',linewidth = 2)
-    plt.plot(input_data['dist_mod'],sens['highT_L']['mean'],'--r', linewidth = 2)
+    plt.plot(input_data['dist_mod'].reshape(-1),sens['lowT_L']['mean'],'--b',linewidth=2)
+    plt.plot(input_data['dist_mod'].reshape(-1),sens['base']['mean'],'k',linewidth = 2)
+    plt.plot(input_data['dist_mod'].reshape(-1),sens['highT_L']['mean'],'--r', linewidth = 2)
     #Follow X-Limits set by MATLAB code.
     plt.xlim = ([np.min(input_data['temp_t0_data'][:,0]), 
                  np.max(input_data['temp_t0_data'][:,0])])
@@ -180,13 +168,11 @@ def hflux_sens(input_data,dis_high_low,T_L_high_low,vts_high_low,shade_high_low)
     plt.ylabel('Temperature (°C)')
     plt.xlabel('Distance Downstream (m)')
     plt.legend(['Low','Base','High'])
-    plt.tight_layout()
 
-    plt.figure()
     plt.subplot(2,2,3)
-    plt.plot(input_data['dist_mod'],sens['lowvts']['mean'],'--b',linewidth=2)
-    plt.plot(input_data['dist_mod'],sens['base']['mean'],'k',linewidth=2)
-    plt.plot(input_data['dist_mod'],sens['highvts']['mean'],'--r',linewidth=2)
+    plt.plot(input_data['dist_mod'].reshape(-1),sens['lowvts']['mean'],'--b',linewidth=2)
+    plt.plot(input_data['dist_mod'].reshape(-1),sens['base']['mean'],'k',linewidth=2)
+    plt.plot(input_data['dist_mod'].reshape(-1),sens['highvts']['mean'],'--r',linewidth=2)
     #Follow X-Limits set by MATLAB code.
     plt.xlim = ([np.min(input_data['temp_t0_data'][:,0]), 
                  np.max(input_data['temp_t0_data'][:,0])])
@@ -194,13 +180,11 @@ def hflux_sens(input_data,dis_high_low,T_L_high_low,vts_high_low,shade_high_low)
     plt.xlabel('Distance Downstream (m)')
     plt.ylabel('Temperature (°C)')
     plt.legend(['Low','Base','High'])
-    plt.tight_layout()
 
-    plt.figure()
     plt.subplot(2,2,4)
-    plt.plot(input_data['dist_mod'],sens['lowshade']['mean'],'--b',linewidth=2)
-    plt.plot(input_data['dist_mod'],sens['base']['mean'],'k',linewidth=2)
-    plt.plot(input_data['dist_mod'],sens['highshade']['mean'],'--r',linewidth=2)
+    plt.plot(input_data['dist_mod'].reshape(-1),sens['lowshade']['mean'],'--b',linewidth=2)
+    plt.plot(input_data['dist_mod'].reshape(-1),sens['base']['mean'],'k',linewidth=2)
+    plt.plot(input_data['dist_mod'].reshape(-1),sens['highshade']['mean'],'--r',linewidth=2)
     plt.xlim = ([np.min(input_data['temp_t0_data'][:,0]), 
                  np.max(input_data['temp_t0_data'][:,0])])
     #Follow X-Limits set by MATLAB code.
@@ -226,13 +210,28 @@ def hflux_sens(input_data,dis_high_low,T_L_high_low,vts_high_low,shade_high_low)
     #Bar Chart - https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.bar.html#matplotlib.pyplot.bar
     plt.bar(['Discharge', 'GW Temp', 'VTS', 'Shade'], change[:, 0], label='Decrease Value')
     plt.bar(['Discharge', 'GW Temp', 'VTS', 'Shade'], change[:, 1], label='Increase Value')
-    plt.title('Change in Average Stream Temperature With Changing Variables', fontname='Arial', fontsize=14, fontweight='bold')
+    plt.title('Change in Average Stream Temperature With Changing Variables', fontname='Arial', fontsize=12, fontweight='bold')
     plt.ylabel('Change (°C)', fontname='Arial', fontsize=12, fontweight='bold')
     plt.xlabel('Adjusted Variable', fontname='Arial', fontsize=12, fontweight='bold')
     plt.legend(loc='best')
     plt.tight_layout()
 
-    plt.show(block=False)
+    # CITE: https://medium.com/@akaivdo/3-methods-to-save-plots-as-images-or-pdf-files-in-matplotlib-96a922fd2ce4#:~:text=Python%20Imaging%20Library).-,Method%201%3A%20Using%20savefig(),files%20to%20the%20output%20folder.
+    # Save pdf to a specific path
+    pdf_path = os.path.join(os.getcwd(), 'Results', 'PDFs', "hflux_sens.pdf")
+    plots_pdf = PdfPages(pdf_path)
+        # get_fignums Return list of existing 
+    # figure numbers
+    fig_nums = plt.get_fignums()  
+    figs = [plt.figure(n) for n in fig_nums]
+      
+    # iterating over the numbers in list
+    for fig in figs: 
+        # and saving the files
+        fig.savefig(plots_pdf, format='pdf') 
+
+    plots_pdf.close()
+    plt.close('all')
 
     return sens
 

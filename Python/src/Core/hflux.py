@@ -1,3 +1,9 @@
+"""
+Author: Violet Shi, James Gallagher
+Date: 10-02-23
+File: test_hflux_errors.py
+Functionality: Implementation of hflux.m
+"""
 import numpy as np
 import os
 import sys
@@ -7,6 +13,7 @@ from scipy.sparse import csc_matrix
 from scipy.sparse.linalg import spsolve
 import matplotlib.pyplot as plt
 import pandas as pd
+from matplotlib.backends.backend_pdf import PdfPages
 
 #Find the root directory dynmimically. https://stackoverflow.com/questions/73230007/how-can-i-set-a-root-directory-dynamically
 root_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
@@ -18,10 +25,11 @@ from src.Heat_Flux.hflux_flux import hflux_flux
 from src.Utilities.interpolation import interpolation
 
 def hflux(input_data):
-    print('Assigning variable names...')
-
     method = input_data["settings"][0][0]
-    unattend = input_data["settings"][0][4]
+    unattend = bool(input_data["settings"][0][4])
+
+    if not unattend:
+        print('Assigning variable names...')
 
     # initialize variables
     time_mod = input_data["time_mod"][0]
@@ -40,9 +48,6 @@ def hflux(input_data):
     discharge_stdim = input_data["dim_data"][4]
 
     dist_dis = input_data["dis_data"][0]
-    # discharge is multiple columns
-    # I changed this from the old method since this allows for any number
-    # Of columns after the first one
     discharge = input_data["dis_data"][1:]
     time_dis = input_data["time_dis"][0]
 
@@ -64,7 +69,6 @@ def hflux(input_data):
     depth_of_meas = input_data["bed_data1"][1]
 
     time_bed = np.array([input_data["bed_data2"][0, 0], input_data["bed_data2"][1, 0]])
-    ### Same initialization, just allows for an infinite number of potential rows / columns
     bed_temp = input_data["bed_data2"][0:, 1:]
 
     sed_type = input_data["sed_type"][0]
@@ -82,27 +86,28 @@ def hflux(input_data):
     z = input_data["site_info"][0, 3]
 
     sed = hflux_bed_sed(sed_type, dist_bed, dist_mod)
-    # print(sed_type)
     
     sol_refl = hflux_shortwave_relf(year, month, day, hour, minute, lat, lon, t_zone, time_met, time_mod)
 
-    print('...done!')
-    print('Determining time steps and nodes...')
+    if not unattend:
+        print('...done!')
+        print()
+        print('Determining time steps and nodes...')
 
     timesteps = len(time_mod)
     dt = max(time_mod) / (len(time_mod) - 1)
     
-    print('...done!')
-
-    print('Interpolating longitudinal data in space...')
+    if not unattend:
+        print('...done!')
+        print()
+        print('Interpolating longitudinal data in space...')
 
     ### Interpolate Data
     t_l_m = interpolation(dist_T_L, t_L, dist_mod)
     temp_t0_m = interpolation(dist, temp_t0, dist_mod)
-    ### Need to transpose discharge_m to make sure it has the same shape
-    ### As discharge_m in Matlab. I do not know why, but this works
-    ### And the values are correct
 
+    ### Need to transpose discharge_m to make sure it has the same shape
+    ### As discharge_m in Matlab.
     discharge_m = interpolation(dist_dis, discharge, dist_mod).transpose()
 
     width_m = interpolation(dist_stdim, width, dist_mod)
@@ -111,17 +116,16 @@ def hflux(input_data):
     shade_m = interpolation(dist_shade, shade, dist_mod)
     vts_m = interpolation(dist_shade, vts, dist_mod)
 
-    ### This works, would be cool if there was a more elegant solution
-    ### I could not find one, however
     bed_temp_m = [0] * len(time_bed)
     for i in range(len(time_bed)):
         bed_temp_m[i] = interpolation(dist_bed, bed_temp[i], dist_mod)
     bed_temp_m = np.array(bed_temp_m).transpose()
-    # print(bed_temp_m, bed_temp_m.shape)
 
-    print('...done!')
+    if not unattend:
+        print('...done!')
+        print()
+        print('Interpolating temporal data in time...')
 
-    print('Interpolating temporal data in time...')
     ### Interpolate all data given through time so that there are 
     ### Values at every step
     # checked!
@@ -143,10 +147,6 @@ def hflux(input_data):
            (cos_theta ** (2/3)) * 
            (tan_theta ** (5/3)) * (depth_m ** (8/3))) / (2 * dim_q)
 
-    # transpose discharge_m for calculation purpose
-    # depends on how the calculations go later on in the steps
-    # can possibly stay in the transpose position
-    # for now, discharge_m is transposed back on line 158
     discharge_m = discharge_m.transpose()
 
     # checked!
@@ -195,12 +195,15 @@ def hflux(input_data):
     wind_speed_mat = np.array([wind_speed_dt] * r)
     cl = np.array([c_dt] * r)
 
-    print('...done!')
+    if not unattend:
+        print('...done!')
+        print()
 
     ###############################################################
     # STEP 1: compute volumes of each reservoir (node) in the model
     # checked!
-    print('Computing volumes of nodes, discharge rates and groundwater inflow rates...')
+    if not unattend:
+        print('Computing volumes of nodes, discharge rates and groundwater inflow rates...')
     volume = np.empty((r, timesteps))
     volume[0] = (dist_mod[1] - dist_mod[0]) * area_m[0]
     volume[1: r-1] = (area_m[1:r-1].transpose() * 
@@ -229,8 +232,11 @@ def hflux(input_data):
     # checked!
     q_half_min = q_half * 60
     q_l_min = q_l * 60
+    
+    if not unattend:
+        print('...done!')
+        print()
 
-    print('...done!')
     # method 2 creates overflow and the example_data uses method 1
     method = 1
     match method:
@@ -279,7 +285,8 @@ def hflux(input_data):
             # The values for d are temperature-dependent, so they change each time step.
             # Once d is computed, use that d value and the
             # matrix A to solve for the temperature for each time step.
-            print('Computing d-values, heat fluxes and solving for stream temperatures...')
+            if not unattend:
+                print('Computing d-values, heat fluxes and solving for stream temperatures...')
             d = np.empty((r, timesteps))
             t = np.empty((r, timesteps))
             t[:,0] = temp_t0_m
@@ -293,7 +300,6 @@ def hflux(input_data):
             sensible = np.empty((r, timesteps))
             bed = np.empty((r, timesteps))
 
-            # print(sed)
             heat_flux[:, 0], shortwave[:, 0], longwave[:, 0], atm[:, 0], back[:, 0], land[:, 0], latent[:, 0], sensible[:, 0], bed[:, 0] = hflux_flux(input_data["settings"], solar_rad_mat[:, 0],
                                                     air_temp_mat[:, 0], rel_hum_mat[:, 0], temp_t0_m,
                                                     wind_speed_mat[:, 0], z, sed, bed_temp_dt[:, 0],
@@ -303,9 +309,6 @@ def hflux(input_data):
             rho_water = 1000
             c_water = 4182
 
-            print("Calculating...")
-
-                #   , shortwave[:11, 0], longwave[:11, 0], atm[:11, 0], back[:11, 0], land[:11, 0], latent[:11, 0], sensible[:11, 0], bed[:11, 0])
             g = 1 + a_c + c_c - q_c
 
             # Could be done better potentially, leave it for alpha for now
@@ -340,6 +343,7 @@ def hflux(input_data):
                     sed,bed_temp_dt[:,i+1],depth_of_meas_m,
                     shade_m,vts_m,cl[:,i+1],sol_refl[i+1],wp_m[:,i+1], width_m[:,i+1])
 
+        # Overflow error! Will come back to it for beta
         # case 2:
         #     t = np.zeros((r, timesteps))
         #     t[:,0] = temp_t0_m
@@ -437,11 +441,16 @@ def hflux(input_data):
                 
         #     print(heat_flux)
 
-    print("...done!")
+    if not unattend:
+        print("...done!")
+        print()
 
     #2D Plot of stream temperature
     # Create a figure
     fig, ax = plt.subplots()
+
+    pdf_path = os.path.join(os.getcwd(), 'Results', 'PDFs', "hflux.pdf")
+    plots_pdf = PdfPages(pdf_path)
 
     # ax.imshow() - https://matplotlib.org/stable/api/_as_gen/matplotlib.axes.Axes.imshow.html
     cax = ax.imshow(t, aspect='auto', cmap='jet', origin='lower',
@@ -463,7 +472,7 @@ def hflux(input_data):
     # ax.invert_yaxis() - https://www.geeksforgeeks.org/how-to-reverse-axes-in-matplotlib/
     ax.invert_yaxis()
 
-    plt.show(block = False)
+    
 
     #3D plot of stream temperature
     fig = plt.figure()
@@ -475,7 +484,7 @@ def hflux(input_data):
     # Make x, y axis take different length - https://stackoverflow.com/questions/46607106/python-3d-plot-with-different-array-sizes
     time_mod_sized, dist_mod_sized = np.meshgrid(time_mod, dist_mod)
     # ax.plot_surface() - https://matplotlib.org/stable/plot_types/3D/surface3d_simple.html#plot-surface-x-y-z
-    surface = ax.plot_surface(time_mod_sized, dist_mod_sized, t, cmap='jet')
+    surface = ax.plot_surface(dist_mod_sized, time_mod_sized, t, cmap='jet')
 
     # Add a colorbar with label
     cbar = fig.colorbar(surface)
@@ -483,16 +492,14 @@ def hflux(input_data):
 
     # Set title and labels
     plot_title = 'Modeled Stream Temperature'
-    xlab = 'Time (min)'
-    ylab = 'Distance (m)'
+    ylab = 'Time (min)'
+    xlab = 'Distance (m)'
     zlab = 'Temp (°C)'
     ax.set_title(plot_title, fontsize=12, fontweight='bold')
-    ax.set_xlabel(xlab, fontsize=11)
     ax.set_ylabel(ylab, fontsize=11)
+    ax.set_xlabel(xlab, fontsize=11)
     ax.set_zlabel(zlab, fontsize=11)
     ax.invert_xaxis()
-    ax.invert_yaxis()
-    plt.show(block = False)
 
     #Plot of heat fluxes
     fig = plt.figure()
@@ -541,7 +548,8 @@ def hflux(input_data):
     # to avoid labels overlapping
     # cite: https://saturncloud.io/blog/how-to-improve-label-placement-for-matplotlib-scatter-chart/#:~:text=Matplotlib%20provides%20a%20feature%20called,the%20labels%20to%20minimize%20overlap.
     plt.tight_layout()
-    plt.show(block = False)
+
+    
 
     #Plot of heat fluxes: comparison 
     plt.figure()
@@ -565,7 +573,19 @@ def hflux(input_data):
     # Add legend
     plt.legend(loc='best')
 
-    plt.show(block = False)
+    # CITE: https://www.geeksforgeeks.org/save-multiple-matplotlib-figures-in-single-pdf-file-using-python/
+    # get_fignums Return list of existing 
+    # figure numbers
+    fig_nums = plt.get_fignums()  
+    figs = [plt.figure(n) for n in fig_nums]
+      
+    # iterating over the numbers in list
+    for fig in figs: 
+        # and saving the files
+        fig.savefig(plots_pdf, format='pdf') 
+
+    plots_pdf.close()
+    plt.close('all')
 
     if method == 1:
         matrix_data = {}
