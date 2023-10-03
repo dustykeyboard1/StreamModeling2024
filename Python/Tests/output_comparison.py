@@ -5,9 +5,10 @@ def main():
     ### We are starting in the StreamModelling2024 directory, so these two lines
     ### Give us the output locations of our files
 
-    matlab = os.path.join("MATLAB", "HFLUX outputs")
-    python = os.path.join("MATLAB", "HFLUX_3.1")
-    output = open("diff.txt", "w")  # file to write to
+    matlab = os.path.join("MATLAB", "HFLUX_3.1")
+    python = os.path.join("Python", "Results", "CSVs")
+    output_location = os.path.join(os.getcwd(), "Python", "Results", "CSVs")
+    output = open(os.path.join(output_location, "csv_diff.txt"), "w")  # file to write to
 
     for mat in os.listdir(matlab):
         for py in os.listdir(python):
@@ -19,25 +20,28 @@ def main():
     output.close()
 
 def compare_files(mat, py, output, filename):
-    sensitivity = 10    # number of places to round to
+    comparison_value = 1E-10    # acceptable difference for matlab vs. python output
+
     ### Seperating everything by commas to get a list where each item is a csv element
     mat = [item for items in open(mat).readlines() for item in items.split(",")]
     py = [item for items in open(py).readlines() for item in items.split(",")]
     output.write("Filename: " + filename + "\n")
-    for i in range(min(len(mat), len(py))):
-        mat_val = round(float(mat[i]), sensitivity)
-        py_val = round(float(py[i]), sensitivity)
-        if (mat_val != py_val):
+    if (len(mat) != len(py)):
+        if (len(mat) > len(py)):
+            output.write("matlab output " + filename + " has " + str(len(mat) - len(py)) + " more entries than python output")
+        else:
+            output.write("python output " + filename + " has " + str(len(mat) - len(py)) + " more entries than matlab output")
+    
+    for i in range(len(mat)):
+        mat_val = float(mat[i])
+        py_val = float(py[i])
+        if (abs(mat_val - py_val) > comparison_value):
             output.write("Index: " + str(i) + 
                          " Matlab val=" + str(mat_val) + 
                          " Python val=" + str(py_val) + 
                          " Difference=" + str(abs(mat_val - py_val)) + "\n")
     
-    if (len(mat) != len(py)):
-        if (len(mat) > len(py)):
-            print("matlab output has " + str(len(mat) - len(py)) + " more entries than python output")
-        else:
-            print("python output has " + str(len(mat) - len(py)) + " more entries than matlab output")
+
 
 if __name__=="__main__":
      main()
