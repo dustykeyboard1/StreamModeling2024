@@ -1,7 +1,7 @@
 """
 Author: Violet Shi, James Gallagher
 Date: 10-02-23
-File: test_hflux_errors.py
+File: hflux.py
 Functionality: Implementation of hflux.m
 """
 import numpy as np
