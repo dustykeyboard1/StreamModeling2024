@@ -1,5 +1,5 @@
 """
-Author: Violet Shi, James Gallagher
+Author: Violet Shi, James Gallagher, Michael Scoleri
 Date: 10-02-23
 File: hflux.py
 Functionality: Implementation of hflux.m
