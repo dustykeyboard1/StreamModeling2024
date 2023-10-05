@@ -36,9 +36,10 @@ Stores utility functions like data input/output and interpolation methods.
 ## How to Run
 
 1. Clone the repository.
-2. Navigate to the project directory.
+2. Navigate to the Python directory.
 3. Install the required packages using `pip install -r requirements.txt`.
-4. *To be implemented:* Run `main.py` to execute the program.
+4. *For Alpha*: Run script_to_run.py
+5. *To be implemented:* Run `main.py` to execute the program.
 
 ## Testing
 
