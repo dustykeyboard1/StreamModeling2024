@@ -17,11 +17,11 @@ def hflux_sensible(water_temp, air_temp, rel_hum, wind_speed, z, latent, eq3):
     
     match eq3:
         case 1:
-            ews = saturated_vp(water_temp)
-            ewa = actual_vp(rel_hum, ews)
+            ews = np.vectorize(saturated_vp)(water_temp)
+            ewa = (rel_hum / 100) * ews
             air_pressure = 101.3 * (((293 - (.0065 * z)) / 293) ** 5.256)
-            br = bowens_ratio(air_pressure, water_temp, air_temp, ews, ewa)
-            sensible = case1_sensible(br, latent)
+            br = .00061 * air_pressure * ((water_temp - air_temp) / (ews - ewa))
+            sensible = br * latent
         case 2:
             c_air = 1004 # heat-capacity of the air (J/kg deg C)
             rho_air = 1.2041 # density of air at 20 degree C (kg/m^3)
@@ -34,16 +34,13 @@ def hflux_sensible(water_temp, air_temp, rel_hum, wind_speed, z, latent, eq3):
             k = .4 #dimensionless constant
 
             kh = dh_dm * c_air * rho_air * (k ** 2 / ((math.log((z_met - zd) / z0)) ** 2))
-            sensible = case2_sensible(kh, wind_speed, water_temp, air_temp)
+            sensible = -kh * wind_speed * (water_temp - air_temp)
 
     return sensible
 
 ### Saturated vapor pressire using stream temp
-def saturated_vp(water_temp):
-    result = np.zeros(len(water_temp))
-    for i in range(len(water_temp)):
-        result[i] = .61275 * math.exp((17.27 * water_temp[i]) / (237.3 + water_temp[i]))
-    return result
+def saturated_vp(water_temp_value):
+    return .61275 * math.exp((17.27 * water_temp_value) / (237.3 + water_temp_value))
 
 ### Actual vapor pressure
 def actual_vp(rel_hum, ews):

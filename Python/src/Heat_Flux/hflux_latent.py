@@ -24,100 +24,92 @@ def hflux_latent(water_temp, air_temp, rel_hum, wind_speed, shortwave, longwave,
     b0 = 1.505E-8; #1/(m/s*kPa)
     b1 = 1.6E-8; #1/kPa
 
+    e_s = np.vectorize(saturation_vp_air)(air_temp) 
+    e_a = (rel_hum / 100.0) * e_s
+    l_e = 1000000 * (2.501 - (.002361 * water_temp))
+
     match eq2:
         case 1:
-            e_s = saturation_vp_air(air_temp) 
-            e_a = actual_vp(rel_hum, e_s) 
-            l_e = latent_heat_vapor(water_temp) 
-            s = saturation_vp_slope(air_temp, e_s) 
-            r_a = aero_resistance(wind_speed)
-            penman_evap = penman_evap_eq(s, shortwave, longwave, rho_water, l_e, psy_constant, c_air, rho_air, e_s, e_a, r_a)
-            latent = case1_latent_heat_flux(rho_water, l_e, penman_evap)
-        case 2:
-            e_s = saturation_vp_air(air_temp) 
-            e_a = actual_vp(rel_hum, e_s) 
-            ews = saturated_vp_water(water_temp)
-            l_e = latent_heat_vapor(water_temp) 
-            fw = wind_speed(b0, b1, wind_speed)
-            mass_transfer_evap = mass_transfer_evap_eq(fw, ews, e_a)
-            latent = case2_latent_heat_flux(rho_water, l_e, mass_transfer_evap)
+            s = (4100 * e_s) / ((237 + air_temp) ** 2)
+            r_a = 245 / ((.54 * wind_speed) + .5)
+            penman_evap = (((s * (shortwave + longwave)) / (rho_water * l_e * (s + psy_constant)))) + ((c_air * rho_air * psy_constant * (e_s - e_a)) / (rho_water * l_e * r_a * (s + psy_constant)))
+            latent = (-rho_water) * l_e * penman_evap
+        case 2: 
+            ews = np.vectorize(saturation_vp_water)(water_temp)
+            fw = b0 + (b1 * wind_speed)
+            mass_transfer_evap = fw * (ews - e_a)
+            latent = -rho_water * l_e * mass_transfer_evap
 
     return latent
 
 ### The saturation vapor pressure equation (air)
-def saturation_vp_air(temp):
-    result = np.empty(len(temp))
-    for i in range(len(temp)):
-        result[i] = .611 * math.exp((17.27 * temp[i]) / (237.2 + temp[i]))
-    return result
+def saturation_vp_air(air_temp_value):
+    return .611 * math.exp((17.27 * air_temp_value) / (237.2 + air_temp_value))
 
 ### The actual vapor pressure equation
-def actual_vp(rel_hum, e_s):
-    result = np.zeros(len(rel_hum))
-    for i in range(len(rel_hum)):
-        result[i] = (rel_hum[i] / 100.0) * e_s[i]
-    return result
+# def actual_vp(rel_hum, e_s):
+#     result = np.zeros(len(rel_hum))
+#     for i in range(len(rel_hum)):
+#         result[i] = (rel_hum[i] / 100.0) * e_s[i]
+#     return result
 
 ### Saturated vapor pressure at the stream surface
-def saturated_vp_water(water_temp):
-    result = np.zeros(len(water_temp))
-    for i in range(len(water_temp)):
-        result[i] = .611 * math.exp((17.27 * water_temp[i]) / (237.3 + water_temp[i]))
-    return result
+def saturation_vp_water(water_temp_value):
+    return .611 * math.exp((17.27 * water_temp_value) / (237.3 + water_temp_value))
 
 ### Latent heat of vaporization
-def latent_heat_vapor(water_temp):
-    result = np.zeros(len(water_temp))
-    for i in range(len(water_temp)):
-        result[i] = 1000000 * (2.501 - (.002361 * water_temp[i]))
-    return result
+# def latent_heat_vapor(water_temp):
+#     result = np.zeros(len(water_temp))
+#     for i in range(len(water_temp)):
+#         result[i] = 1000000 * (2.501 - (.002361 * water_temp[i]))
+#     return result
 
-### Slope of the saturated vapor pressure curve at a given air temperature
-def saturation_vp_slope(air_temp, e_s):
-    result = np.zeros(len(e_s))
-    for i in range(len(e_s)):
-        result[i] = (4100 * e_s[i]) / ((237 + air_temp[i]) ** 2)
-    return result
+# ### Slope of the saturated vapor pressure curve at a given air temperature
+# def saturation_vp_slope(air_temp, e_s):
+#     result = np.zeros(len(e_s))
+#     for i in range(len(e_s)):
+#         result[i] = (4100 * e_s[i]) / ((237 + air_temp[i]) ** 2)
+#     return result
 
-### Aerodynamic resistance
-def aero_resistance(wind_speed):
-    result = np.zeros(len(wind_speed))
-    for i in range(len(wind_speed)):
-        result[i] = 245 / ((.54 * wind_speed[i]) + .5)
-    return result
+# ### Aerodynamic resistance
+# def aero_resistance(wind_speed):
+#     result = np.zeros(len(wind_speed))
+#     for i in range(len(wind_speed)):
+#         result[i] = 245 / ((.54 * wind_speed[i]) + .5)
+#     return result
 
-### Penman evap equation
-def penman_evap_eq(s, shortwave, longwave, rho_water, l_e, psy_constant, c_air, rho_air, e_s, e_a, r_a):
-    result = np.zeros(len(shortwave))
-    for i in range(len(shortwave)):
-        result[i] = (((s[i] * (shortwave[i] + longwave[i])) / (rho_water * l_e[i] * (s[i] + psy_constant)))) + ((c_air * rho_air * psy_constant * (e_s[i] - e_a[i])) / (rho_water * l_e[i] * r_a[i] * (s[i] + psy_constant)))
-    return result
+# ### Penman evap equation
+# def penman_evap_eq(s, shortwave, longwave, rho_water, l_e, psy_constant, c_air, rho_air, e_s, e_a, r_a):
+#     result = np.zeros(len(shortwave))
+#     for i in range(len(shortwave)):
+#         result[i] = (((s[i] * (shortwave[i] + longwave[i])) / (rho_water * l_e[i] * (s[i] + psy_constant)))) + ((c_air * rho_air * psy_constant * (e_s[i] - e_a[i])) / (rho_water * l_e[i] * r_a[i] * (s[i] + psy_constant)))
+#     return result
 
-### Latent heat flux
-def case1_latent_heat_flux(rho_water, l_e, penman_evap):
-    result = np.zeros(len(l_e))
-    for i in range(len(l_e)):
-        result[i] = (-rho_water) * l_e[i] * penman_evap[i]
-    return result
+# ### Latent heat flux
+# def case1_latent_heat_flux(rho_water, l_e, penman_evap):
+#     result = np.zeros(len(l_e))
+#     for i in range(len(l_e)):
+#         result[i] = (-rho_water) * l_e[i] * penman_evap[i]
+#     return result
 
-### Wind speed function
-def wind_speed(b0, b1, wind_speed):
-    result = np.zeros(len(wind_speed))
-    for i in range(len(wind_speed)):
-        result[i] = b0 + (b1 * wind_speed[i])
+# ### Wind speed function
+# def wind_speed(b0, b1, wind_speed):
+#     result = np.zeros(len(wind_speed))
+#     for i in range(len(wind_speed)):
+#         result[i] = b0 + (b1 * wind_speed[i])
 
-    return result
+#     return result
 
-### Mass transfer evap
-def mass_transfer_evap_eq(fw, ews, e_a):
-    result = np.zeros(len(ews))
-    for i in range(len(ews)):
-        result[i] = fw[i] * (ews[i] - e_a[i])
-    return result
+# ### Mass transfer evap
+# def mass_transfer_evap_eq(fw, ews, e_a):
+#     result = np.zeros(len(ews))
+#     for i in range(len(ews)):
+#         result[i] = fw[i] * (ews[i] - e_a[i])
+#     return result
 
-### Case 2 Latent heat flux
-def case2_latent_heat_flux(rho_water, l_e, mass_transfer_evap):
-    result = np.zeros(len(l_e))
-    for i in range(len(l_e)):
-        result[i] = -rho_water * l_e[i] * mass_transfer_evap[i]
-    return result
+# ### Case 2 Latent heat flux
+# def case2_latent_heat_flux(rho_water, l_e, mass_transfer_evap):
+#     result = np.zeros(len(l_e))
+#     for i in range(len(l_e)):
+#         result[i] = -rho_water * l_e[i] * mass_transfer_evap[i]
+#     return result
