@@ -219,7 +219,7 @@ def hflux_sens(input_data, dis_high_low, t_l_high_low, vts_high_low, shade_high_
 
     # CITE: https://medium.com/@akaivdo/3-methods-to-save-plots-as-images-or-pdf-files-in-matplotlib-96a922fd2ce4#:~:text=Python%20Imaging%20Library).-,Method%201%3A%20Using%20savefig(),files%20to%20the%20output%20folder.
     # Save pdf to a specific path
-    pdf_path = os.path.join(os.getcwd(), 'Results', 'PDFs', "hflux_sens.pdf")
+    pdf_path = os.path.join(os.getcwd(), "Python", 'Results', 'PDFs', "hflux_sens.pdf")
     plots_pdf = PdfPages(pdf_path)
         # get_fignums Return list of existing 
     # figure numbers

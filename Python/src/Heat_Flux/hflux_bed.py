@@ -29,12 +29,12 @@ def hflux_bed(sed_type, water_temp, bed_temp, depth_of_measure, width_m, wp_m):
             case 4:
                 k_sed[i] = 2.5 #(W/m*C)
     
-    return heat_flux_bed(k_sed, water_temp, bed_temp, depth_of_measure, width_m, wp_m)
+    return (wp_m / width_m) * (-k_sed * ((water_temp - bed_temp) / depth_of_measure))
     
 ### Heat flux through the stream bed
-def heat_flux_bed(sed_type, water_temp, bed_temp, depth_of_measure, width_m, wp_m):
-    result = np.empty(len(sed_type))
-    for i in range(len(sed_type)):
-        result[i] = (wp_m[i] / width_m[i]) * (-sed_type[i] * ((water_temp[i] - bed_temp[i]) / depth_of_measure[i]))
-    return result
+# def heat_flux_bed(sed_type, water_temp, bed_temp, depth_of_measure, width_m, wp_m):
+#     result = np.empty(len(sed_type))
+#     for i in range(len(sed_type)):
+#         result[i] = (wp_m[i] / width_m[i]) * (-sed_type[i] * ((water_temp[i] - bed_temp[i]) / depth_of_measure[i]))
+#     return result
             
