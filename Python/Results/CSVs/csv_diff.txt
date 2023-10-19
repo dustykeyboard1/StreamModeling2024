@@ -1,0 +1,13 @@
+Filename: atmflux_data.csv
+Filename: solarflux_data.csv
+Filename: temp.csv
+Filename: heatflux_data.csv
+Filename: rel_err.csv
+Filename: solar_refl_data.csv
+Filename: temp_mod.csv
+Filename: sensible_data.csv
+Filename: evap_data.csv
+Filename: backrad_data.csv
+Filename: long_data.csv
+Filename: landflux_data.csv
+Filename: conduction_data.csv
