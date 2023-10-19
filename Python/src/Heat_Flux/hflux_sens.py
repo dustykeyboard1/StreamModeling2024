@@ -35,7 +35,7 @@ def multithreading_call(input_data_list):
     print()
     print("Beginning Multi-threaded calls to hflux...")
 
-    with ProcessPoolExecutor() as executor:
+    with ProcessPoolExecutor(max_workers=7) as executor:
         for result, _, _, _ in executor.map(hflux, input_data_list):
             results.append(result)
         executor.shutdown()
