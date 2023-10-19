@@ -9,6 +9,7 @@ import pandas as pd
 import numpy as np
 import sys
 import os
+import time
 
 # Dynamically find and set the root directory.
 root_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
@@ -62,7 +63,12 @@ def script_to_run():
     np.savetxt(f"{path}/conduction_data.csv", flux_data["conduction"], delimiter=",")
 
     print("...Done!")
+    print()
 
 
 if __name__ == "__main__":
+    start_time = time.time()
     script_to_run()
+    end_time = time.time()
+    runtime = end_time - start_time
+    print(f"Runtime: {runtime} seconds")
