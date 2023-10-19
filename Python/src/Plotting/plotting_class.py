@@ -13,13 +13,27 @@ class Plotting:
         """
         pass
 
-    def make3dplot(self, x, y, z, xlabel, ylabel, zlabel):
+    def class_assistant(self):
+        """
+        Print out class details.
+        """
+        help(type(self))
+
+    def make3dplot(self, x, y, z, xlabel, ylabel, zlabel, colorbar_label, title):
         """
         Create and return a return 3d plot.
-        Args: x (ndarray):
-                y (ndarray):
-                z (ndarray):
-        Return: Figure of 3d plot.
+
+        Args: x (ndarray): The x-axis data.
+                y (ndarray): The y-axis data.
+                z (ndarray): The z-axis data.
+                xlabel (string): The x-axis label.
+                ylabel (string): The y-axis label.
+                zlabel (string): The z-axis label.
+                colorbar_label (string): The colorbar label.
+                title (string): The title of the graph.
+
+        Returns:
+            Figure of 3d plot.
         """
         pass
 
@@ -49,7 +63,7 @@ class Plotting:
             ylimit (int): The limit for the y-axis.
             linewidth (float): The width of the line.
             marker (str): The marker style.
-            legend (list[str]): List of strings for the legend.
+            legend ([str]): List of strings for the legend.
 
         Returns:
             Figure: Figure of the residual plot.

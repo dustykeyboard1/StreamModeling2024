@@ -20,6 +20,15 @@ import matplotlib.pyplot as plt
 
 
 def multithreading_call(input_data_list):
+    """
+    Implements Multi-threading for calls to hflux.py
+
+    Args:
+        input_data_list ([dict]): list of dictionaries to be used as the parameter for hflux.py
+
+    Return:
+        results ({ndarray, {ndarrarys}, {ndarrays}})
+    """
     results = []
 
     # Launching Parallel Tasks - https://docs.python.org/3/library/concurrent.futures.html

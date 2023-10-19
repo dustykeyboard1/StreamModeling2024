@@ -24,8 +24,19 @@ def handle_errors(*args):
     Checks for errors related to the heat flux calculations.
         - Checks Value Errors for number of arguments.
         - Checks Type Errors for type/shape of arguments
-    Params: *args - list of arguements to be assigned.
-    Returns: rel_err, me, mae, mse, rmse, nrmse
+
+    Args:
+    *args (list): list of 6 or 7 arguements to be assigned in one of these 2 orders:
+                1: time_mod, dist_mod, temp_mod, dist_temp, time_temp, temp, unattend
+                2: time_mod, dist_mod, temp_mod, dist_temp, time_temp, temp
+
+    Return:
+        rel_err (integer): relative error,
+        me (float): mean residual error,
+        mae (float): mean absoulute residual error,
+        mse (float): mean squared error,
+        rmse (float): Root Mean Squared Error
+        nrmse (float): Normalized Root Mean Square
     """
 
     # Initialize variables.
