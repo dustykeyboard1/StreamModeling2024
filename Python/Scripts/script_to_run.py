@@ -9,6 +9,7 @@ import pandas as pd
 import numpy as np
 import sys
 import os
+from datetime import datetime
 
 #Dynamically find and set the root directory. 
 root_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
@@ -27,6 +28,7 @@ def script_to_run():
     '''
 
     #Read in input data from helper funciton.
+    t1 = datetime.now()
     filename = os.path.join(os.getcwd(), 'Data', 'example_data.xlsx')
     input_data = readFromFile(filename)
 
@@ -54,7 +56,8 @@ def script_to_run():
     np.savetxt(f"{path}/evap_data.csv", flux_data['evap'], delimiter=",")
     np.savetxt(f"{path}/sensible_data.csv", flux_data['sensible'], delimiter=",")
     np.savetxt(f"{path}/conduction_data.csv", flux_data['conduction'], delimiter=",")
-
+    t2 = datetime.now()
     print("...Done!")
+    print("total time: ", t2-t1)
 
 script_to_run()

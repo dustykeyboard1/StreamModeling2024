@@ -9,8 +9,8 @@ import os
 import sys
 import math
 from datetime import datetime
-from scipy.sparse import csc_matrix
-from scipy.sparse.linalg import spsolve
+from scipy.sparse import csc_matrix, dia_matrix
+import scipy.sparse.linalg as linalg
 import matplotlib.pyplot as plt
 import pandas as pd
 from matplotlib.backends.backend_pdf import PdfPages
@@ -322,27 +322,27 @@ def hflux(input_data):
 
             m = np.zeros(width_m.shape)
             d = np.zeros(width_m.shape)     
+
             for i in range(timesteps - 1):
                 m[:,i] = (dt * (width_m[:,i] * heat_flux[:,i]) / ((rho_water * c_water)) / area_m[:,i])
                 d[0,i] = ((g[0,i] * t[0,i]) + (o_c[0,i] * temp_x0_dt[i]) - (p_c[0,i] * t[1,i]) + (k[0,i] * t_l_m[0]) + m[0,i]) - (a_c[0,i] * temp_x0_dt[i+1])
                 d[r - 1,i] = (g[r - 1,i] * t[r - 1,i]) + (o_c[r - 1,i] * t[r-2, i]) - (p_c[r - 1,i] * t[r - 1,i]) + (k[r - 1,i] * t_l_m[r - 1]) + m[r - 1,i]
                 d[1:r-1,i]=(g[1:r-1,i] * t[1:r-1,i]) + (o_c[1:r-1,i] * t[0:r-2,i]) - (p_c[1:r-1,i] * t[2:r,i]) + (k[1:r-1,i] * t_l_m[1:r-1]) + m[1:r-1,i]
-                
-                A = np.zeros((r, r))
-                for j in range(r - 1):
-                    A[j + 1, j] = a[j+1, i]
-                    A[j, j] = b[j, i]
-                    A[j, j + 1] = c[j, i]
-                    A[r - 1, r - 1] = b[r - 1, i] + c[r - 1, i]
+
+                b_row = np.append(b[:r-1, i], [b[r - 1, i] + c[r - 1, i]])
+                a_row = np.append(a[1:r, i], [0])
+                c_row = np.append([0], c[:r-1, i])
+                data = np.stack((a_row, b_row, c_row))
+                offsets = np.array([-1, 0, 1])
+                A = dia_matrix((data, offsets), shape=(r, r))
 
                 A = csc_matrix(A)
-                t[:, i + 1] = spsolve(A, d[:,i])
+                t[:, i + 1] = linalg.splu(A).solve(d[:,i])
 
                 heat_flux[:,i+1], shortwave[:,i+1], longwave[:,i+1],atm[:,i+1], back[:,i+1], land[:,i+1], latent[:,i+1],sensible[:,i+1], bed[:,i+1] = hflux_flux(input_data["settings"],solar_rad_mat[:,i+1],air_temp_mat[:,i+1],
                     rel_hum_mat[:,i+1],t[:,i+1],wind_speed_mat[:,i+1],z,
                     sed,bed_temp_dt[:,i+1],depth_of_meas_m,
                     shade_m,vts_m,cl[:,i+1],sol_refl[i+1],wp_m[:,i+1], width_m[:,i+1])
-
         # Overflow error! Will come back to it for beta
         # case 2:
         #     t = np.zeros((r, timesteps))
@@ -548,8 +548,6 @@ def hflux(input_data):
     # to avoid labels overlapping
     # cite: https://saturncloud.io/blog/how-to-improve-label-placement-for-matplotlib-scatter-chart/#:~:text=Matplotlib%20provides%20a%20feature%20called,the%20labels%20to%20minimize%20overlap.
     plt.tight_layout()
-
-    
 
     #Plot of heat fluxes: comparison 
     plt.figure()
