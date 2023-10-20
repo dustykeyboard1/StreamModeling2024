@@ -5,6 +5,10 @@ Date: 10-19-2023
 Functionality: Construct a plotting class for plotting capabilities.
 """
 
+import matplotlib.pyplot as plt
+import numpy as np
+from scipy.ndimage import gaussian_filter
+
 
 class Plotting:
     def __init__(self):
@@ -35,7 +39,32 @@ class Plotting:
         Returns:
             Figure of 3d plot.
         """
-        pass
+        # 3D plot of stream temperature
+        fig = plt.figure()
+
+        # Create a 3D axis
+        ax = fig.add_subplot(111, projection="3d")
+
+        # Create a surface plot
+        # Make x, y axis take different length - https://stackoverflow.com/questions/46607106/python-3d-plot-with-different-array-sizes
+        x_sized, y_sized = np.meshgrid(x, y)
+        # ax.plot_surface() - https://matplotlib.org/stable/plot_types/3D/surface3d_simple.html#plot-surface-x-y-z
+
+        surface = ax.plot_surface(
+            x_sized, y_sized, z, cmap="jet", rstride=10, cstride=10
+        )
+
+        # Add a colorbar with label
+        cbar = fig.colorbar(surface)
+        cbar.set_label(colorbar_label, fontsize=11, fontweight="bold")
+
+        ax.set_title(title, fontsize=12, fontweight="bold")
+        ax.set_ylabel(ylabel, fontsize=11)
+        ax.set_xlabel(xlabel, fontsize=11)
+        ax.set_zlabel(zlabel, fontsize=11)
+        ax.invert_xaxis()
+
+        return fig
 
     def make_basic_plot(
         self,

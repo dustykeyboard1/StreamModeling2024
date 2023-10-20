@@ -19,6 +19,7 @@ sys.path.append(root_dir)
 from src.Utilities import Input_reader
 from src.Heat_Flux.heatflux_calculations import HeatFluxCalculations
 from src.Utilities.interpolation import interpolation
+from src.Plotting.plotting_class import Plotting as plc
 
 
 def hflux(input_data):
@@ -604,32 +605,39 @@ def hflux(input_data):
         ax.invert_yaxis()
 
         # 3D plot of stream temperature
-        fig = plt.figure()
+        # fig = plt.figure()
 
-        # Create a 3D axis
-        ax = fig.add_subplot(111, projection="3d")
+        # # Create a 3D axis
+        # ax = fig.add_subplot(111, projection="3d")
 
-        # Create a surface plot
-        # Make x, y axis take different length - https://stackoverflow.com/questions/46607106/python-3d-plot-with-different-array-sizes
-        time_mod_sized, dist_mod_sized = np.meshgrid(time_mod, dist_mod)
-        # ax.plot_surface() - https://matplotlib.org/stable/plot_types/3D/surface3d_simple.html#plot-surface-x-y-z
-        surface = ax.plot_surface(dist_mod_sized, time_mod_sized, t, cmap="jet")
+        # # Create a surface plot
+        # # Make x, y axis take different length - https://stackoverflow.com/questions/46607106/python-3d-plot-with-different-array-sizes
+        # time_mod_sized, dist_mod_sized = np.meshgrid(time_mod, dist_mod)
+        # # ax.plot_surface() - https://matplotlib.org/stable/plot_types/3D/surface3d_simple.html#plot-surface-x-y-z
+        # surface = ax.plot_surface(dist_mod_sized, time_mod_sized, t, cmap="jet")
 
-        # Add a colorbar with label
-        cbar = fig.colorbar(surface)
-        cbar.set_label("Temperature (°C)", fontsize=11, fontweight="bold")
+        # # Add a colorbar with label
+        # cbar = fig.colorbar(surface)
+        # cbar.set_label("Temperature (°C)", fontsize=11, fontweight="bold")
 
-        # Set title and labels
+        print()
+        print("INITIALZ")
+        # # Set title and labels
         plot_title = "Modeled Stream Temperature"
         ylab = "Time (min)"
         xlab = "Distance (m)"
         zlab = "Temp (°C)"
-        ax.set_title(plot_title, fontsize=12, fontweight="bold")
-        ax.set_ylabel(ylab, fontsize=11)
-        ax.set_xlabel(xlab, fontsize=11)
-        ax.set_zlabel(zlab, fontsize=11)
-        ax.invert_xaxis()
-
+        cbar = "Temperature (°C)"
+        # ax.set_title(plot_title, fontsize=12, fontweight="bold")
+        # ax.set_ylabel(ylab, fontsize=11)
+        # ax.set_xlabel(xlab, fontsize=11)
+        # ax.set_zlabel(zlab, fontsize=11)
+        # ax.invert_xaxis()
+        p = plc()
+        fig = p.make3dplot(time_mod, dist_mod, t, xlab, ylab, zlab, cbar, plot_title)
+        fig.show()
+        input("WAITING ON INPUT...")
+        sys.exit()
         # Plot of heat fluxes
         fig = plt.figure()
 
