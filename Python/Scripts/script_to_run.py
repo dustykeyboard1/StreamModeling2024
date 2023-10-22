@@ -34,15 +34,15 @@ def script_to_run():
 
     # Use helper functions (hflux(), handle_errors() and sens())  to calculate values.
     # Helper functions will also plot and display results.
-    temp_mod, matrix_data, node_data, flux_data = hflux(input_data)
-    rel_err, me, mae, mse, rmse, nrmse = handle_errors(
-        input_data["time_mod"][0],
-        input_data["dist_mod"][0],
-        temp_mod,
-        input_data["temp_t0_data"][0],
-        input_data["temp_x0_data"][0],
-        input_data["temp"],
-    )
+    # temp_mod, matrix_data, node_data, flux_data = hflux(input_data)
+    # rel_err, me, mae, mse, rmse, nrmse = handle_errors(
+    #     input_data["time_mod"][0],
+    #     input_data["dist_mod"][0],
+    #     temp_mod,
+    #     input_data["temp_t0_data"][0],
+    #     input_data["temp_x0_data"][0],
+    #     input_data["temp"],
+    # )
     sens = hflux_sens(input_data, [-0.01, 0.01], [-2, 2], [-0.1, 0.1], [-0.1, 0.1])
 
     # Save output to CSV files using Numpy.

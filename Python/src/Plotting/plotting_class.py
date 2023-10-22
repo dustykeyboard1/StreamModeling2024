@@ -73,8 +73,6 @@ class Plotting:
         xlabel,
         ylabel,
         title,
-        xlimit=None,
-        ylimit=None,
         linewidth=None,
         marker=None,
         legend=None,
@@ -105,6 +103,48 @@ class Plotting:
         plt.ylabel(ylabel)
         plt.xlabel(xlabel)
         plt.axis(axis)
+        plt.autoscale(enable=True)
+        return fig
+
+    def make_multiple_line_plot(
+        self,
+        low_x,
+        low_y,
+        base_x,
+        base_y,
+        high_x,
+        high_y,
+        title,
+        xlabel,
+        ylabel,
+    ):
+        """
+        Creates a 3 line plot for low, base and high.
+
+        Args:
+            low_x (ndarray): X data for low.
+            low_y (ndarray): Y data for low.
+            base_x (ndarray): X data for base.
+            base_y (ndarray): Y data for base.
+            high_x (ndarray): X data for high.
+            high_y (ndarray): Y data for high.
+            xlimit ([ndarray]): limit for the X axis.
+            ylimit ([ndarray]): limit for the Y axis.
+
+        Return:
+            Figure with plotted data.
+        """
+        fig = plt.figure()
+
+        plt.plot(low_x, low_y, "--b", linewidth=2)
+        plt.plot(base_x, base_y, "k", linewidth=2)
+        plt.plot(high_x, high_y, "--r", linewidth=2)
+        plt.title(title, fontweight="bold")
+        plt.xlabel(xlabel)
+        plt.ylabel(ylabel)
+        plt.autoscale(enable=True)
+        plt.legend(["Low", "Base", "High"])
+        plt.tight_layout()
         return fig
 
         def make_residual_plot(

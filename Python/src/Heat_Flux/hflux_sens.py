@@ -15,8 +15,11 @@ root_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
 sys.path.append(root_dir)
 
 from src.Core.hflux import hflux
+from src.Plotting.plotting_class import Plotting as p
 import numpy as np
 import matplotlib.pyplot as plt
+import time
+import multiprocessing
 
 
 def multithreading_call(input_data_list):
@@ -29,18 +32,21 @@ def multithreading_call(input_data_list):
     Return:
         results ({ndarray, {ndarrarys}, {ndarrays}})
     """
+    start_time = time.time()
     results = []
 
     # Launching Parallel Tasks - https://docs.python.org/3/library/concurrent.futures.html
     print()
     print("Beginning Multi-threaded calls to hflux...")
 
-    with ProcessPoolExecutor() as executor:
+    with ProcessPoolExecutor(max_workers=(multiprocessing.cpu_count() - 1)) as executor:
         for result, _, _, _ in executor.map(hflux, input_data_list):
             results.append(result)
         executor.shutdown()
     print()
     print("Closed multithreading executer.")
+    end_time = time.time()
+    print(f"Time for multithreading: {end_time - start_time} seconds.")
     return results
 
 
@@ -186,83 +192,126 @@ def hflux_sens(input_data, dis_high_low, t_l_high_low, vts_high_low, shade_high_
     # Make sensitivity plots.
     # Following all axes, line, label and function parameters from MATLAB code.
     # Reshape used to align plotting structures - https://numpy.org/doc/stable/reference/generated/numpy.reshape.html
-    plt.figure()
-    plt.subplot(2, 2, 1)
+    # plt.figure()
+    # plt.subplot(2, 2, 1)
 
-    plt.plot(
-        input_data["dist_mod"].reshape(-1), sens["lowdis"]["mean"], "--b", linewidth=2
-    )
-    plt.plot(input_data["dist_mod"].reshape(-1), sens["base"]["mean"], "k", linewidth=2)
-    plt.plot(
-        input_data["dist_mod"].reshape(-1), sens["highdis"]["mean"], "--r", linewidth=2
-    )
-    # Follow X-Limits set by MATLAB code.
-    plt.xlim = [
+    # plt.plot(
+    #     input_data["dist_mod"].reshape(-1), sens["lowdis"]["mean"], "--b", linewidth=2
+    # )
+    # plt.plot(input_data["dist_mod"].reshape(-1), sens["base"]["mean"], "k", linewidth=2)
+    # plt.plot(
+    #     input_data["dist_mod"].reshape(-1), sens["highdis"]["mean"], "--r", linewidth=2
+    # )
+    # # Follow X-Limits set by MATLAB code.
+    # plt.xlim = [
+    #     np.min(input_data["temp_t0_data"][:, 0]),
+    #     np.max(input_data["temp_t0_data"][:, 0]),
+    # ]
+    # plt.title("Discharge", fontweight="bold")
+    # plt.xlabel("Distance Downstream(m)")
+    # plt.ylabel("Temperature (°C)")
+    # plt.legend(["Low", "Base", "High"])
+
+    # plt.subplot(2, 2, 2)
+    # plt.plot(
+    #     input_data["dist_mod"].reshape(-1), sens["lowT_L"]["mean"], "--b", linewidth=2
+    # )
+    # plt.plot(input_data["dist_mod"].reshape(-1), sens["base"]["mean"], "k", linewidth=2)
+    # plt.plot(
+    #     input_data["dist_mod"].reshape(-1), sens["highT_L"]["mean"], "--r", linewidth=2
+    # )
+    # # Follow X-Limits set by MATLAB code.
+    # plt.xlim = [
+    #     np.min(input_data["temp_t0_data"][:, 0]),
+    #     np.max(input_data["temp_t0_data"][:, 0]),
+    # ]
+    # plt.title("Groundwater Temperature", fontweight="bold")
+    # plt.ylabel("Temperature (°C)")
+    # plt.xlabel("Distance Downstream (m)")
+    # plt.legend(["Low", "Base", "High"])
+
+    # plt.subplot(2, 2, 3)
+    # plt.plot(
+    #     input_data["dist_mod"].reshape(-1), sens["lowvts"]["mean"], "--b", linewidth=2
+    # )
+    # plt.plot(input_data["dist_mod"].reshape(-1), sens["base"]["mean"], "k", linewidth=2)
+    # plt.plot(
+    #     input_data["dist_mod"].reshape(-1), sens["highvts"]["mean"], "--r", linewidth=2
+    # )
+    # # Follow X-Limits set by MATLAB code.
+    # plt.xlim = [
+    #     np.min(input_data["temp_t0_data"][:, 0]),
+    #     np.max(input_data["temp_t0_data"][:, 0]),
+    # ]
+    # plt.title("View to Sky Coefficient", fontweight="bold")
+    # plt.xlabel("Distance Downstream (m)")
+    # plt.ylabel("Temperature (°C)")
+    # plt.legend(["Low", "Base", "High"])
+
+    # plt.subplot(2, 2, 4)
+    # plt.plot(
+    #     input_data["dist_mod"].reshape(-1), sens["lowshade"]["mean"], "--b", linewidth=2
+    # )
+    # plt.plot(input_data["dist_mod"].reshape(-1), sens["base"]["mean"], "k", linewidth=2)
+    # plt.plot(
+    #     input_data["dist_mod"].reshape(-1),
+    #     sens["highshade"]["mean"],
+    #     "--r",
+    #     linewidth=2,
+    # )
+    # plt.xlim = [
+    #     np.min(input_data["temp_t0_data"][:, 0]),
+    #     np.max(input_data["temp_t0_data"][:, 0]),
+    # ]
+    # # Follow X-Limits set by MATLAB code.
+    # plt.title("Shade", fontweight="bold")
+    # plt.xlabel("Distance Downstream (m)")
+    # plt.ylabel("Temperature (°C)")
+    # plt.legend(["Low", "Base", "High"])
+    # plt.tight_layout()
+
+    x1 = input_data["dist_mod"].reshape(-1)
+    y1 = sens["lowshade"]["mean"]
+    x2 = input_data["dist_mod"].reshape(-1)
+    y2 = sens["base"]["mean"]
+    x3 = input_data["dist_mod"].reshape(-1)
+    y3 = sens["highshade"]["mean"]
+
+    print(f"X1 shape {x1.shape}")
+    print(f"y1 shape {y1.shape}")
+    print(f"x2 shape {x2.shape}")
+    print(f"y2 shape {y2.shape}")
+    print(f"X3 shape {x3.shape}")
+    print(f"y3 shape {y3.shape}")
+
+    print(type(y1))
+    print(type(y2))
+    print(type(y3))
+
+    title = "Shade"
+    xlab = "Distance Downstream (m)"
+    ylab = "Temperature (°C)"
+    xlimit = [
         np.min(input_data["temp_t0_data"][:, 0]),
         np.max(input_data["temp_t0_data"][:, 0]),
     ]
-    plt.title("Discharge", fontweight="bold")
-    plt.xlabel("Distance Downstream(m)")
-    plt.ylabel("Temperature (°C)")
-    plt.legend(["Low", "Base", "High"])
 
-    plt.subplot(2, 2, 2)
-    plt.plot(
-        input_data["dist_mod"].reshape(-1), sens["lowT_L"]["mean"], "--b", linewidth=2
+    p_class = p()
+    fig = p_class.make_multiple_line_plot(
+        low_x=x1,
+        low_y=y1,
+        base_x=x2,
+        base_y=y2,
+        high_x=x3,
+        high_y=y3,
+        title=title,
+        xlabel=xlab,
+        ylabel=ylab,
+        xlimit=xlimit,
     )
-    plt.plot(input_data["dist_mod"].reshape(-1), sens["base"]["mean"], "k", linewidth=2)
-    plt.plot(
-        input_data["dist_mod"].reshape(-1), sens["highT_L"]["mean"], "--r", linewidth=2
-    )
-    # Follow X-Limits set by MATLAB code.
-    plt.xlim = [
-        np.min(input_data["temp_t0_data"][:, 0]),
-        np.max(input_data["temp_t0_data"][:, 0]),
-    ]
-    plt.title("Groundwater Temperature", fontweight="bold")
-    plt.ylabel("Temperature (°C)")
-    plt.xlabel("Distance Downstream (m)")
-    plt.legend(["Low", "Base", "High"])
-
-    plt.subplot(2, 2, 3)
-    plt.plot(
-        input_data["dist_mod"].reshape(-1), sens["lowvts"]["mean"], "--b", linewidth=2
-    )
-    plt.plot(input_data["dist_mod"].reshape(-1), sens["base"]["mean"], "k", linewidth=2)
-    plt.plot(
-        input_data["dist_mod"].reshape(-1), sens["highvts"]["mean"], "--r", linewidth=2
-    )
-    # Follow X-Limits set by MATLAB code.
-    plt.xlim = [
-        np.min(input_data["temp_t0_data"][:, 0]),
-        np.max(input_data["temp_t0_data"][:, 0]),
-    ]
-    plt.title("View to Sky Coefficient", fontweight="bold")
-    plt.xlabel("Distance Downstream (m)")
-    plt.ylabel("Temperature (°C)")
-    plt.legend(["Low", "Base", "High"])
-
-    plt.subplot(2, 2, 4)
-    plt.plot(
-        input_data["dist_mod"].reshape(-1), sens["lowshade"]["mean"], "--b", linewidth=2
-    )
-    plt.plot(input_data["dist_mod"].reshape(-1), sens["base"]["mean"], "k", linewidth=2)
-    plt.plot(
-        input_data["dist_mod"].reshape(-1),
-        sens["highshade"]["mean"],
-        "--r",
-        linewidth=2,
-    )
-    plt.xlim = [
-        np.min(input_data["temp_t0_data"][:, 0]),
-        np.max(input_data["temp_t0_data"][:, 0]),
-    ]
-    # Follow X-Limits set by MATLAB code.
-    plt.title("Shade", fontweight="bold")
-    plt.xlabel("Distance Downstream (m)")
-    plt.ylabel("Temperature (°C)")
-    plt.legend(["Low", "Base", "High"])
-    plt.tight_layout()
+    fig.show()
+    input("Press enter to close.")
+    sys.exit()
 
     # Calculate total percent change in stream temperature
     change = np.array(
