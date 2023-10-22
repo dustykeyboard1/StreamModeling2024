@@ -66,18 +66,19 @@ class Plotting:
 
         return fig
 
-    def make_basic_plot(
+    def make_single_plot(
         self,
         x,
         y,
-        title,
         xlabel,
         ylabel,
-        xlimit,
-        ylimit,
+        title,
+        xlimit=None,
+        ylimit=None,
         linewidth=None,
         marker=None,
         legend=None,
+        axis=None,
     ):
         """
         Creates a basic line plot.
@@ -93,12 +94,18 @@ class Plotting:
             linewidth (float): The width of the line.
             marker (str): The marker style.
             legend ([str]): List of strings for the legend.
+            axis ([ndarray]): axis parameters for plots.
 
         Returns:
             Figure: Figure of the residual plot.
         """
-
-        pass
+        fig = plt.figure()
+        plt.plot(x, y, marker)
+        plt.title(title, fontweight="bold")
+        plt.ylabel(ylabel)
+        plt.xlabel(xlabel)
+        plt.axis(axis)
+        return fig
 
         def make_residual_plot(
             self, x, y, xlabel, ylabel, title, colorbar_label, extent

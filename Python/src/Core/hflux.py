@@ -635,25 +635,42 @@ def hflux(input_data):
         # ax.invert_xaxis()
         p = plc()
         fig = p.make3dplot(time_mod, dist_mod, t, xlab, ylab, zlab, cbar, plot_title)
-        fig.show()
-        input("WAITING ON INPUT...")
-        sys.exit()
+        # fig.show()
         # Plot of heat fluxes
         fig = plt.figure()
 
         # Subplot 1
         plt.subplot(3, 2, 1)
-        plt.plot(time_mod, np.mean(heat_flux / 60, axis=0), "k")
-        plt.title("Total Heat Flux", fontweight="bold")
-        plt.ylabel("Energy Flux (W/m^2)", fontweight="bold")
-        plt.axis(
-            [
-                np.min(time_mod),
-                np.max(time_mod),
-                np.min(np.mean(heat_flux / 60, axis=0)),
-                np.max(np.mean(heat_flux / 60, axis=0)),
-            ]
-        )
+
+        x = time_mod
+        y = np.mean(heat_flux / 60, axis=0)
+        marker = "k"
+        title = "Total Heat Flux"
+        ylabel = "Energy Flux (W/m^2)"
+        xlabel = "X axis"
+        axis = [
+            np.min(time_mod),
+            np.max(time_mod),
+            np.min(np.mean(heat_flux / 60, axis=0)),
+            np.max(np.mean(heat_flux / 60, axis=0)),
+        ]
+        fig = p.make_single_plot(x, y, xlabel, ylabel, title, marker=marker, axis=axis)
+        fig.show()
+        input("Press enter to close.")
+        sys.exit()
+        # plt.plot(time_mod, np.mean(heat_flux / 60, axis=0), "k")
+        # plt.title("Total Heat Flux", fontweight="bold")
+        # plt.ylabel("Energy Flux (W/m^2)", fontweight="bold")
+        # plt.axis(
+        #     [
+        #         np.min(time_mod),
+        #         np.max(time_mod),
+        #         np.min(np.mean(heat_flux / 60, axis=0)),
+        #         np.max(np.mean(heat_flux / 60, axis=0)),
+        #     ]
+        # )
+        input("WAITING ON INPUT...")
+        sys.exit()
 
         # Subplot 2
         plt.subplot(3, 2, 2)
