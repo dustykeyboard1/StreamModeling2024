@@ -147,23 +147,30 @@ class Plotting:
         plt.tight_layout()
         return fig
 
-        def make_residual_plot(
-            self, x, y, xlabel, ylabel, title, colorbar_label, extent
-        ):
-            """
-            Creates a residual plot (heat map).
+    def make_residual_plot(self, data, xlabel, ylabel, title, colorbar_label, extent):
+        """
+        Creates a residual plot (heat map).
 
-            Args:
-                x (ndarray): The x-axis data.
-                y (ndarray): The y-axis data.
-                xlabel (str): The label for the x-axis.
-                ylabel (str): The label for the y-axis.
-                title (str): The title of the graph.
-                colorbar_label (str): The label for the colorbar.
-                extent (list[float]): List of floats to set the extent of the graph.
+        Args:
+            data (ndarray): The heatmap data.
+            xlabel (str): The label for the x-axis.
+            ylabel (str): The label for the y-axis.
+            title (str): The title of the graph.
+            colorbar_label (str): The label for the colorbar.
+            extent (list[float]): List of floats to set the extent of the graph.
 
-            Returns:
-                Figure: Figure of line plot.
-            """
+        Returns:
+            Figure: Figure of line plot.
+        """
 
-        pass
+        fig, ax = plt.subplots()
+        plt.imshow(data, aspect="auto", cmap="jet", origin="lower", extent=extent)
+        plt.colorbar(label=colorbar_label)
+        plt.axis("square")
+        plt.title(title, fontsize=11, fontweight="bold")
+        plt.xlabel(xlabel, fontsize=9)
+        plt.ylabel(ylabel, fontsize=9)
+        plt.autoscale(enable=True)
+        plt.tight_layout()
+        ax.invert_yaxis()
+        return fig

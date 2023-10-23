@@ -620,8 +620,8 @@ def hflux(input_data):
         # cbar = fig.colorbar(surface)
         # cbar.set_label("Temperature (°C)", fontsize=11, fontweight="bold")
 
-        print()
-        print("INITIALZ")
+        # print()
+        # print("INITIALZ")
         # # Set title and labels
         plot_title = "Modeled Stream Temperature"
         ylab = "Time (min)"
@@ -655,9 +655,9 @@ def hflux(input_data):
             np.max(np.mean(heat_flux / 60, axis=0)),
         ]
         fig = p.make_single_plot(x, y, xlabel, ylabel, title, marker=marker, axis=axis)
-        fig.show()
-        input("Press enter to close.")
-        sys.exit()
+        # fig.show()
+        # input("Press enter to close.")
+        # sys.exit()
         # plt.plot(time_mod, np.mean(heat_flux / 60, axis=0), "k")
         # plt.title("Total Heat Flux", fontweight="bold")
         # plt.ylabel("Energy Flux (W/m^2)", fontweight="bold")
@@ -669,8 +669,8 @@ def hflux(input_data):
         #         np.max(np.mean(heat_flux / 60, axis=0)),
         #     ]
         # )
-        input("WAITING ON INPUT...")
-        sys.exit()
+        # input("WAITING ON INPUT...")
+        # sys.exit()
 
         # Subplot 2
         plt.subplot(3, 2, 2)

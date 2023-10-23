@@ -17,6 +17,7 @@ root_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
 sys.path.append(root_dir)
 
 from src.Utilities.interpolation import interpolation
+from src.Plotting.plotting_class import Plotting
 
 
 def handle_errors(*args):
@@ -131,24 +132,36 @@ def handle_errors(*args):
     # Begin plotting...
     # Set all labels/titles, font parametets, and axis ratio limits according to MATLAB code.
     if not unattend:
-        _, ax = plt.subplots()
+        # _, ax = plt.subplots()
         residuals = temp - temp_dt
-        # Create 2D image from 2D ndarray.
-        # Matplotlib Imshow - https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.imshow.html
-        plt.imshow(
+        # # Create 2D image from 2D ndarray.
+        # # Matplotlib Imshow - https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.imshow.html
+        # plt.imshow(
+        #     residuals,
+        #     aspect="auto",
+        #     cmap="jet",
+        #     origin="lower",
+        #     extent=[0, 1400, 0, 1400],
+        # )
+        # # Matplotlib Color Bar - https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.colorbar.html
+        # plt.colorbar(label="Model Residuals (°C)")
+        # plt.axis("square")
+        # plt.title("Modeled Temperature Residuals", fontsize=11, fontweight="bold")
+        # plt.xlabel("Time (min)", fontsize=9, fontweight="bold")
+        # plt.ylabel("Distance (m)", fontsize=9, fontweight="bold")
+        # ax.invert_yaxis()
+        p_class = Plotting()
+        fig = p_class.make_residual_plot(
             residuals,
-            aspect="auto",
-            cmap="jet",
-            origin="lower",
-            extent=[0, 1400, 0, 1400],
+            "Time (min)",
+            "Distance (m)",
+            "Modeled Temperature Residuals",
+            "Model Residuals (°C)",
+            [0, 1400, 0, 1400],
         )
-        # Matplotlib Color Bar - https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.colorbar.html
-        plt.colorbar(label="Model Residuals (°C)")
-        plt.axis("square")
-        plt.title("Modeled Temperature Residuals", fontsize=11, fontweight="bold")
-        plt.xlabel("Time (min)", fontsize=9, fontweight="bold")
-        plt.ylabel("Distance (m)", fontsize=9, fontweight="bold")
-        ax.invert_yaxis()
+        fig.show()
+        input("Press enter.")
+        sys.exit()
 
         plt.figure()
         plt.subplot(2, 1, 1)
