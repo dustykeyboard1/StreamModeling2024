@@ -3,31 +3,22 @@ import numpy as np
 import os
 
 class DataTable:
-    def __init__(self, filename):
-        data = pd.ExcelFile(filename)
-        sheet_names = data.sheet_names
-        sheet_num = len(sheet_names)
-
-        input_data = {}
-        for i in range(0, sheet_num):
-            d = pd.read_excel(data, sheet_names[i]).values.transpose()
-            self.formatChecking(len(d), sheet_names[i])
-            input_data[sheet_names[i]] = d
-
-        self.method = input_data["settings"][0][0]
+    def __init__(self, file_name):
+        input_data = self._input_reader(file_name)
         self.unattend = bool(input_data["settings"][0][4])
-
+        # initialize variables
+        self.method = input_data["settings"][0][0]
         if not self.unattend:
             print('Assigning variable names...')
+        self.settings = input_data["settings"]
 
-        # initialize variables
         self.time_mod = input_data["time_mod"][0]
         self.dist_mod = input_data["dist_mod"][0]
 
         self.time_temp = input_data["temp_x0_data"][0]
         self.temp_x0 = input_data["temp_x0_data"][1]
 
-        self.dist = input_data["temp_t0_data"][0]
+        self.dist_temp = input_data["temp_t0_data"][0]
         self.temp_t0 = input_data["temp_t0_data"][1]
 
         self.dist_stdim = input_data["dim_data"][0]
@@ -74,8 +65,25 @@ class DataTable:
         self.t_zone = input_data["site_info"][0, 2]
         self.z = input_data["site_info"][0, 3]
 
+        self.temp = input_data['temp']
 
-    def _formatChecking(colNum, sheet_name):
+    def set_data(attribute_name):
+        pass
+
+    def _input_reader(self, file_name):
+        data = pd.ExcelFile(file_name)
+        sheet_names = data.sheet_names
+        sheet_num = len(sheet_names)
+
+        input_data = {}
+        for i in range(0, sheet_num):
+            d = pd.read_excel(data, sheet_names[i]).values.transpose()
+            self._formatChecking(len(d), sheet_names[i])
+            input_data[sheet_names[i]] = d
+
+        return input_data
+
+    def _formatChecking(self, colNum, sheet_name):
         if sheet_name in ("temp_x0_data", "temp_t0_data", "T_L_data",
                         "bed_data1", "cloud_data") and colNum != 2:
             print(sheet_name + " must contain 2 columns of data!")
@@ -87,6 +95,33 @@ class DataTable:
             print(sheet_name + " must contain 3 columns of data!")
         elif sheet_name in ("site_info", "time_mod", "dist_mod", "sed_type") and colNum != 1: #what is a cell array? Column vector?
             print(sheet_name + " must contain 1 columns of data!")
+
+        # #Check for Boolean. 
+        # if not self.unattend:
+        #     print("Checking input arguments...")
+
+        #Type check variables to ensure they are column vectors by checking number of dimnesions and shape. 
+        # ndim - https://numpy.org/doc/stable/reference/generated/numpy.ndarray.ndim.html
+        # shape - https://numpy.org/doc/stable/reference/generated/numpy.shape.html
+        # if self.time_mod.ndim != 1:
+        #     raise TypeError("Time_m must be a column vector")
+        # if self.dist_mod.ndim != 1:
+        #     raise TypeError("Dist_m must be a column vector")
+        # if self.time_temp.ndim != 1:
+        #     raise TypeError("Time_temp must be a column vector")
+        # if self.dist_temp.ndim != 1:
+        #     raise TypeError("Dist_temp must be a column vector.")
+
+        #Ensure temp_mod and temp are ndarrays.
+        #Isinstance - https://docs.python.org/3/library/functions.html#isinstance
+        # if not isinstance(self.temp_mod, np.ndarray): 
+        #     raise TypeError("Temp_mod must be a numpy array representing a matrix.")
+        # if not isinstance(self.temp, np.ndarray):
+        #     raise TypeError("Temp must be a numpy array representing a matrix.")
+        
+        # if not self.unattend:
+        #     print('...Done!')
+
 
     
 

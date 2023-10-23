@@ -17,31 +17,31 @@ from src.Core.hflux import hflux
 import numpy as np
 import matplotlib.pyplot as plt
 
-def hflux_sens(input_data, dis_high_low, t_l_high_low, vts_high_low, shade_high_low):
+def hflux_sens(data_table, dis_high_low, t_l_high_low, vts_high_low, shade_high_low):
     '''
     Implementation of hflux_sens.m
-    Parameters: input_data,dis_high_low,t_l_high_low,vts_high_low,shade_high_low
+    Parameters: data_table,dis_high_low,t_l_high_low,vts_high_low,shade_high_low
     Returns: Sens - dictionary
     '''
 
     print("Calculating high and low values...")
 
-    input_data["settings"][0][4] = 1
+    data_table["settings"][0][4] = 1
 
     # Create low and high values for each parameter.
-    dis_data_1 = input_data['dis_data'][1:].transpose()
+    dis_data_1 = data_table['dis_data'][1:].transpose()
     dis_low = dis_data_1 + dis_high_low[0]
     dis_high = dis_data_1 + dis_high_low[1]
 
-    t_l_data_1 = input_data['T_L_data'][1]
+    t_l_data_1 = data_table['T_L_data'][1]
     t_l_low = t_l_data_1 + t_l_high_low[0]
     t_l_high = t_l_data_1 + t_l_high_low[1]
 
-    vts = input_data['shade_data'][2]
+    vts = data_table['shade_data'][2]
     vts_low = vts + vts_high_low[0]
     vts_high = vts + vts_high_low[1]
 
-    shade_1 = input_data['shade_data'][1]
+    shade_1 = data_table['shade_data'][1]
     shade_low = shade_1 + shade_high_low[0]
     shade_high = shade_1 + shade_high_low[1]
 
@@ -50,42 +50,42 @@ def hflux_sens(input_data, dis_high_low, t_l_high_low, vts_high_low, shade_high_
     # Use newaxis to index arrays.
     # np.hstack - https://numpy.org/devdocs/reference/generated/numpy.hstack.html#numpy-hstack
     # np.newaxis - https://numpy.org/devdocs/reference/constants.html#numpy.newaxis
-    dis_data_0 = input_data['dis_data'][0]
+    dis_data_0 = data_table['dis_data'][0]
     dis_data_low = np.hstack((dis_data_0[:, np.newaxis], dis_low)).transpose()
     dis_data_high = np.hstack((dis_data_0[:, np.newaxis], dis_high)).transpose()
 
     # Set t_l_data_low and t_l_data_high values.
-    t_l_data_0 = input_data['T_L_data'][0]
+    t_l_data_0 = data_table['T_L_data'][0]
     t_l_data_low = np.array([t_l_data_0, t_l_low])
     t_l_data_high = np.array([t_l_data_0, t_l_high])
 
     # Set vts_data_low and vts_data_high values.
-    shade_0 = input_data['shade_data'][0]
+    shade_0 = data_table['shade_data'][0]
     vts_data_low = np.array([shade_0, shade_1, vts_low])
     vts_data_high = np.array([shade_0, shade_1, vts_high])
 
     #Initalize shade_data_low and shade_data_high with zeros. 
-    shade_2 = input_data['shade_data'][2]
+    shade_2 = data_table['shade_data'][2]
     shade_data_low = np.array([shade_0, shade_low, shade_2])
     shade_data_high = np.array([shade_0, shade_high, shade_2])
 
-    #Create multiple copies of input_data for and modifying specifc keys. 
-    input_data_base = input_data.copy()
-    input_data_lowdis = input_data.copy()
+    #Create multiple copies of data_table for and modifying specifc keys. 
+    input_data_base = data_table.copy()
+    input_data_lowdis = data_table.copy()
     input_data_lowdis['dis_data'] = dis_data_low
-    input_data_highdis = input_data.copy()
+    input_data_highdis = data_table.copy()
     input_data_highdis['dis_data'] = dis_data_high
-    input_data_lowT_L = input_data.copy()
+    input_data_lowT_L = data_table.copy()
     input_data_lowT_L['T_L_data'] = t_l_data_low
-    input_data_highT_L = input_data.copy()
+    input_data_highT_L = data_table.copy()
     input_data_highT_L['T_L_data'] = t_l_data_high
-    input_data_lowvts = input_data.copy()
+    input_data_lowvts = data_table.copy()
     input_data_lowvts['shade_data'] = vts_data_low
-    input_data_highvts = input_data.copy()
+    input_data_highvts = data_table.copy()
     input_data_highvts['shade_data'] = vts_data_high
-    input_data_lowshade = input_data.copy()
+    input_data_lowshade = data_table.copy()
     input_data_lowshade['shade_data'] = shade_data_low
-    input_data_highshade = input_data.copy()
+    input_data_highshade = data_table.copy()
     input_data_highshade['shade_data'] = shade_data_high
 
     print('...Done!')
@@ -147,47 +147,47 @@ def hflux_sens(input_data, dis_high_low, t_l_high_low, vts_high_low, shade_high_
     plt.figure()
     plt.subplot(2,2,1)
 
-    plt.plot(input_data['dist_mod'].reshape(-1), sens['lowdis']['mean'], '--b', linewidth=2)
-    plt.plot(input_data['dist_mod'].reshape(-1), sens['base']['mean'], 'k', linewidth=2)
-    plt.plot(input_data['dist_mod'].reshape(-1), sens['highdis']['mean'], '--r', linewidth=2)
+    plt.plot(data_table['dist_mod'].reshape(-1), sens['lowdis']['mean'], '--b', linewidth=2)
+    plt.plot(data_table['dist_mod'].reshape(-1), sens['base']['mean'], 'k', linewidth=2)
+    plt.plot(data_table['dist_mod'].reshape(-1), sens['highdis']['mean'], '--r', linewidth=2)
     #Follow X-Limits set by MATLAB code.
-    plt.xlim = ([np.min(input_data['temp_t0_data'][:,0]), 
-                 np.max(input_data['temp_t0_data'][:,0])])
+    plt.xlim = ([np.min(data_table['temp_t0_data'][:,0]), 
+                 np.max(data_table['temp_t0_data'][:,0])])
     plt.title('Discharge', fontweight = 'bold')
     plt.xlabel('Distance Downstream(m)')
     plt.ylabel('Temperature (°C)')
     plt.legend(['Low', 'Base', 'High'])
 
     plt.subplot(2,2,2)
-    plt.plot(input_data['dist_mod'].reshape(-1),sens['lowT_L']['mean'],'--b',linewidth=2)
-    plt.plot(input_data['dist_mod'].reshape(-1),sens['base']['mean'],'k',linewidth = 2)
-    plt.plot(input_data['dist_mod'].reshape(-1),sens['highT_L']['mean'],'--r', linewidth = 2)
+    plt.plot(data_table['dist_mod'].reshape(-1),sens['lowT_L']['mean'],'--b',linewidth=2)
+    plt.plot(data_table['dist_mod'].reshape(-1),sens['base']['mean'],'k',linewidth = 2)
+    plt.plot(data_table['dist_mod'].reshape(-1),sens['highT_L']['mean'],'--r', linewidth = 2)
     #Follow X-Limits set by MATLAB code.
-    plt.xlim = ([np.min(input_data['temp_t0_data'][:,0]), 
-                 np.max(input_data['temp_t0_data'][:,0])])
+    plt.xlim = ([np.min(data_table['temp_t0_data'][:,0]), 
+                 np.max(data_table['temp_t0_data'][:,0])])
     plt.title('Groundwater Temperature', fontweight='bold')
     plt.ylabel('Temperature (°C)')
     plt.xlabel('Distance Downstream (m)')
     plt.legend(['Low','Base','High'])
 
     plt.subplot(2,2,3)
-    plt.plot(input_data['dist_mod'].reshape(-1),sens['lowvts']['mean'],'--b',linewidth=2)
-    plt.plot(input_data['dist_mod'].reshape(-1),sens['base']['mean'],'k',linewidth=2)
-    plt.plot(input_data['dist_mod'].reshape(-1),sens['highvts']['mean'],'--r',linewidth=2)
+    plt.plot(data_table['dist_mod'].reshape(-1),sens['lowvts']['mean'],'--b',linewidth=2)
+    plt.plot(data_table['dist_mod'].reshape(-1),sens['base']['mean'],'k',linewidth=2)
+    plt.plot(data_table['dist_mod'].reshape(-1),sens['highvts']['mean'],'--r',linewidth=2)
     #Follow X-Limits set by MATLAB code.
-    plt.xlim = ([np.min(input_data['temp_t0_data'][:,0]), 
-                 np.max(input_data['temp_t0_data'][:,0])])
+    plt.xlim = ([np.min(data_table['temp_t0_data'][:,0]), 
+                 np.max(data_table['temp_t0_data'][:,0])])
     plt.title('View to Sky Coefficient', fontweight="bold")
     plt.xlabel('Distance Downstream (m)')
     plt.ylabel('Temperature (°C)')
     plt.legend(['Low','Base','High'])
 
     plt.subplot(2,2,4)
-    plt.plot(input_data['dist_mod'].reshape(-1),sens['lowshade']['mean'],'--b',linewidth=2)
-    plt.plot(input_data['dist_mod'].reshape(-1),sens['base']['mean'],'k',linewidth=2)
-    plt.plot(input_data['dist_mod'].reshape(-1),sens['highshade']['mean'],'--r',linewidth=2)
-    plt.xlim = ([np.min(input_data['temp_t0_data'][:,0]), 
-                 np.max(input_data['temp_t0_data'][:,0])])
+    plt.plot(data_table['dist_mod'].reshape(-1),sens['lowshade']['mean'],'--b',linewidth=2)
+    plt.plot(data_table['dist_mod'].reshape(-1),sens['base']['mean'],'k',linewidth=2)
+    plt.plot(data_table['dist_mod'].reshape(-1),sens['highshade']['mean'],'--r',linewidth=2)
+    plt.xlim = ([np.min(data_table['temp_t0_data'][:,0]), 
+                 np.max(data_table['temp_t0_data'][:,0])])
     #Follow X-Limits set by MATLAB code.
     plt.title('Shade', fontweight="bold")
     plt.xlabel('Distance Downstream (m)')
