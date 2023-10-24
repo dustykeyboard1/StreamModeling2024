@@ -1,12 +1,13 @@
 import sys
 import os
 
-from PySide6.QtCore import QSize, Qt
+from PySide6.QtCore import Qt
 from PySide6.QtWidgets import QSlider, QCheckBox, QApplication, QMainWindow, QPushButton, QGridLayout, QLabel, QWidget, QVBoxLayout, QLineEdit, QFormLayout, QHBoxLayout
-from PySide6.QtGui import QPixmap
+from PySide6.QtGui import QPixmap, QScreen
 
 STARTER_ROWS = 16
 GUI_WIDTH = 500
+GUI_HEIGHT = 740
 LINEEDIT_WIDTH = 300
 ERROR_COLOR = "red"
 
@@ -98,10 +99,10 @@ class SubmitButton(QPushButton):
         return results
     
     def validate_submission(self):
-        filename = self._results[0]
-        if filename[-5:] != '.xlsx' and len(filename) < 6:
-            self._form.addRow(ErrorMessage("Excel file must be a valid '.xlsx' file"))
-            return False
+        # filename = self._results[0]
+        # if filename[-5:] != '.xlsx' or len(filename) < 6:
+        #     self._form.addRow(ErrorMessage("Excel file must be a valid '.xlsx' file"))
+        #     return False
         
         settings = self._results[1:5]
         for val in settings:
@@ -124,24 +125,31 @@ class SensitivitySlider(QSlider):
         self.setSingleStep(step)
         self.setTickPosition(tick_pos)
         self.setTickInterval(tick_interval)
+        self.valueChanged.connect(self.update_value)
     
     def get_label(self):
         return self._label
+
+    def update_value(self):
+        self._label.setText(self._label.text()[:self._label.text().find(":")])
+        self._label.setText(self._label.text() + ": " + str(self.value()))
 
 # Subclass QMainWindow to customize your application's main window
 class MainWindow(QWidget):
     def __init__(self):
         super().__init__()
         self.setWindowTitle("HFLUX Stream Temperature Solver")
-        self.setFixedWidth(GUI_WIDTH)
         
+        self.setFixedWidth(GUI_WIDTH)
+        self.setFixedHeight(740)
+
         pixmap = QPixmap(os.path.join(os.getcwd(), "Demo", "hlfux_logo.png"))
         hflux_logo = QLabel()
         hflux_logo.setPixmap(pixmap)
 
         form = QFormLayout()
         form.addRow(TitleBanner("HFLUX Stream Temperature Solver"))
-        form.addWidget(hflux_logo)
+        form.addRow(hflux_logo)
 
         input_filename = SettingsInput("Required: Excel File Name", "Filename")
         method = SettingsInput("Solution Method", "Crank-Nicolson (1) or 2nd Order Runge-Kutta (2)")
@@ -158,6 +166,13 @@ class MainWindow(QWidget):
         form.addRow(submit)
         self.setLayout(form)
 
+        ### Centering the GUI on the screen
+        qr = self.frameGeometry()
+        cp = self.screen().availableSize()
+        self.move((cp.width() / 2) - (qr.width() / 2), (cp.height() / 2) - (qr.height() / 2))
+        print(self.height(), cp.height())
+        print(self.x(), self.y())
+
     def create_settings(self, form, filename, method, equation1, equation2, equation3):
         form.addRow(filename.get_label(), filename)
         form.addRow(QLabel("\nEquation Settings. Providing no value defaults to the Excel Sheet"))
@@ -168,14 +183,14 @@ class MainWindow(QWidget):
     
     def create_sensitivity_sliders(self, form):
         form.addRow(QLabel("\nSensitivity Sliders"))
-        sens1 = SensitivitySlider("Sensitivity 1", min=0, max=10, step=1, tick_pos=QSlider.TicksBelow, tick_interval=1)
+        sens1 = SensitivitySlider(QLabel("Sensitivity 1"), min=0, max=10, step=1, tick_pos=QSlider.TicksBelow, tick_interval=1)
         form.addRow(sens1.get_label(), sens1)
 
-        sens2 = SensitivitySlider("Sensitivity 2", min=0, max=15, step=1, tick_pos=QSlider.TicksBelow, tick_interval=1)
+        sens2 = SensitivitySlider(QLabel("Sensitivity 2"), min=0, max=15, step=1, tick_pos=QSlider.TicksBelow, tick_interval=1)
         form.addRow(sens2.get_label(), sens2)
 
         sens3 = QSlider(Qt.Horizontal)
-        sens3 = SensitivitySlider("Sensitivity 3", min=0, max=100, step=2, tick_pos=QSlider.TicksBelow, tick_interval=1)
+        sens3 = SensitivitySlider(QLabel("Sensitivity 3"), min=0, max=100, step=2, tick_pos=QSlider.TicksBelow, tick_interval=1)
         form.addRow(sens3.get_label(), sens3)
 
         return sens1, sens2, sens3
@@ -195,13 +210,41 @@ class MainWindow(QWidget):
 
     def call_hflux(self, settings_input):
         # Make a full call to hflux
-        if (len(settings_input) == 10):
-            ### No Pdf not checked
+        path = settings_input[0]
+        if (not os.path.exists(path)):
             ""
-            #Hflux call
-        print(settings_input)
+            ## Throw an error because this is bad
+        
+        if (os.path.isfile(path)):
+            if (path[-5:] != '.xlsx'):
+                ""
+                ## A file but not an excel file so throw an error
+            else:
+                ""
+                ## Call Hflux since we have a file
+            ## Search starting from the directory downwards to find all excel files and give
+            ## An option of which one to run the program on
+        else:
+            self.list_of_excel_files = self.file_explore(path)
+            print(self.list_of_excel_files)
+            
+    ## recursively explores the folder/file that was passed, and returns all excel files found
+    def file_explore(self, path):
+        print(path)
+        results = []
+        if os.path.isfile(path):
+            if (path[len(path)-4:] == "xlsx"):
+                print("found an excel file: ", path)
+                results.append(path)
+            return results
+                    
+        for f in os.listdir(path):
+            results += self.file_explore(os.path.join(path, f))
+        
+        return results
 
-
+# file_explore(r"C:\Users\galla\Documents\Hamilton\Senior Year\Senior Year First Semester\Comp Sci Seminar\StreamModeling2024")
+# input()
 app = QApplication(sys.argv)
 
 window = MainWindow()
