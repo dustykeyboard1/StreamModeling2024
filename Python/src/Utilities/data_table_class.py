@@ -66,9 +66,13 @@ class DataTable:
         self.z = input_data["site_info"][0, 3]
 
         self.temp = input_data['temp']
+        self.dis_data = input_data["dis_data"]
+        self.t_l_data = input_data["T_L_data"]
+        self.shade_data = input_data["shade_data"]
 
-    def set_data(attribute_name):
-        pass
+        self._format_checking_after_reading()
+
+
 
     def _input_reader(self, file_name):
         data = pd.ExcelFile(file_name)
@@ -78,12 +82,12 @@ class DataTable:
         input_data = {}
         for i in range(0, sheet_num):
             d = pd.read_excel(data, sheet_names[i]).values.transpose()
-            self._formatChecking(len(d), sheet_names[i])
+            self._format_checking_during_reading(len(d), sheet_names[i])
             input_data[sheet_names[i]] = d
 
         return input_data
 
-    def _formatChecking(self, colNum, sheet_name):
+    def _format_checking_during_reading(self, colNum, sheet_name):
         if sheet_name in ("temp_x0_data", "temp_t0_data", "T_L_data",
                         "bed_data1", "cloud_data") and colNum != 2:
             print(sheet_name + " must contain 2 columns of data!")
@@ -96,31 +100,35 @@ class DataTable:
         elif sheet_name in ("site_info", "time_mod", "dist_mod", "sed_type") and colNum != 1: #what is a cell array? Column vector?
             print(sheet_name + " must contain 1 columns of data!")
 
+    def _format_checking_after_reading(self):
         # #Check for Boolean. 
-        # if not self.unattend:
-        #     print("Checking input arguments...")
+        if not self.unattend:
+            print("Checking input arguments...")
 
-        #Type check variables to ensure they are column vectors by checking number of dimnesions and shape. 
+        # Type check variables to ensure they are column vectors by checking number of dimnesions and shape. 
         # ndim - https://numpy.org/doc/stable/reference/generated/numpy.ndarray.ndim.html
         # shape - https://numpy.org/doc/stable/reference/generated/numpy.shape.html
-        # if self.time_mod.ndim != 1:
-        #     raise TypeError("Time_m must be a column vector")
-        # if self.dist_mod.ndim != 1:
-        #     raise TypeError("Dist_m must be a column vector")
-        # if self.time_temp.ndim != 1:
-        #     raise TypeError("Time_temp must be a column vector")
-        # if self.dist_temp.ndim != 1:
-        #     raise TypeError("Dist_temp must be a column vector.")
+        if self.time_mod.ndim != 1:
+            raise TypeError("Time_m must be a column vector")
+        if self.dist_mod.ndim != 1:
+            raise TypeError("Dist_m must be a column vector")
+        if self.time_temp.ndim != 1:
+            raise TypeError("Time_temp must be a column vector")
+        if self.dist_temp.ndim != 1:
+            raise TypeError("Dist_temp must be a column vector.")
 
-        #Ensure temp_mod and temp are ndarrays.
-        #Isinstance - https://docs.python.org/3/library/functions.html#isinstance
+        # Ensure temp_mod and temp are ndarrays.
+        # Isinstance - https://docs.python.org/3/library/functions.html#isinstance
         # if not isinstance(self.temp_mod, np.ndarray): 
         #     raise TypeError("Temp_mod must be a numpy array representing a matrix.")
-        # if not isinstance(self.temp, np.ndarray):
-        #     raise TypeError("Temp must be a numpy array representing a matrix.")
+        if not isinstance(self.temp, np.ndarray):
+            raise TypeError("Temp must be a numpy array representing a matrix.")
         
-        # if not self.unattend:
-        #     print('...Done!')
+        if not self.unattend:
+            print('...Done!')
+
+    def get_input_data(self, file_name):
+        return self._input_reader(file_name)
 
 
     

@@ -34,6 +34,7 @@ def script_to_run():
     t1 = datetime.now()
     filename = os.path.join(os.getcwd(), 'Data', 'example_data.xlsx')
     data_table = DataTable(filename)
+    input_data = data_table.get_input_data(filename)
 
     heat_flux = HeatFlux(data_table)
     #Use helper functions (hflux(), handle_errors() and sens())  to calculate values.
@@ -54,9 +55,9 @@ def script_to_run():
     time_temp = data_table.time_temp
     time_mod = data_table.time_mod
     handle_errors(time_mod, time_temp, temp, temp_dt, temp_mod, dist_temp, dist_mod)
-    # t3 = datetime.now()
-    # sens = hflux_sens(data_table, [-0.01, 0.01],[-2, 2],[-0.1, 0.1],[-0.1, 0.1])
-    # t4 = datetime.now()
+    t3 = datetime.now()
+    sens = hflux_sens(input_data, [-0.01, 0.01],[-2, 2],[-0.1, 0.1],[-0.1, 0.1])
+    t4 = datetime.now()
 
 
     # Save output to CSV files using Numpy.
@@ -79,4 +80,5 @@ def script_to_run():
     print("...Done!")
     print("total time: ", t2-t1)
 
-script_to_run()
+if __name__ == "__main__":
+    script_to_run()
