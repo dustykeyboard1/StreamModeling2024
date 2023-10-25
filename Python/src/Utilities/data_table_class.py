@@ -5,13 +5,19 @@ import os
 class DataTable:
     def __init__(self, file_name):
         input_data = self._input_reader(file_name)
-        self.unattend = bool(input_data["settings"][0][4])
+
+        self.settings = input_data["settings"]
+        self.unattend = bool(self.settings[0][4])
         # initialize variables
-        self.method = input_data["settings"][0][0]
+        self.method = self.settings[0][0]
         if not self.unattend:
             print('Assigning variable names...')
-        self.settings = input_data["settings"]
 
+        self.temp = input_data['temp']
+        self.dis_data = input_data["dis_data"]
+        self.t_l_data = input_data["T_L_data"]
+        self.shade_data = input_data["shade_data"]
+        
         self.time_mod = input_data["time_mod"][0]
         self.dist_mod = input_data["dist_mod"][0]
 
@@ -27,12 +33,12 @@ class DataTable:
         self.depth = input_data["dim_data"][3]
         self.discharge_stdim = input_data["dim_data"][4]
 
-        self.dist_dis = input_data["dis_data"][0]
-        self.discharge = input_data["dis_data"][1:]
+        self.dist_dis = self.dis_data[0]
+        self.discharge = self.dis_data[1:]
         self.time_dis = input_data["time_dis"][0]
 
-        self.dist_T_L = input_data["T_L_data"][0]
-        self.t_L = input_data["T_L_data"][1]
+        self.dist_T_L = self.t_l_data[0]
+        self.t_L = self.t_l_data[1]
 
         self.year = input_data["met_data"][0]
         self.month = input_data["met_data"][1]
@@ -53,9 +59,9 @@ class DataTable:
 
         self.sed_type = input_data["sed_type"][0]
 
-        self.dist_shade = input_data["shade_data"][0]
-        self.shade = input_data["shade_data"][1]
-        self.vts = input_data["shade_data"][2]
+        self.dist_shade = self.shade_data[0]
+        self.shade = self.shade_data[1]
+        self.vts = self.shade_data[2]
 
         self.time_cloud = input_data["cloud_data"][0]
         self.c_in = input_data["cloud_data"][1]
@@ -64,11 +70,6 @@ class DataTable:
         self.lon = input_data["site_info"][0, 1]
         self.t_zone = input_data["site_info"][0, 2]
         self.z = input_data["site_info"][0, 3]
-
-        self.temp = input_data['temp']
-        self.dis_data = input_data["dis_data"]
-        self.t_l_data = input_data["T_L_data"]
-        self.shade_data = input_data["shade_data"]
 
         self._format_checking_after_reading()
 

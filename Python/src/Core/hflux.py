@@ -15,7 +15,7 @@ import matplotlib.pyplot as plt
 import pandas as pd
 from matplotlib.backends.backend_pdf import PdfPages
 
-# Find the root directory dynmimically. https://stackoverflow.com/questions/73230007/how-can-i-set-a-root-directory-dynamically
+#Find the root directory dynmimically. https://stackoverflow.com/questions/73230007/how-can-i-set-a-root-directory-dynamically
 root_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
 sys.path.append(root_dir)
 from src.Heat_Flux.hflux_bed_sed import hflux_bed_sed
@@ -23,13 +23,9 @@ from src.Heat_Flux.hflux_shortwave_refl import hflux_shortwave_relf
 from src.Heat_Flux.hflux_flux import hflux_flux
 from src.Utilities.interpolation import interpolation
 
-
 def hflux(input_data):
-    method = input_data["settings"][0][0]
-    unattend = bool(input_data["settings"][0][4])
 
-    if not unattend:
-        print("Assigning variable names...")
+    print("Assigning variable names...")
 
     # initialize variables
     time_mod = input_data["time_mod"][0]
@@ -568,7 +564,7 @@ def hflux(input_data):
 
     # 2D Plot of stream temperature
     # Create a figure
-    fig, ax = plt.subplots()
+
 
     pdf_path = os.path.join(os.getcwd(), "Results", "PDFs", "hflux.pdf")
     plots_pdf = PdfPages(pdf_path)
@@ -595,8 +591,7 @@ def hflux(input_data):
     ax.set_xlabel(xlab, fontsize=11)
     ax.set_ylabel(ylab, fontsize=11)
 
-    # ax.invert_yaxis() - https://www.geeksforgeeks.org/how-to-reverse-axes-in-matplotlib/
-    ax.invert_yaxis()
+
 
     # 3D plot of stream temperature
     fig = plt.figure()
@@ -711,9 +706,7 @@ def hflux(input_data):
         ]
     )
 
-    # to avoid labels overlapping
-    # cite: https://saturncloud.io/blog/how-to-improve-label-placement-for-matplotlib-scatter-chart/#:~:text=Matplotlib%20provides%20a%20feature%20called,the%20labels%20to%20minimize%20overlap.
-    plt.tight_layout()
+
 
     # Plot of heat fluxes: comparison
     plt.figure()
@@ -726,8 +719,7 @@ def hflux(input_data):
     plt.plot(time_mod, np.mean(bed, axis=0), "c", label="Streambed Conduction")
     plt.plot(time_mod, np.mean(sensible, axis=0), "m", label="Sensible Heat Flux")
 
-    # Set axis properties
-    plt.xlim([np.min(time_mod), np.max(time_mod)])
+
 
     # Add title and labels
     plt.title("Energy Fluxes", fontsize=12, fontweight="bold")
