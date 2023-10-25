@@ -1,14 +1,16 @@
 import sys
 import os
 
-from PySide6.QtCore import Qt
-from PySide6.QtWidgets import QSlider, QCheckBox, QApplication, QMainWindow, QPushButton, QGridLayout, QLabel, QWidget, QVBoxLayout, QLineEdit, QFormLayout, QHBoxLayout
-from PySide6.QtGui import QPixmap, QScreen
+from PySide6.QtCore import Qt, QDir
+from PySide6.QtWidgets import QFileDialog, QSlider, QCheckBox, QApplication, QMainWindow, QPushButton, QGridLayout, QLabel, QWidget, QVBoxLayout, QLineEdit, QFormLayout, QHBoxLayout
+from PySide6.QtGui import QPixmap
 
 STARTER_ROWS = 16
 GUI_WIDTH = 500
-GUI_HEIGHT = 740
-LINEEDIT_WIDTH = 300
+GUI_HEIGHT = 747
+LINEEDIT_WIDTH = 330
+FILE_INPUT_TEXT_WIDTH = 250
+BROWSE_BUTTON_WIDTH = 75
 ERROR_COLOR = "red"
 
 class TitleBanner(QLabel):
@@ -29,6 +31,22 @@ class SettingsInput(QLineEdit):
         self.setPlaceholderText(placeholdertext)
         self._label = label
         self.setFixedWidth(LINEEDIT_WIDTH)
+    
+    def get_text(self):
+        return self.text()
+
+    def get_placeholdertext(self):
+        return self.placeholderText()
+
+    def get_label(self):
+        return self._label
+
+class FileInput(QLineEdit):
+    def __init__(self, label, placeholder):
+        super().__init__()
+        self.setPlaceholderText(placeholder)
+        self._label = label
+        self.setFixedWidth(FILE_INPUT_TEXT_WIDTH)
     
     def get_text(self):
         return self.text()
@@ -70,8 +88,6 @@ class SubmitButton(QPushButton):
 
     def get_input_filename(self):
         filename = self._input_filename.get_text()
-        
-
         return [filename]
         
     def get_settings(self):
@@ -99,10 +115,10 @@ class SubmitButton(QPushButton):
         return results
     
     def validate_submission(self):
-        # filename = self._results[0]
-        # if filename[-5:] != '.xlsx' or len(filename) < 6:
-        #     self._form.addRow(ErrorMessage("Excel file must be a valid '.xlsx' file"))
-        #     return False
+        filename = self._results[0]
+        if not os.path.exists(filename):
+            self._form.addRow(ErrorMessage("Path/file must be valid"))
+            return False
         
         settings = self._results[1:5]
         for val in settings:
@@ -111,8 +127,8 @@ class SubmitButton(QPushButton):
         
         output_path = self._results[-1]
         save_to_pdf = self._results[-2]
-        if output_path == "" and save_to_pdf:
-            self._form.addRow(ErrorMessage("Save to PDF was selected, but no file path was provided"))
+        if save_to_pdf and (not os.path.exists(output_path)):
+            self._form.addRow(ErrorMessage("Save to PDF was selected, but an invalid path was provided"))
             return False
         return True
 
@@ -134,6 +150,28 @@ class SensitivitySlider(QSlider):
         self._label.setText(self._label.text()[:self._label.text().find(":")])
         self._label.setText(self._label.text() + ": " + str(self.value()))
 
+class BrowseFileButton(QPushButton):
+    def __init__(self, lineedit):
+        super().__init__("Browse")
+        self.clicked.connect(self.get_file)
+        self.setFixedWidth(BROWSE_BUTTON_WIDTH)
+        self._lineedit = lineedit
+
+    def get_file(self):
+        file_name, _ = QFileDialog.getOpenFileName(self, 'Select Input File', QDir.rootPath() , '*.xlsx')
+        self._lineedit.setText(file_name)
+
+class BrowsePathButton(QPushButton):
+    def __init__(self, lineedit):
+        super().__init__("Browse")
+        self.clicked.connect(self.get_file)
+        self.setFixedWidth(BROWSE_BUTTON_WIDTH)
+        self._lineedit = lineedit
+
+    def get_file(self):
+        path_name = QFileDialog.getExistingDirectory(self, "Select Output Location", QDir.rootPath())
+        self._lineedit.setText(path_name)
+
 # Subclass QMainWindow to customize your application's main window
 class MainWindow(QWidget):
     def __init__(self):
@@ -141,8 +179,9 @@ class MainWindow(QWidget):
         self.setWindowTitle("HFLUX Stream Temperature Solver")
         
         self.setFixedWidth(GUI_WIDTH)
-        self.setFixedHeight(740)
+        self.setFixedHeight(GUI_HEIGHT)
 
+        ### Creating the logo and title banner
         pixmap = QPixmap(os.path.join(os.getcwd(), "Demo", "hlfux_logo.png"))
         hflux_logo = QLabel()
         hflux_logo.setPixmap(pixmap)
@@ -150,36 +189,43 @@ class MainWindow(QWidget):
         form = QFormLayout()
         form.addRow(TitleBanner("HFLUX Stream Temperature Solver"))
         form.addRow(hflux_logo)
+        
+        ### Creating the file input and browse button
+        input_filename, browser = self.create_file_input("Required: Excel File", "Path")
+        form.addRow(input_filename.get_label(), browser)
 
-        input_filename = SettingsInput("Required: Excel File Name", "Filename")
-        method = SettingsInput("Solution Method", "Crank-Nicolson (1) or 2nd Order Runge-Kutta (2)")
-        equation1 = SettingsInput("Shortwave Radiation Method", "Correction for Reflection (1) or Albedo Correction (2)")
-        equation2 = SettingsInput("Latent Heat Flux Equation", "Penman (1) or Mass Transfer Method (2)")
-        equation3 = SettingsInput("Sensible Heat Equation", "Bowen Ratio Method (1) or Dingman 1994 (2)")
-
-        self.create_settings(form, input_filename, method, equation1, equation2, equation3)
+        ### Creating all input fields (settings, sliders, output options)
+        method, equation1, equation2, equation3 = self.create_settings(form)
         sens1, sens2, sens3 = self.create_sensitivity_sliders(form)
-        graphs, pdf, output_file_location = self.create_output_options(form)
+        graphs, pdf = self.create_output_options(form)
+
+        ### Creating the output path and browse button
+        output_file_location, browser = self.create_path_output("File Path (if saving to PDF)", "Please enter a file path")
+        form.addRow(output_file_location.get_label(), browser)
 
         ### Creating the submit button and adding it to the form
-        submit = SubmitButton(form, input_filename, [method, equation1, equation2, equation3], [sens1, sens2, sens3], [graphs, pdf], output_file_location,)
+        submit = SubmitButton(form, input_filename, [method, equation1, equation2, equation3], [sens1, sens2, sens3], [graphs, pdf], output_file_location)
         form.addRow(submit)
         self.setLayout(form)
 
         ### Centering the GUI on the screen
         qr = self.frameGeometry()
         cp = self.screen().availableSize()
-        self.move((cp.width() / 2) - (qr.width() / 2), (cp.height() / 2) - (qr.height() / 2))
-        print(self.height(), cp.height())
-        print(self.x(), self.y())
+        self.move((cp.width() / 2) - (GUI_WIDTH / 2), (cp.height() / 2) - (GUI_HEIGHT / 2))
+        
+    def create_settings(self, form):
+        method = SettingsInput("Solution Method", "Crank-Nicolson (1) or 2nd Order Runge-Kutta (2)")
+        equation1 = SettingsInput("Shortwave Radiation Method", "Correction for Reflection (1) or Albedo Correction (2)")
+        equation2 = SettingsInput("Latent Heat Flux Equation", "Penman (1) or Mass Transfer Method (2)")
+        equation3 = SettingsInput("Sensible Heat Equation", "Bowen Ratio Method (1) or Dingman 1994 (2)")
 
-    def create_settings(self, form, filename, method, equation1, equation2, equation3):
-        form.addRow(filename.get_label(), filename)
         form.addRow(QLabel("\nEquation Settings. Providing no value defaults to the Excel Sheet"))
         form.addRow(method.get_label(), method)
         form.addRow(equation1.get_label(), equation1)
         form.addRow(equation2.get_label(), equation2)
         form.addRow(equation3.get_label(), equation3)
+
+        return method, equation1, equation2, equation3
     
     def create_sensitivity_sliders(self, form):
         form.addRow(QLabel("\nSensitivity Sliders"))
@@ -200,51 +246,30 @@ class MainWindow(QWidget):
 
         graphs = QCheckBox("Display Graphs")
         pdf = QCheckBox("Save to PDF")
-        file_location = SettingsInput("File Path (if saving to PDF)", "Please enter a file path")
 
         form.addRow(graphs)
         form.addRow(pdf)
-        form.addRow(file_location.get_label(), file_location)
 
-        return graphs, pdf, file_location
+        return graphs, pdf
+
+    def create_file_input(self, label, placeholdertext):
+        filebrowser = QHBoxLayout()        
+        input_filename = FileInput(label, placeholdertext)
+        filebrowser.addWidget(input_filename)
+        filebrowser.addWidget(BrowseFileButton(input_filename))
+        return input_filename, filebrowser
+
+    def create_path_output(self, label, placeholdertext):
+        filebrowser = QHBoxLayout()        
+        output_path = FileInput(label, placeholdertext)
+        filebrowser.addWidget(output_path)
+        filebrowser.addWidget(BrowsePathButton(output_path))
+        return output_path, filebrowser
 
     def call_hflux(self, settings_input):
         # Make a full call to hflux
-        path = settings_input[0]
-        if (not os.path.exists(path)):
-            ""
-            ## Throw an error because this is bad
+        print(settings_input)
         
-        if (os.path.isfile(path)):
-            if (path[-5:] != '.xlsx'):
-                ""
-                ## A file but not an excel file so throw an error
-            else:
-                ""
-                ## Call Hflux since we have a file
-            ## Search starting from the directory downwards to find all excel files and give
-            ## An option of which one to run the program on
-        else:
-            self.list_of_excel_files = self.file_explore(path)
-            print(self.list_of_excel_files)
-            
-    ## recursively explores the folder/file that was passed, and returns all excel files found
-    def file_explore(self, path):
-        print(path)
-        results = []
-        if os.path.isfile(path):
-            if (path[len(path)-4:] == "xlsx"):
-                print("found an excel file: ", path)
-                results.append(path)
-            return results
-                    
-        for f in os.listdir(path):
-            results += self.file_explore(os.path.join(path, f))
-        
-        return results
-
-# file_explore(r"C:\Users\galla\Documents\Hamilton\Senior Year\Senior Year First Semester\Comp Sci Seminar\StreamModeling2024")
-# input()
 app = QApplication(sys.argv)
 
 window = MainWindow()
