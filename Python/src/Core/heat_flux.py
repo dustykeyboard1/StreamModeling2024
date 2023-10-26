@@ -14,13 +14,8 @@ from matplotlib.backends.backend_pdf import PdfPages
 root_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
 sys.path.append(root_dir)
 from src.Utilities import Input_reader
-from src.Heat_Flux.hflux_bed_sed import hflux_bed_sed
-from src.Heat_Flux.hflux_shortwave_refl import hflux_shortwave_relf
-from src.Heat_Flux.hflux_flux import hflux_flux
 from src.Utilities.interpolation import interpolation
 from src.Heat_Flux.heatflux_calculations import HeatFluxCalculations
-
-
 
 class HeatFlux:
     def __init__(self, data_table):
@@ -244,7 +239,7 @@ class HeatFlux:
         sensible = np.empty((r, timesteps))
         bed = np.empty((r, timesteps))
 
-        heat_flux[:, 0], shortwave[:, 0], longwave[:, 0], atm[:, 0], back[:, 0], land[:, 0], latent[:, 0], sensible[:, 0], bed[:, 0] = hflux_flux(self.data_table.settings, solar_rad_mat[:, 0],
+        heat_flux[:, 0], shortwave[:, 0], longwave[:, 0], atm[:, 0], back[:, 0], land[:, 0], latent[:, 0], sensible[:, 0], bed[:, 0] = self.hflux_calculations.heatflux_calculations(self.data_table.settings, solar_rad_mat[:, 0],
                                                 air_temp_mat[:, 0], rel_hum_mat[:, 0], temp_t0_m,
                                                 wind_speed_mat[:, 0], self.data_table.z, sed, bed_temp_dt[:, 0],
                                                 depth_of_meas_m, shade_m, vts_m,
@@ -283,7 +278,7 @@ class HeatFlux:
             A = csc_matrix(A)
             t[:, i + 1] = linalg.splu(A).solve(d[:,i])
 
-            heat_flux[:,i+1], shortwave[:,i+1], longwave[:,i+1],atm[:,i+1], back[:,i+1], land[:,i+1], latent[:,i+1],sensible[:,i+1], bed[:,i+1] = hflux_flux(self.data_table.settings,solar_rad_mat[:,i+1],air_temp_mat[:,i+1],
+            heat_flux[:,i+1], shortwave[:,i+1], longwave[:,i+1],atm[:,i+1], back[:,i+1], land[:,i+1], latent[:,i+1],sensible[:,i+1], bed[:,i+1] = self.hflux_calculations.heatflux_calculations(self.data_table.settings,solar_rad_mat[:,i+1],air_temp_mat[:,i+1],
                 rel_hum_mat[:,i+1],t[:,i+1],wind_speed_mat[:,i+1],self.data_table.z,
                 sed,bed_temp_dt[:,i+1],depth_of_meas_m,
                 shade_m,vts_m,cl[:,i+1],sol_refl[i+1],wp_m[:,i+1], width_m[:,i+1])
