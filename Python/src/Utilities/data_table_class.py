@@ -1,79 +1,219 @@
 import pandas as pd
 import numpy as np
 import os
+from copy import deepcopy
 
 class DataTable:
-    def __init__(self, file_name):
-        input_data = self._input_reader(file_name)
+    def __init__(self, file_name = ""):
+        if file_name != "":
+            input_data = self._input_reader(file_name)
 
-        self.settings = input_data["settings"]
-        self.unattend = bool(self.settings[0][4])
-        # initialize variables
-        self.method = self.settings[0][0]
-        if not self.unattend:
-            print('Assigning variable names...')
+            # initialize variables
+            self.input_data = input_data
 
-        self.temp = input_data['temp']
-        self.dis_data = input_data["dis_data"]
-        self.t_l_data = input_data["T_L_data"]
-        self.shade_data = input_data["shade_data"]
-        
-        self.time_mod = input_data["time_mod"][0]
-        self.dist_mod = input_data["dist_mod"][0]
+            self.settings = input_data["settings"]
+            self.unattend = bool(self.settings[0][4])
+            self.method = self.settings[0][0]
 
-        self.time_temp = input_data["temp_x0_data"][0]
-        self.temp_x0 = input_data["temp_x0_data"][1]
+            if not self.unattend:
+                print('Assigning variable names...')
+            
+            self.temp = input_data['temp']
 
-        self.dist_temp = input_data["temp_t0_data"][0]
-        self.temp_t0 = input_data["temp_t0_data"][1]
+            self.time_mod_raw = input_data["time_mod"]
 
-        self.dist_stdim = input_data["dim_data"][0]
-        # area = input_data["dim_data"][1]  p.s. commented out in the original Matlab file
-        self.width = input_data["dim_data"][2]
-        self.depth = input_data["dim_data"][3]
-        self.discharge_stdim = input_data["dim_data"][4]
+            self.dist_mod_raw = input_data["dist_mod"]
 
-        self.dist_dis = self.dis_data[0]
-        self.discharge = self.dis_data[1:]
-        self.time_dis = input_data["time_dis"][0]
+            self.temp_x0_data = input_data["temp_x0_data"]
 
-        self.dist_T_L = self.t_l_data[0]
-        self.t_L = self.t_l_data[1]
+            self.temp_t0_data = input_data["temp_t0_data"]
 
-        self.year = input_data["met_data"][0]
-        self.month = input_data["met_data"][1]
-        self.day = input_data["met_data"][2]
-        self.hour = input_data["met_data"][3]
-        self.minute = input_data["met_data"][4]
-        self.time_met = input_data["met_data"][5]
-        self.solar_rad_in = input_data["met_data"][6]
-        self.air_temp_in = input_data["met_data"][7]
-        self.rel_hum_in = input_data["met_data"][8]
-        self.wind_speed_in = input_data["met_data"][9]
+            self.dim_data = input_data["dim_data"]
+            # # area = input_data["dim_data"][1]  p.s. commented out in the original Matlab file
+            
+            self.dis_data = input_data["dis_data"]
 
-        self.dist_bed = input_data["bed_data1"][0]
-        self.depth_of_meas = input_data["bed_data1"][1]
+            self.time_dis_raw = input_data["time_dis"]
 
-        self.time_bed = np.array([input_data["bed_data2"][0, 0], input_data["bed_data2"][1, 0]])
-        self.bed_temp = input_data["bed_data2"][0:, 1:]
+            self.t_l_data = input_data["T_L_data"]
 
-        self.sed_type = input_data["sed_type"][0]
+            self.met_data = input_data["met_data"]
 
-        self.dist_shade = self.shade_data[0]
-        self.shade = self.shade_data[1]
-        self.vts = self.shade_data[2]
+            self.bed_data1 = input_data["bed_data1"]
 
-        self.time_cloud = input_data["cloud_data"][0]
-        self.c_in = input_data["cloud_data"][1]
+            self.bed_data2 = input_data["bed_data2"]
 
-        self.lat = input_data["site_info"][0, 0]
-        self.lon = input_data["site_info"][0, 1]
-        self.t_zone = input_data["site_info"][0, 2]
-        self.z = input_data["site_info"][0, 3]
+            self.sed_type_raw = input_data["sed_type"]
 
-        self._format_checking_after_reading()
+            self.shade_data = input_data["shade_data"]
 
+            self.cloud_data = input_data["cloud_data"]
 
+            self.site_info = input_data["site_info"]
+
+            self._format_checking_after_reading()
+
+    @property
+    def time_mod(self):
+        return self.time_mod_raw[0]
+    
+    @property
+    def dist_mod(self):
+        return self.dist_mod_raw[0]
+
+    @property
+    def time_temp(self):
+        return self.temp_x0_data[0]
+
+    @property
+    def temp_x0(self):
+        return self.temp_x0_data[1]
+
+    @property
+    def dist_temp(self):
+        return self.temp_t0_data[0]
+
+    @property
+    def temp_t0(self):
+        return self.temp_t0_data[1]
+
+    @property
+    def dist_stdim(self):
+        return self.dim_data[0]
+    
+    @property
+    def width(self):
+        return self.dim_data[2]
+
+    @property
+    def depth(self):
+        return self.dim_data[3]
+    
+    @property
+    def discharge_stdim(self):
+        return self.dim_data[4]
+    
+    @property
+    def dist_dis(self):
+        return self.dis_data[0]
+    
+    @property
+    def discharge(self):
+        return self.dis_data[1:]
+
+    @property
+    def time_dis(self):
+        return self.time_dis_raw[0]
+
+    @property
+    def dist_T_L(self):
+        return self.t_l_data[0]
+
+    @property
+    def t_L(self):
+        return self.t_l_data[1]  
+
+    @property
+    def year(self):
+        return self.met_data[0]
+    
+    @property
+    def month(self):
+        return self.met_data[1]
+    
+    @property
+    def day(self):
+        return self.met_data[2]
+    
+    @property
+    def hour(self):
+        return self.met_data[3]
+
+    @property
+    def minute(self):
+        return self.met_data[4]
+
+    @property
+    def time_met(self):
+        return self.met_data[5]
+    
+    @property
+    def solar_rad_in(self):
+        return self.met_data[6]
+
+    @property
+    def air_temp_in(self):
+        return self.met_data[7]
+    
+    @property
+    def rel_hum_in(self):
+        return self.met_data[8]
+    
+    @property
+    def wind_speed_in(self):
+        return self.met_data[9]
+
+    @property
+    def dist_bed(self):
+        return self.bed_data1[0]
+
+    @property
+    def depth_of_meas(self):
+        return self.bed_data1[1]
+    
+    @property
+    def time_bed(self):
+        return np.array([self.bed_data2[0, 0], self.bed_data2[1, 0]])
+    
+    @property
+    def bed_temp(self):
+        return self.bed_data2[0:, 1:]
+    
+    @property
+    def sed_type(self):
+        return self.sed_type_raw[0]
+    
+    @property
+    def dist_shade(self):
+        return self.shade_data[0]
+    
+    @property
+    def shade(self):
+        return self.shade_data[1]
+    
+    @property
+    def vts(self):
+        return self.shade_data[2]
+    
+    @property
+    def time_cloud(self):
+        return self.cloud_data[0]
+
+    @property
+    def c_in(self):
+        return self.cloud_data[1]
+    
+    @property
+    def lat(self):
+        return self.site_info[0, 0]
+
+    @property
+    def lon(self):
+        return self.site_info[0, 1]
+
+    @property
+    def t_zone(self):
+        return self.site_info[0, 2]
+    
+    @property
+    def z(self):
+        return self.site_info[0, 3]
+    
+    def modify_data_table(self, sheet_to_change_name, new_value):
+        modified_data_table = deepcopy(self)
+        setattr(modified_data_table, sheet_to_change_name, new_value)
+
+        return modified_data_table
 
     def _input_reader(self, file_name):
         data = pd.ExcelFile(file_name)
@@ -128,13 +268,4 @@ class DataTable:
         if not self.unattend:
             print('...Done!')
 
-    def get_input_data(self, file_name):
-        return self._input_reader(file_name)
-
-
-    
-
-
-    # filename = os.getcwd() + "\\Python\\src\\Utilities" + "\\example_data.xlsx"
-    # readFromFile(filename)
 

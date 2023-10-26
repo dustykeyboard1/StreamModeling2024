@@ -288,26 +288,25 @@ class HeatFlux:
                 sed,bed_temp_dt[:,i+1],depth_of_meas_m,
                 shade_m,vts_m,cl[:,i+1],sol_refl[i+1],wp_m[:,i+1], width_m[:,i+1])
 
-        if self.data_table.method == 1:
-            matrix_data = {}
-            matrix_data["a"] = a
-            matrix_data["b"] = b
-            matrix_data["c"] = c
-            matrix_data["A"] = A
-            matrix_data["o"] = o
-            matrix_data["p"] = p
-            matrix_data["q"] = q
-            matrix_data["g"] = g
-            matrix_data["k"] = k
-            matrix_data["m"] = m
-            matrix_data["d"] = d
+        matrix_data = {}
+        matrix_data["a"] = a
+        matrix_data["b"] = b
+        matrix_data["c"] = c
+        matrix_data["A"] = A
+        matrix_data["o"] = o
+        matrix_data["p"] = p
+        matrix_data["q"] = q
+        matrix_data["g"] = g
+        matrix_data["k"] = k
+        matrix_data["m"] = m
+        matrix_data["d"] = d
 
-            matrix_data["a_c"] = a_c
-            matrix_data["b_c"] = b_c
-            matrix_data["c_c"] = c_c
-            matrix_data["o_c"] = o_c
-            matrix_data["p_c"] = p_c
-            matrix_data["q_c"] = q_c
+        matrix_data["a_c"] = a_c
+        matrix_data["b_c"] = b_c
+        matrix_data["c_c"] = c_c
+        matrix_data["o_c"] = o_c
+        matrix_data["p_c"] = p_c
+        matrix_data["q_c"] = q_c
         # will come back to case2 after alpha!
         # else:
         #     matrix_data["u1"] = u1

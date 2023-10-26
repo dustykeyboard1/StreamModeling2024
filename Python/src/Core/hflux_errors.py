@@ -212,11 +212,9 @@ def handle_errors(time_mod, time_temp, temp, temp_dt, temp_mod, dist_temp, dist_
         fig_nums = plt.get_fignums()
         figs = [plt.figure(n) for n in fig_nums]
 
-
         # iterating over the numbers in list
         for fig in figs:
             # and saving the files
-            fig.savefig(plots_pdf, format="pdf")
             fig.savefig(plots_pdf, format="pdf")
 
         plots_pdf.close()

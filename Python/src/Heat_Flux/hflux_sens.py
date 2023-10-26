@@ -15,14 +15,13 @@ from Python.src.Core.heat_flux import HeatFlux
 root_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
 sys.path.append(root_dir)
 
-from src.Core.hflux import hflux
 import numpy as np
 import matplotlib.pyplot as plt
 
 def heat_flux_wrapper(data_table):
     return HeatFlux(data_table).crank_nicolson_method()
 
-def multithreading_call(input_data_list):
+def multithreading_call(input_data_list, base_result):
     """
     Implements Multi-threading for calls to hflux.py
 
@@ -32,12 +31,11 @@ def multithreading_call(input_data_list):
     Return:
         results ({ndarray, {ndarrarys}, {ndarrays}})
     """
-    results = []
+    results = [base_result]
 
     # Launching Parallel Tasks - https://docs.python.org/3/library/concurrent.futures.html
     print()
     print("Beginning Multi-threaded calls to hflux...")
-
     with ProcessPoolExecutor(max_workers=7) as executor:
         for result, _, _, _ in executor.map(heat_flux_wrapper, input_data_list):
             results.append(result)
@@ -47,7 +45,7 @@ def multithreading_call(input_data_list):
     return results
 
 
-def hflux_sens(data_table, dis_high_low, t_l_high_low, vts_high_low, shade_high_low):
+def hflux_sens(data_table, base_result, dis_high_low, t_l_high_low, vts_high_low, shade_high_low):
     """
     Implementation of hflux_sens.m
     Parameters: data_table,dis_high_low,t_l_high_low,vts_high_low,shade_high_low
@@ -102,47 +100,22 @@ def hflux_sens(data_table, dis_high_low, t_l_high_low, vts_high_low, shade_high_
     shade_data_high = np.array([shade_0, shade_high, shade_2])
 
     # Create multiple copies of data_table for and modifying specifc keys.
-
-    input_data_base = data_table
-
-    original_dis_data = data_table.dis_data
-    data_table.dis_data = dis_data_low
-    input_data_lowdis = data_table
-    data_table.dis_data = dis_data_high
-    input_data_highdis = data_table
-    data_table.dis_data = original_dis_data
-
-    original_t_l_data = data_table.t_l_data
-    data_table.t_l_data = t_l_data_low
-    input_data_lowT_L = data_table
-    # input_data_lowT_L["T_L_data"] = t_l_data_low
-    data_table.t_l_data = t_l_data_high
-    input_data_highT_L = data_table
-    data_table.t_l_data = original_t_l_data
-    # input_data_highT_L["T_L_data"] = t_l_data_high
-
-    original_shade_data = data_table.shade_data
-    data_table.shade_data = vts_data_low
-    input_data_lowvts = data_table
-    # input_data_lowvts["shade_data"] = vts_data_low
-    data_table.shade_data = vts_data_high
-    input_data_highvts = data_table
-    # input_data_highvts["shade_data"] = vts_data_high
-    data_table.shade_data = shade_data_low
-    input_data_lowshade = data_table
-    # input_data_lowshade["shade_data"] = shade_data_low
-    data_table.shade_data = shade_data_high
-    input_data_highshade = data_table
-    # input_data_highshade["shade_data"] = shade_data_high
-    data_table_shade_data = original_shade_data
     print("...Done!")
     print("     ")
     print("Running HLUX for the base, high, and low cases.")
 
+    input_data_lowdis = data_table.modify_data_table("dis_data", dis_data_low)
+    input_data_highdis = data_table.modify_data_table("dis_data", dis_data_high)
+    input_data_lowT_L = data_table.modify_data_table("t_l_data", t_l_data_low)
+    input_data_highT_L = data_table.modify_data_table("t_l_data", t_l_data_high)
+    input_data_lowvts = data_table.modify_data_table("shade_data", vts_data_low)
+    input_data_highvts = data_table.modify_data_table("shade_data", vts_data_high)
+    input_data_lowshade = data_table.modify_data_table("shade_data", shade_data_low)
+    input_data_highshade = data_table.modify_data_table("shade_data", shade_data_high)
+
     # Run hlux.m for middle (base) values, then for high and low values of
     # each parameter with other parameters kept at base values
     new_data_list = [
-        input_data_base,
         input_data_lowdis,
         input_data_highdis,
         input_data_lowT_L,
@@ -152,7 +125,8 @@ def hflux_sens(data_table, dis_high_low, t_l_high_low, vts_high_low, shade_high_
         input_data_lowshade,
         input_data_highshade,
     ]
-    results = multithreading_call(new_data_list)
+
+    results = multithreading_call(new_data_list, base_result)
 
     temp_mod_base = results[0]
     temp_mod_lowdis = results[1]

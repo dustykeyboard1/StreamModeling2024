@@ -10,7 +10,6 @@ import numpy as np
 import sys
 import os
 import time
-from datetime import datetime
 from matplotlib.backends.backend_pdf import PdfPages
 import matplotlib.pyplot as plt
 
@@ -18,9 +17,7 @@ import matplotlib.pyplot as plt
 root_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
 sys.path.append(root_dir)
 
-from Python.src.Utilities.Input_reader import readFromFile
 from Python.src.Core.hflux_errors import handle_errors
-from Python.src.Core.hflux import hflux
 from Python.src.Core.heat_flux import HeatFlux
 from Python.src.Heat_Flux.hflux_sens import hflux_sens
 from Python.src.Utilities.data_table_class import DataTable
@@ -34,10 +31,8 @@ def script_to_run():
     """
 
     #Read in input data from helper funciton.
-    t1 = datetime.now()
     filename = os.path.join(os.getcwd(), 'Data', 'example_data.xlsx')
     data_table = DataTable(filename)
-    input_data = data_table.get_input_data(filename)
 
     heat_flux = HeatFlux(data_table)
     #Use helper functions (hflux(), handle_errors() and sens())  to calculate values.
@@ -58,10 +53,8 @@ def script_to_run():
     time_temp = data_table.time_temp
     time_mod = data_table.time_mod
     handle_errors(time_mod, time_temp, temp, temp_dt, temp_mod, dist_temp, dist_mod)
-    t3 = datetime.now()
-    sens = hflux_sens(data_table, [-0.01, 0.01],[-2, 2],[-0.1, 0.1],[-0.1, 0.1])
-    t4 = datetime.now()
 
+    sens = hflux_sens(data_table, temp_mod, [-0.01, 0.01],[-2, 2],[-0.1, 0.1],[-0.1, 0.1])
 
     # Save output to CSV files using Numpy.
     # np.savetxt() - https://numpy.org/doc/stable/reference/generated/numpy.savetxt.html
@@ -79,9 +72,9 @@ def script_to_run():
     np.savetxt(f"{path}/evap_data.csv", flux_data["evap"], delimiter=",")
     np.savetxt(f"{path}/sensible_data.csv", flux_data["sensible"], delimiter=",")
     np.savetxt(f"{path}/conduction_data.csv", flux_data["conduction"], delimiter=",")
-    t2 = datetime.now()
+
     print("...Done!")
-    print("total time: ", t2-t1)
+
 
 if __name__ == "__main__":
     start_time = time.time()
