@@ -10,15 +10,17 @@ import numpy as np
 import sys
 import os
 import time
+from matplotlib.backends.backend_pdf import PdfPages
+import matplotlib.pyplot as plt
 
 # Dynamically find and set the root directory.
 root_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
 sys.path.append(root_dir)
 
-from Python.src.Utilities.Input_reader import readFromFile
 from Python.src.Core.hflux_errors import handle_errors
-from Python.src.Core.hflux import hflux
+from Python.src.Core.heat_flux import HeatFlux
 from Python.src.Heat_Flux.hflux_sens import hflux_sens
+from Python.src.Utilities.data_table_class import DataTable
 
 
 def script_to_run():
@@ -28,28 +30,37 @@ def script_to_run():
     Returns: None
     """
 
-    # Read in input data from helper funciton.
-    filename = os.path.join(os.getcwd(), "Data", "example_data.xlsx")
-    input_data = readFromFile(filename)
+    #Read in input data from helper funciton.
+    filename = os.path.join(os.getcwd(), 'Data', 'example_data.xlsx')
+    data_table = DataTable(filename)
 
-    # Use helper functions (hflux(), handle_errors() and sens())  to calculate values.
+    heat_flux = HeatFlux(data_table)
+    #Use helper functions (hflux(), handle_errors() and sens())  to calculate values.
     # Helper functions will also plot and display results.
-    temp_mod, matrix_data, node_data, flux_data = hflux(input_data)
-    rel_err, me, mae, mse, rmse, nrmse = handle_errors(
-        input_data["time_mod"][0],
-        input_data["dist_mod"][0],
-        temp_mod,
-        input_data["temp_t0_data"][0],
-        input_data["temp_x0_data"][0],
-        input_data["temp"],
-    )
-    sens = hflux_sens(input_data, [-0.01, 0.01], [-2, 2], [-0.1, 0.1], [-0.1, 0.1])
+    temp_mod, matrix_data, node_data, flux_data = heat_flux.crank_nicolson_method()
+    temp_dt = heat_flux.calculate_temp_dt(temp_mod)
+
+    temp = data_table.temp.transpose()
+    rel_err = heat_flux.calculate_percent_relative_error(temp, temp_dt)
+    me = heat_flux.calculate_mean_residual_error(temp, temp_dt)
+    mae = heat_flux.calculate_mean_absolute_residual_error(temp, temp_dt)
+    mse = heat_flux.calculate_mean_squared_error(temp, temp_dt)
+    rmse = heat_flux.calculate_root_mean_squared_error(temp, temp_dt)
+    nrmse = heat_flux.calculate_normalized_root_mean_square(rmse, temp)
+
+    dist_temp = data_table.dist_temp
+    dist_mod = data_table.dist_mod
+    time_temp = data_table.time_temp
+    time_mod = data_table.time_mod
+    handle_errors(time_mod, time_temp, temp, temp_dt, temp_mod, dist_temp, dist_mod)
+
+    sens = hflux_sens(data_table, temp_mod, [-0.01, 0.01],[-2, 2],[-0.1, 0.1],[-0.1, 0.1])
 
     # Save output to CSV files using Numpy.
     # np.savetxt() - https://numpy.org/doc/stable/reference/generated/numpy.savetxt.html
     path = os.path.join(os.getcwd(), "Results", "CSVs")
     np.savetxt(f"{path}/temp_mod.csv", temp_mod, delimiter=",")
-    np.savetxt(f"{path}/temp.csv", input_data["temp"].transpose(), delimiter=",")
+    np.savetxt(f"{path}/temp.csv", data_table.temp, delimiter=",")
     np.savetxt(f"{path}/rel_err.csv", rel_err, delimiter=",")
     np.savetxt(f"{path}/heatflux_data.csv", flux_data["heatflux"], delimiter=",")
     np.savetxt(f"{path}/solarflux_data.csv", flux_data["solarflux"], delimiter=",")
@@ -63,7 +74,6 @@ def script_to_run():
     np.savetxt(f"{path}/conduction_data.csv", flux_data["conduction"], delimiter=",")
 
     print("...Done!")
-    print()
 
 
 if __name__ == "__main__":

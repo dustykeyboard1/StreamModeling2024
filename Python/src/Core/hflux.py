@@ -7,27 +7,25 @@ Functionality: Implementation of hflux.m
 import numpy as np
 import os
 import sys
-from scipy.sparse import csc_matrix
-from scipy.sparse.linalg import spsolve
+import math
+from datetime import datetime
+from scipy.sparse import csc_matrix, dia_matrix
+import scipy.sparse.linalg as linalg
 import matplotlib.pyplot as plt
 import pandas as pd
 from matplotlib.backends.backend_pdf import PdfPages
 
-# Find the root directory dynmimically. https://stackoverflow.com/questions/73230007/how-can-i-set-a-root-directory-dynamically
+#Find the root directory dynmimically. https://stackoverflow.com/questions/73230007/how-can-i-set-a-root-directory-dynamically
 root_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
 sys.path.append(root_dir)
-from src.Utilities import Input_reader
-from src.Heat_Flux.heatflux_calculations import HeatFluxCalculations
+from src.Heat_Flux.hflux_bed_sed import hflux_bed_sed
+from src.Heat_Flux.hflux_shortwave_refl import hflux_shortwave_relf
+from src.Heat_Flux.hflux_flux import hflux_flux
 from src.Utilities.interpolation import interpolation
 
-
 def hflux(input_data):
-    hflux_calculations = HeatFluxCalculations()
-    method = input_data["settings"][0][0]
-    unattend = bool(input_data["settings"][0][4])
 
-    if not unattend:
-        print("Assigning variable names...")
+    print("Assigning variable names...")
 
     # initialize variables
     time_mod = input_data["time_mod"][0]
@@ -83,9 +81,9 @@ def hflux(input_data):
     t_zone = input_data["site_info"][0, 2]
     z = input_data["site_info"][0, 3]
 
-    sed = hflux_calculations.hflux_bed_sed(sed_type, dist_bed, dist_mod)
+    sed = hflux_bed_sed(sed_type, dist_bed, dist_mod)
 
-    sol_refl = hflux_calculations.hflux_shortwave_refl(
+    sol_refl = hflux_shortwave_relf(
         year, month, day, hour, minute, lat, lon, t_zone, time_met, time_mod
     )
 
@@ -360,7 +358,7 @@ def hflux(input_data):
                 latent[:, 0],
                 sensible[:, 0],
                 bed[:, 0],
-            ) = hflux_calculations.heatflux_calculations(
+            ) = hflux_flux(
                 input_data["settings"],
                 solar_rad_mat[:, 0],
                 air_temp_mat[:, 0],
@@ -395,6 +393,7 @@ def hflux(input_data):
 
             m = np.zeros(width_m.shape)
             d = np.zeros(width_m.shape)
+
             for i in range(timesteps - 1):
                 m[:, i] = (
                     dt
@@ -424,15 +423,14 @@ def hflux(input_data):
                     + m[1 : r - 1, i]
                 )
 
-                A = np.zeros((r, r))
-                for j in range(r - 1):
-                    A[j + 1, j] = a[j + 1, i]
-                    A[j, j] = b[j, i]
-                    A[j, j + 1] = c[j, i]
-                    A[r - 1, r - 1] = b[r - 1, i] + c[r - 1, i]
-
+                b_row = np.append(b[: r - 1, i], [b[r - 1, i] + c[r - 1, i]])
+                a_row = np.append(a[1:r, i], [0])
+                c_row = np.append([0], c[: r - 1, i])
+                data = np.stack((a_row, b_row, c_row))
+                offsets = np.array([-1, 0, 1])
+                A = dia_matrix((data, offsets), shape=(r, r))
                 A = csc_matrix(A)
-                t[:, i + 1] = spsolve(A, d[:, i])
+                t[:, i + 1] = linalg.splu(A).solve(d[:, i])
 
                 (
                     heat_flux[:, i + 1],
@@ -444,7 +442,7 @@ def hflux(input_data):
                     latent[:, i + 1],
                     sensible[:, i + 1],
                     bed[:, i + 1],
-                ) = hflux_calculations.heatflux_calculations(
+                ) = hflux_flux(
                     input_data["settings"],
                     solar_rad_mat[:, i + 1],
                     air_temp_mat[:, i + 1],
@@ -462,7 +460,6 @@ def hflux(input_data):
                     wp_m[:, i + 1],
                     width_m[:, i + 1],
                 )
-
         # Overflow error! Will come back to it for beta
         # case 2:
         #     t = np.zeros((r, timesteps))
@@ -567,196 +564,184 @@ def hflux(input_data):
 
     # 2D Plot of stream temperature
     # Create a figure
-    if not unattend:
-        fig, ax = plt.subplots()
 
-        pdf_path = os.path.join(os.getcwd(), "Results", "PDFs", "hflux.pdf")
-        plots_pdf = PdfPages(pdf_path)
 
-        # ax.imshow() - https://matplotlib.org/stable/api/_as_gen/matplotlib.axes.Axes.imshow.html
-        cax = ax.imshow(
-            t,
-            aspect="auto",
-            cmap="jet",
-            origin="lower",
-            extent=[
-                np.min(time_mod),
-                np.max(time_mod),
-                np.min(dist_mod),
-                np.max(dist_mod),
-            ],
-        )
+    pdf_path = os.path.join(os.getcwd(), "Results", "PDFs", "hflux.pdf")
+    plots_pdf = PdfPages(pdf_path)
 
-        # Add a colorbar with label
-        # plt.colorbar() - https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.colorbar.html
-        cbar = plt.colorbar(cax)
-        cbar.set_label("Temperature (°C)", fontsize=12, fontweight="bold")
+    # ax.imshow() - https://matplotlib.org/stable/api/_as_gen/matplotlib.axes.Axes.imshow.html
+    cax = ax.imshow(
+        t,
+        aspect="auto",
+        cmap="jet",
+        origin="lower",
+        extent=[np.min(time_mod), np.max(time_mod), np.min(dist_mod), np.max(dist_mod)],
+    )
 
-        # Set title and labels
-        plot_title = "Modeled Stream Temperature"
-        xlab = "Time (min)"
-        ylab = "Distance (m)"
-        ax.set_title(plot_title, fontsize=12, fontweight="bold")
-        ax.set_xlabel(xlab, fontsize=11)
-        ax.set_ylabel(ylab, fontsize=11)
+    # Add a colorbar with label
+    # plt.colorbar() - https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.colorbar.html
+    cbar = plt.colorbar(cax)
+    cbar.set_label("Temperature (°C)", fontsize=12, fontweight="bold")
 
-        # ax.invert_yaxis() - https://www.geeksforgeeks.org/how-to-reverse-axes-in-matplotlib/
-        ax.invert_yaxis()
+    # Set title and labels
+    plot_title = "Modeled Stream Temperature"
+    xlab = "Time (min)"
+    ylab = "Distance (m)"
+    ax.set_title(plot_title, fontsize=12, fontweight="bold")
+    ax.set_xlabel(xlab, fontsize=11)
+    ax.set_ylabel(ylab, fontsize=11)
 
-        # 3D plot of stream temperature
-        fig = plt.figure()
 
-        # Create a 3D axis
-        ax = fig.add_subplot(111, projection="3d")
 
-        # Create a surface plot
-        # Make x, y axis take different length - https://stackoverflow.com/questions/46607106/python-3d-plot-with-different-array-sizes
-        time_mod_sized, dist_mod_sized = np.meshgrid(time_mod, dist_mod)
-        # ax.plot_surface() - https://matplotlib.org/stable/plot_types/3D/surface3d_simple.html#plot-surface-x-y-z
-        surface = ax.plot_surface(dist_mod_sized, time_mod_sized, t, cmap="jet")
+    # 3D plot of stream temperature
+    fig = plt.figure()
 
-        # Add a colorbar with label
-        cbar = fig.colorbar(surface)
-        cbar.set_label("Temperature (°C)", fontsize=11, fontweight="bold")
+    # Create a 3D axis
+    ax = fig.add_subplot(111, projection="3d")
 
-        # Set title and labels
-        plot_title = "Modeled Stream Temperature"
-        ylab = "Time (min)"
-        xlab = "Distance (m)"
-        zlab = "Temp (°C)"
-        ax.set_title(plot_title, fontsize=12, fontweight="bold")
-        ax.set_ylabel(ylab, fontsize=11)
-        ax.set_xlabel(xlab, fontsize=11)
-        ax.set_zlabel(zlab, fontsize=11)
-        ax.invert_xaxis()
+    # Create a surface plot
+    # Make x, y axis take different length - https://stackoverflow.com/questions/46607106/python-3d-plot-with-different-array-sizes
+    time_mod_sized, dist_mod_sized = np.meshgrid(time_mod, dist_mod)
+    # ax.plot_surface() - https://matplotlib.org/stable/plot_types/3D/surface3d_simple.html#plot-surface-x-y-z
+    surface = ax.plot_surface(dist_mod_sized, time_mod_sized, t, cmap="jet")
 
-        # Plot of heat fluxes
-        fig = plt.figure()
+    # Add a colorbar with label
+    cbar = fig.colorbar(surface)
+    cbar.set_label("Temperature (°C)", fontsize=11, fontweight="bold")
 
-        # Subplot 1
-        plt.subplot(3, 2, 1)
-        plt.plot(time_mod, np.mean(heat_flux / 60, axis=0), "k")
-        plt.title("Total Heat Flux", fontweight="bold")
-        plt.ylabel("Energy Flux (W/m^2)", fontweight="bold")
-        plt.axis(
-            [
-                np.min(time_mod),
-                np.max(time_mod),
-                np.min(np.mean(heat_flux / 60, axis=0)),
-                np.max(np.mean(heat_flux / 60, axis=0)),
-            ]
-        )
+    # Set title and labels
+    plot_title = "Modeled Stream Temperature"
+    ylab = "Time (min)"
+    xlab = "Distance (m)"
+    zlab = "Temp (°C)"
+    ax.set_title(plot_title, fontsize=12, fontweight="bold")
+    ax.set_ylabel(ylab, fontsize=11)
+    ax.set_xlabel(xlab, fontsize=11)
+    ax.set_zlabel(zlab, fontsize=11)
+    ax.invert_xaxis()
 
-        # Subplot 2
-        plt.subplot(3, 2, 2)
-        plt.plot(time_mod, np.mean(shortwave, axis=0), "r")
-        plt.title("Shortwave Radiation", fontweight="bold")
-        plt.axis(
-            [
-                np.min(time_mod),
-                np.max(time_mod),
-                np.min(np.mean(shortwave, axis=0)),
-                np.max(np.mean(shortwave, axis=0)),
-            ]
-        )
+    # Plot of heat fluxes
+    fig = plt.figure()
 
-        # Subplot 3
-        plt.subplot(3, 2, 3)
-        plt.plot(time_mod, np.mean(longwave, axis=0), "b")
-        plt.title("Longwave Radiation", fontweight="bold")
-        plt.ylabel("Energy Flux (W/m^2)", fontweight="bold")
-        plt.axis(
-            [
-                np.min(time_mod),
-                np.max(time_mod),
-                np.min(np.mean(longwave, axis=0)),
-                np.max(np.mean(longwave, axis=0)),
-            ]
-        )
+    # Subplot 1
+    plt.subplot(3, 2, 1)
+    plt.plot(time_mod, np.mean(heat_flux / 60, axis=0), "k")
+    plt.title("Total Heat Flux", fontweight="bold")
+    plt.ylabel("Energy Flux (W/m^2)", fontweight="bold")
+    plt.axis(
+        [
+            np.min(time_mod),
+            np.max(time_mod),
+            np.min(np.mean(heat_flux / 60, axis=0)),
+            np.max(np.mean(heat_flux / 60, axis=0)),
+        ]
+    )
 
-        # Subplot 4
-        plt.subplot(3, 2, 4)
-        plt.plot(time_mod, np.mean(latent, axis=0), "g")
-        plt.title("Latent Heat Flux", fontweight="bold")
-        plt.axis(
-            [
-                np.min(time_mod),
-                np.max(time_mod),
-                np.min(np.mean(latent, axis=0)),
-                np.max(np.mean(latent, axis=0)),
-            ]
-        )
+    # Subplot 2
+    plt.subplot(3, 2, 2)
+    plt.plot(time_mod, np.mean(shortwave, axis=0), "r")
+    plt.title("Shortwave Radiation", fontweight="bold")
+    plt.axis(
+        [
+            np.min(time_mod),
+            np.max(time_mod),
+            np.min(np.mean(shortwave, axis=0)),
+            np.max(np.mean(shortwave, axis=0)),
+        ]
+    )
 
-        # Subplot 5
-        plt.subplot(3, 2, 5)
-        plt.plot(time_mod, np.mean(bed, axis=0), "m")
-        plt.title("Bed Conduction", fontweight="bold")
-        plt.xlabel("Time (min)", fontweight="bold")
-        plt.ylabel("Energy Flux (W/m^2)", fontweight="bold")
-        plt.axis(
-            [
-                np.min(time_mod),
-                np.max(time_mod),
-                np.min(np.mean(bed, axis=0)),
-                np.max(np.mean(bed, axis=0)),
-            ]
-        )
+    # Subplot 3
+    plt.subplot(3, 2, 3)
+    plt.plot(time_mod, np.mean(longwave, axis=0), "b")
+    plt.title("Longwave Radiation", fontweight="bold")
+    plt.ylabel("Energy Flux (W/m^2)", fontweight="bold")
+    plt.axis(
+        [
+            np.min(time_mod),
+            np.max(time_mod),
+            np.min(np.mean(longwave, axis=0)),
+            np.max(np.mean(longwave, axis=0)),
+        ]
+    )
 
-        # Subplot 6
-        plt.subplot(3, 2, 6)
-        plt.plot(time_mod, np.mean(sensible, axis=0), "y")
-        plt.title("Sensible Heat Flux", fontweight="bold")
-        plt.xlabel("Time (min)", fontweight="bold")
-        plt.axis(
-            [
-                np.min(time_mod),
-                np.max(time_mod),
-                np.min(np.mean(sensible, axis=0)),
-                np.max(np.mean(sensible, axis=0)),
-            ]
-        )
+    # Subplot 4
+    plt.subplot(3, 2, 4)
+    plt.plot(time_mod, np.mean(latent, axis=0), "g")
+    plt.title("Latent Heat Flux", fontweight="bold")
+    plt.axis(
+        [
+            np.min(time_mod),
+            np.max(time_mod),
+            np.min(np.mean(latent, axis=0)),
+            np.max(np.mean(latent, axis=0)),
+        ]
+    )
 
-        # to avoid labels overlapping
-        # cite: https://saturncloud.io/blog/how-to-improve-label-placement-for-matplotlib-scatter-chart/#:~:text=Matplotlib%20provides%20a%20feature%20called,the%20labels%20to%20minimize%20overlap.
-        plt.tight_layout()
+    # Subplot 5
+    plt.subplot(3, 2, 5)
+    plt.plot(time_mod, np.mean(bed, axis=0), "m")
+    plt.title("Bed Conduction", fontweight="bold")
+    plt.xlabel("Time (min)", fontweight="bold")
+    plt.ylabel("Energy Flux (W/m^2)", fontweight="bold")
+    plt.axis(
+        [
+            np.min(time_mod),
+            np.max(time_mod),
+            np.min(np.mean(bed, axis=0)),
+            np.max(np.mean(bed, axis=0)),
+        ]
+    )
 
-        # Plot of heat fluxes: comparison
-        plt.figure()
+    # Subplot 6
+    plt.subplot(3, 2, 6)
+    plt.plot(time_mod, np.mean(sensible, axis=0), "y")
+    plt.title("Sensible Heat Flux", fontweight="bold")
+    plt.xlabel("Time (min)", fontweight="bold")
+    plt.axis(
+        [
+            np.min(time_mod),
+            np.max(time_mod),
+            np.min(np.mean(sensible, axis=0)),
+            np.max(np.mean(sensible, axis=0)),
+        ]
+    )
 
-        # Plot data
-        plt.plot(
-            time_mod, np.mean(heat_flux / 60, axis=0), "k", label="Total Heat Flux"
-        )
-        plt.plot(time_mod, np.mean(shortwave, axis=0), "r", label="Solar Radiation")
-        plt.plot(time_mod, np.mean(longwave, axis=0), "b", label="Longwave Radiation")
-        plt.plot(time_mod, np.mean(latent, axis=0), "g", label="Latent Heat Flux")
-        plt.plot(time_mod, np.mean(bed, axis=0), "c", label="Streambed Conduction")
-        plt.plot(time_mod, np.mean(sensible, axis=0), "m", label="Sensible Heat Flux")
 
-        # Set axis properties
-        plt.xlim([np.min(time_mod), np.max(time_mod)])
 
-        # Add title and labels
-        plt.title("Energy Fluxes", fontsize=12, fontweight="bold")
-        plt.xlabel("Time (min)", fontsize=11, fontweight="bold")
-        plt.ylabel("Energy Flux (W/m^2)", fontsize=11, fontweight="bold")
+    # Plot of heat fluxes: comparison
+    plt.figure()
 
-        # Add legend
-        plt.legend(loc="best")
+    # Plot data
+    plt.plot(time_mod, np.mean(heat_flux / 60, axis=0), "k", label="Total Heat Flux")
+    plt.plot(time_mod, np.mean(shortwave, axis=0), "r", label="Solar Radiation")
+    plt.plot(time_mod, np.mean(longwave, axis=0), "b", label="Longwave Radiation")
+    plt.plot(time_mod, np.mean(latent, axis=0), "g", label="Latent Heat Flux")
+    plt.plot(time_mod, np.mean(bed, axis=0), "c", label="Streambed Conduction")
+    plt.plot(time_mod, np.mean(sensible, axis=0), "m", label="Sensible Heat Flux")
 
-        # CITE: https://www.geeksforgeeks.org/save-multiple-matplotlib-figures-in-single-pdf-file-using-python/
-        # get_fignums Return list of existing
-        # figure numbers
-        fig_nums = plt.get_fignums()
-        figs = [plt.figure(n) for n in fig_nums]
 
-        # iterating over the numbers in list
-        for fig in figs:
-            # and saving the files
-            fig.savefig(plots_pdf, format="pdf")
 
-        plots_pdf.close()
-        plt.close("all")
+    # Add title and labels
+    plt.title("Energy Fluxes", fontsize=12, fontweight="bold")
+    plt.xlabel("Time (min)", fontsize=11, fontweight="bold")
+    plt.ylabel("Energy Flux (W/m^2)", fontsize=11, fontweight="bold")
+
+    # Add legend
+    plt.legend(loc="best")
+
+    # CITE: https://www.geeksforgeeks.org/save-multiple-matplotlib-figures-in-single-pdf-file-using-python/
+    # get_fignums Return list of existing
+    # figure numbers
+    fig_nums = plt.get_fignums()
+    figs = [plt.figure(n) for n in fig_nums]
+
+    # iterating over the numbers in list
+    for fig in figs:
+        # and saving the files
+        fig.savefig(plots_pdf, format="pdf")
+
+    plots_pdf.close()
+    plt.close("all")
 
     if method == 1:
         matrix_data = {}
