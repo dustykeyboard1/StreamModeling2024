@@ -117,7 +117,7 @@ class SubmitButton(QPushButton):
     def validate_submission(self):
         filename = self._results[0]
         if not os.path.exists(filename):
-            self._form.addRow(ErrorMessage("Path/file must be valid"))
+            self._form.addRow(ErrorMessage("Input path/file must be valid"))
             return False
         
         settings = self._results[1:5]
