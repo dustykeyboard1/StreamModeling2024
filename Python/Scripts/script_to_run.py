@@ -30,12 +30,12 @@ def script_to_run():
     Returns: None
     """
 
-    #Read in input data from helper funciton.
-    filename = os.path.join(os.getcwd(), 'Data', 'example_data.xlsx')
+    # Read in input data from helper funciton.
+    filename = os.path.join(os.getcwd(), "Data", "example_data.xlsx")
     data_table = DataTable(filename)
 
     heat_flux = HeatFlux(data_table)
-    #Use helper functions (hflux(), handle_errors() and sens())  to calculate values.
+    # Use helper functions (hflux(), handle_errors() and sens())  to calculate values.
     # Helper functions will also plot and display results.
     temp_mod, matrix_data, node_data, flux_data = heat_flux.crank_nicolson_method()
     temp_dt = heat_flux.calculate_temp_dt(temp_mod)
@@ -52,9 +52,19 @@ def script_to_run():
     dist_mod = data_table.dist_mod
     time_temp = data_table.time_temp
     time_mod = data_table.time_mod
+
+    # hflux_resiudal = heat_flux.flux_residual_plot()
+    # hflux_3d = heat_flux.hlfux_3d_plot()
+    hflux_subplots = heat_flux.make_subplots()
+    hflux_subplots.show()
+    input()
+    sys.exit()
+
     handle_errors(time_mod, time_temp, temp, temp_dt, temp_mod, dist_temp, dist_mod)
 
-    sens = hflux_sens(data_table, temp_mod, [-0.01, 0.01],[-2, 2],[-0.1, 0.1],[-0.1, 0.1])
+    sens = hflux_sens(
+        data_table, temp_mod, [-0.01, 0.01], [-2, 2], [-0.1, 0.1], [-0.1, 0.1]
+    )
 
     # Save output to CSV files using Numpy.
     # np.savetxt() - https://numpy.org/doc/stable/reference/generated/numpy.savetxt.html
