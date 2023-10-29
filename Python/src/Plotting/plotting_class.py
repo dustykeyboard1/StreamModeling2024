@@ -7,7 +7,8 @@ Functionality: Construct a plotting class for plotting capabilities.
 
 import matplotlib.pyplot as plt
 import numpy as np
-from scipy.ndimage import gaussian_filter
+from matplotlib.backends.backend_pdf import PdfPages
+import os
 
 
 class Plotting:
@@ -106,7 +107,7 @@ class Plotting:
         plt.autoscale(enable=True)
         return ax
 
-    def make_multiple_line_plot(
+    def make_three_line_plot(
         self,
         low_x,
         low_y,
@@ -174,3 +175,61 @@ class Plotting:
         plt.tight_layout()
         ax.invert_yaxis()
         return fig
+
+    def heat_flux_comparison(
+        self,
+        x,
+        y1,
+        marker1,
+        label1,
+        y2,
+        marker2,
+        label2,
+        y3,
+        marker3,
+        label3,
+        y4,
+        marker4,
+        label4,
+        y5,
+        marker5,
+        label5,
+        y6,
+        marker6,
+        label6,
+        title,
+        xlabel,
+        ylabel,
+    ):
+        fig = plt.figure()
+        plt.plot(x, y1, marker1, label=label1)
+        plt.plot(x, y2, marker2, label=label2)
+        plt.plot(x, y3, marker3, label=label3)
+        plt.plot(x, y4, marker4, label=label4)
+        plt.plot(x, y5, marker5, label=label5)
+        plt.plot(x, y6, marker6, label=label6)
+        plt.title(title, fontweight="bold")
+        plt.xlabel(xlabel)
+        plt.ylabel(ylabel)
+        plt.legend(loc="best")
+        plt.tight_layout()
+        return fig
+
+    def save_plots(self, *args):
+        """
+        Takes a list of figures and saves them to a pdf.
+
+        Args:
+            *args ([figures]): list of figures to save.
+
+        Return:
+            None
+        """
+        pdf_path = os.path.join(os.getcwd(), "Results", "PDFs", "hflux.pdf")
+        print(f"Saving PDF to {pdf_path}...")
+        plots_pdf = PdfPages(pdf_path)
+        for fig in args:
+            plots_pdf.savefig(fig)
+        plots_pdf.close()
+        plt.close("all")
+        print("Done!")

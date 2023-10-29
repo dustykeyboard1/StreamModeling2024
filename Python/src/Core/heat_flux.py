@@ -702,6 +702,13 @@ class HeatFlux:
     def calculate_normalized_root_mean_square(self, rmse, temp):
         return (rmse / (np.max(temp) - np.min(temp))) * 100
 
+    def create_hlux_plots(self):
+        hflux_resiudal = self.flux_residual_plot()
+        hflux_3d = self.hlfux_3d_plot()
+        hflux_subplots = self.make_subplots()
+        comparison_plot = self.make_comparison_plot()
+        self.plc.save_plots(hflux_resiudal, hflux_3d, hflux_subplots, comparison_plot)
+
     def flux_residual_plot(self):
         plot_title = "Modeled Stream Temperature"
         xlab = "Time (min)"
@@ -848,4 +855,31 @@ class HeatFlux:
             marker="y",
         )
         plt.tight_layout()
+        return fig
+
+    def make_comparison_plot(self):
+        fig = self.plc.heat_flux_comparison(
+            x=self.data_table.time_mod,
+            y1=np.mean(self.heat_flux_for_plot / 60, axis=0),
+            marker1="k",
+            label1="Total Heat Flux",
+            y2=np.mean(self.shortwave_for_plot, axis=0),
+            marker2="r",
+            label2="Solar Radiation",
+            y3=np.mean(self.longwave_for_plot, axis=0),
+            marker3="b",
+            label3="Longwave Radiation",
+            y4=np.mean(self.latent_for_plot, axis=0),
+            marker4="g",
+            label4="Latent Heat Flux",
+            y5=np.mean(self.bed_for_plot, axis=0),
+            marker5="c",
+            label5="Streambed Conduction",
+            y6=np.mean(self.sensible_for_plot, axis=0),
+            marker6="m",
+            label6="Sensible Heat Flux",
+            title="Energy Fluxes",
+            xlabel="Time (min)",
+            ylabel="Energy Flux (W/m^2)",
+        )
         return fig

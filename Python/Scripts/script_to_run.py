@@ -53,11 +53,7 @@ def script_to_run():
     time_temp = data_table.time_temp
     time_mod = data_table.time_mod
 
-    # hflux_resiudal = heat_flux.flux_residual_plot()
-    # hflux_3d = heat_flux.hlfux_3d_plot()
-    hflux_subplots = heat_flux.make_subplots()
-    hflux_subplots.show()
-    input()
+    hflux_resiudal = heat_flux.create_hlux_plots()
     sys.exit()
 
     handle_errors(time_mod, time_temp, temp, temp_dt, temp_mod, dist_temp, dist_mod)
