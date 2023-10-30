@@ -104,21 +104,9 @@ class Plotting:
         ax.set_ylabel(ylabel)
         ax.set_xlabel(xlabel)
         ax.axis(axis)
-        plt.autoscale(enable=True)
         return ax
 
-    def make_three_line_plot(
-        self,
-        low_x,
-        low_y,
-        base_x,
-        base_y,
-        high_x,
-        high_y,
-        title,
-        xlabel,
-        ylabel,
-    ):
+    def make_three_line_plot(self, x, low_y, base_y, high_y, title, xlabel, ylabel, ax):
         """
         Creates a 3 line plot for low, base and high.
 
@@ -135,18 +123,15 @@ class Plotting:
         Return:
             Figure with plotted data.
         """
-        fig = plt.figure()
-
-        plt.plot(low_x, low_y, "--b", linewidth=2)
-        plt.plot(base_x, base_y, "k", linewidth=2)
-        plt.plot(high_x, high_y, "--r", linewidth=2)
-        plt.title(title, fontweight="bold")
-        plt.xlabel(xlabel)
-        plt.ylabel(ylabel)
-        plt.autoscale(enable=True)
-        plt.legend(["Low", "Base", "High"])
-        plt.tight_layout()
-        return fig
+        ax.plot(x, low_y, "--b", linewidth=2)
+        ax.plot(x, base_y, "k", linewidth=2)
+        ax.plot(x, high_y, "--r", linewidth=2)
+        ax.set_title(title, fontweight="bold")
+        ax.set_xlabel(xlabel)
+        ax.set_ylabel(ylabel)
+        ax.legend(["Low", "Base", "High"])
+        ax.set_xlim([np.min(x), np.max(x)])
+        return ax
 
     def make_residual_plot(self, data, xlabel, ylabel, title, colorbar_label, extent):
         """
@@ -287,3 +272,30 @@ class Plotting:
         plots_pdf.close()
         plt.close("all")
         print("Done!")
+
+    def make_bar_charts(self, change):
+        fig = plt.figure()
+        # Bar Chart - https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.bar.html#matplotlib.pyplot.bar
+        plt.bar(
+            ["Discharge", "GW Temp", "VTS", "Shade"],
+            change[:, 0],
+            label="Decrease Value",
+        )
+        plt.bar(
+            ["Discharge", "GW Temp", "VTS", "Shade"],
+            change[:, 1],
+            label="Increase Value",
+        )
+        plt.title(
+            "Change in Average Stream Temperature With Changing Variables",
+            fontname="Arial",
+            fontsize=12,
+            fontweight="bold",
+        )
+        plt.ylabel("Change (°C)", fontname="Arial", fontsize=12, fontweight="bold")
+        plt.xlabel(
+            "Adjusted Variable", fontname="Arial", fontsize=12, fontweight="bold"
+        )
+        plt.legend(loc="best")
+        plt.tight_layout()
+        return fig

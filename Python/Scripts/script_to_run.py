@@ -19,9 +19,10 @@ sys.path.append(root_dir)
 
 from Python.src.Core.hflux_errors import handle_errors
 from Python.src.Core.heat_flux import HeatFlux
-from Python.src.Heat_Flux.hflux_sens import hflux_sens
+from Python.src.Heat_Flux.hflux_sens import HfluxSens
 from Python.src.Utilities.data_table_class import DataTable
 from Python.src.Plotting.hflux_errors_plotting import create_hflux_errors_plots
+from Python.src.Heat_Flux.hflux_sens import HfluxSens
 
 
 def script_to_run():
@@ -58,13 +59,12 @@ def script_to_run():
     create_hflux_errors_plots(
         (temp - temp_dt), dist_temp, temp, temp_mod, dist_mod, time_temp
     )
-    sys.exit()
+    # handle_errors(time_mod, time_temp, temp, temp_dt, temp_mod, dist_temp, dist_mod)
+    hflux_sens = HfluxSens(root_dir)
+    hflux_sens.hflux_sens(data_table, [-0.01, 0.01], [-2, 2], [-0.1, 0.1], [-0.1, 0.1])
 
-    handle_errors(time_mod, time_temp, temp, temp_dt, temp_mod, dist_temp, dist_mod)
-
-    sens = hflux_sens(
-        data_table, temp_mod, [-0.01, 0.01], [-2, 2], [-0.1, 0.1], [-0.1, 0.1]
-    )
+    sens = hflux_sens.create_new_results(temp_mod)
+    hflux_sens.make_sens_plots(data_table)
 
     # Save output to CSV files using Numpy.
     # np.savetxt() - https://numpy.org/doc/stable/reference/generated/numpy.savetxt.html
