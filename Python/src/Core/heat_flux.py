@@ -707,7 +707,9 @@ class HeatFlux:
         hflux_3d = self.hlfux_3d_plot()
         hflux_subplots = self.make_subplots()
         comparison_plot = self.make_comparison_plot()
-        self.plc.save_plots(hflux_resiudal, hflux_3d, hflux_subplots, comparison_plot)
+        self.plc.save_plots(
+            hflux_resiudal, hflux_3d, hflux_subplots, comparison_plot, path="hflux"
+        )
 
     def flux_residual_plot(self):
         plot_title = "Modeled Stream Temperature"

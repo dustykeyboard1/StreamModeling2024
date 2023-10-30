@@ -215,7 +215,61 @@ class Plotting:
         plt.tight_layout()
         return fig
 
-    def save_plots(self, *args):
+    def make_two_line_plot(self, dist_temp, temp, temp_mod, dist_mod, time_temp):
+        fig, axs = plt.subplots(2, 1)
+        axs[0].plot(
+            dist_temp,
+            np.mean(temp, axis=1),
+            "--ko",
+            linewidth=1.5,
+            markerfacecolor="b",
+            markersize=8,
+        )
+        axs[0].plot(dist_mod, np.mean(temp_mod, axis=1), "r", linewidth=1.5)
+
+        # Xlim - https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.xlim.html
+        # Ylim - https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.ylim.html
+        mean_temp_axis1 = np.mean(temp, axis=1)
+        mean_temp_mod_axis1 = np.mean(temp_mod, axis=1)
+        # Set the X and Y limites according to MATLAB code.
+        plt.xlim([np.min(dist_temp), np.max(dist_temp)])
+        plt.ylim(
+            [
+                min(mean_temp_axis1.min(), mean_temp_mod_axis1.min()),
+                max(mean_temp_axis1.max(), mean_temp_mod_axis1.max()),
+            ]
+        )
+
+        plt.title("Stream Temperature Along the Reach", fontsize=11, fontweight="bold")
+        plt.xlabel("Distance Downstream (m)", fontsize=9)
+        plt.ylabel("Temperature (°C)", fontsize=9)
+        plt.legend(["Measured", "Modeled"], loc="best")
+
+        # Create matching plot from MATLAB code.
+        # Incorrect Graph, coming back for beta
+        axs[1].plot(dist_temp, np.mean(temp, axis=1), "b", linewidth=1.5)
+        axs[1].plot(dist_mod, np.mean(temp_mod, axis=1), "r", linewidth=1.5)
+
+        mean_temp = np.mean(temp, axis=0)
+        mean_temp_mod = np.mean(temp_mod, axis=0)
+        # Set the X and Y limits according to matlab code.
+        plt.xlim([np.min(time_temp), np.max(time_temp)])
+        plt.ylim(
+            [
+                min(mean_temp.min(), mean_temp_mod.min()) - 1,
+                max(mean_temp.max(), mean_temp_mod.max()) + 1,
+            ]
+        )
+
+        plt.title("Stream Temperature Over Time", fontsize=11, fontweight="bold")
+        plt.xlabel("Time (min)", fontsize=9)
+        plt.ylabel("Temperature (°C)", fontsize=9)
+        plt.legend(["Measured", "Modeled"], loc="best")
+
+        plt.tight_layout()
+        return fig
+
+    def save_plots(self, *args, path):
         """
         Takes a list of figures and saves them to a pdf.
 
@@ -225,7 +279,7 @@ class Plotting:
         Return:
             None
         """
-        pdf_path = os.path.join(os.getcwd(), "Results", "PDFs", "hflux.pdf")
+        pdf_path = os.path.join(os.getcwd(), "Results", "PDFs", f"{path}.pdf")
         print(f"Saving PDF to {pdf_path}...")
         plots_pdf = PdfPages(pdf_path)
         for fig in args:

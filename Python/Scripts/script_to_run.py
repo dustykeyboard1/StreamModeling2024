@@ -21,6 +21,7 @@ from Python.src.Core.hflux_errors import handle_errors
 from Python.src.Core.heat_flux import HeatFlux
 from Python.src.Heat_Flux.hflux_sens import hflux_sens
 from Python.src.Utilities.data_table_class import DataTable
+from Python.src.Plotting.hflux_errors_plotting import create_hflux_errors_plots
 
 
 def script_to_run():
@@ -53,7 +54,10 @@ def script_to_run():
     time_temp = data_table.time_temp
     time_mod = data_table.time_mod
 
-    hflux_resiudal = heat_flux.create_hlux_plots()
+    heat_flux.create_hlux_plots()
+    create_hflux_errors_plots(
+        (temp - temp_dt), dist_temp, temp, temp_mod, dist_mod, time_temp
+    )
     sys.exit()
 
     handle_errors(time_mod, time_temp, temp, temp_dt, temp_mod, dist_temp, dist_mod)
