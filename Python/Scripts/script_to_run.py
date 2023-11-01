@@ -55,7 +55,8 @@ def script_to_run():
     time_temp = data_table.time_temp
     time_mod = data_table.time_mod
 
-    heat_flux.create_hlux_plots()
+    heat_flux.create_hlux_plots(temp_mod, flux_data)
+    sys.exit()
     create_hflux_errors_plots(
         (temp - temp_dt), dist_temp, temp, temp_mod, dist_mod, time_temp
     )

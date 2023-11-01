@@ -556,13 +556,6 @@ class HeatFlux:
         flux_data["sensible"] = sensible
         flux_data["conduction"] = bed
 
-        self.bed_for_plot = bed
-        self.sensible_for_plot = sensible
-        self.latent_for_plot = latent
-        self.longwave_for_plot = longwave
-        self.shortwave_for_plot = shortwave
-        self.heat_flux_for_plot = heat_flux
-        self.t_for_plot = t
         return t, matrix_data, node_data, flux_data
 
     def runge_kutta_method():
@@ -702,22 +695,22 @@ class HeatFlux:
     def calculate_normalized_root_mean_square(self, rmse, temp):
         return (rmse / (np.max(temp) - np.min(temp))) * 100
 
-    def create_hlux_plots(self):
-        hflux_resiudal = self.flux_residual_plot()
-        hflux_3d = self.hlfux_3d_plot()
-        hflux_subplots = self.make_subplots()
-        comparison_plot = self.make_comparison_plot()
+    def create_hlux_plots(self, temp_mod, flux_data):
+        hflux_resiudal = self.flux_residual_plot(temp_mod)
+        hflux_3d = self.hlfux_3d_plot(temp_mod)
+        hflux_subplots = self.make_subplots(flux_data)
+        comparison_plot = self.make_comparison_plot(flux_data)
         self.plc.save_plots(
             hflux_resiudal, hflux_3d, hflux_subplots, comparison_plot, path="hflux"
         )
 
-    def flux_residual_plot(self):
+    def flux_residual_plot(self, t):
         plot_title = "Modeled Stream Temperature"
         xlab = "Time (min)"
         ylab = "Distance (m)"
         clab = "Temperature (°C)"
         fig = self.plc.make_residual_plot(
-            self.t_for_plot,
+            t,
             xlab,
             ylab,
             plot_title,
@@ -731,7 +724,7 @@ class HeatFlux:
         )
         return fig
 
-    def hlfux_3d_plot(self):
+    def hlfux_3d_plot(self, t):
         """
         Creates and saves all hflux plots
         """
@@ -743,7 +736,7 @@ class HeatFlux:
         fig = self.plc.make3dplot(
             self.data_table.time_mod,
             self.data_table.dist_mod,
-            self.t_for_plot,
+            t,
             xlab,
             ylab,
             zlab,
@@ -752,21 +745,21 @@ class HeatFlux:
         )
         return fig
 
-    def make_subplots(self):
+    def make_subplots(self, flux_data):
         fig, axs = plt.subplots(3, 2)
 
         # First Subplot
         self.plc.make_single_plot(
             x=self.data_table.time_mod,
-            y=np.mean(self.heat_flux_for_plot / 60, axis=0),
+            y=np.mean(flux_data["heatflux"], axis=0),
             ylabel="Energy Flux (W/m^2)",
             title="Total Heat Flux",
             marker="k",
             axis=[
                 np.min(self.data_table.time_mod),
                 np.max(self.data_table.time_mod),
-                np.min(np.mean(self.heat_flux_for_plot / 60, axis=0)),
-                np.max(np.mean(self.heat_flux_for_plot / 60, axis=0)),
+                np.min(np.mean(flux_data["heatflux"], axis=0)),
+                np.max(np.mean(flux_data["heatflux"], axis=0)),
             ],
             xlabel=None,
             ax=axs[0, 0],
@@ -775,7 +768,7 @@ class HeatFlux:
         # Second subplot
         self.plc.make_single_plot(
             x=self.data_table.time_mod,
-            y=np.mean(self.shortwave_for_plot, axis=0),
+            y=np.mean(flux_data["solarflux"], axis=0),
             marker="r",
             title="Shortwave Radiation",
             xlabel=None,
@@ -783,8 +776,8 @@ class HeatFlux:
             axis=[
                 np.min(self.data_table.time_mod),
                 np.max(self.data_table.time_mod),
-                np.min(np.mean(self.shortwave_for_plot, axis=0)),
-                np.max(np.mean(self.shortwave_for_plot, axis=0)),
+                np.min(np.mean(flux_data["solarflux"], axis=0)),
+                np.max(np.mean(flux_data["solarflux"], axis=0)),
             ],
             ax=axs[0, 1],
         )
@@ -792,15 +785,15 @@ class HeatFlux:
         # Third Subplot
         self.plc.make_single_plot(
             x=self.data_table.time_mod,
-            y=np.mean(self.longwave_for_plot, axis=0),
+            y=np.mean(flux_data["long"], axis=0),
             marker="b",
             title="Longwave Radiation",
             ylabel="Energy Flux (W/m^2)",
             axis=[
                 np.min(self.data_table.time_mod),
                 np.max(self.data_table.time_mod),
-                np.min(np.mean(self.longwave_for_plot, axis=0)),
-                np.max(np.mean(self.longwave_for_plot, axis=0)),
+                np.min(np.mean(flux_data["long"], axis=0)),
+                np.max(np.mean(flux_data["long"], axis=0)),
             ],
             xlabel=None,
             ax=axs[1, 0],
@@ -809,14 +802,14 @@ class HeatFlux:
         # Fourth Subplot
         self.plc.make_single_plot(
             x=self.data_table.time_mod,
-            y=np.mean(self.latent_for_plot, axis=0),
+            y=np.mean(flux_data["evap"], axis=0),
             marker="g",
             title="Latent Heat Flux",
             axis=[
                 np.min(self.data_table.time_mod),
                 np.max(self.data_table.time_mod),
-                np.min(np.mean(self.latent_for_plot, axis=0)),
-                np.max(np.mean(self.latent_for_plot, axis=0)),
+                np.min(np.mean(flux_data["evap"], axis=0)),
+                np.max(np.mean(flux_data["evap"], axis=0)),
             ],
             ax=axs[1, 1],
             ylabel=None,
@@ -826,7 +819,7 @@ class HeatFlux:
         # Fifth Subplot
         self.plc.make_single_plot(
             x=self.data_table.time_mod,
-            y=np.mean(self.bed_for_plot, axis=0),
+            y=np.mean(flux_data["conduction"], axis=0),
             marker="m",
             title="Bed Conduction",
             xlabel="Time (min)",
@@ -834,8 +827,8 @@ class HeatFlux:
             axis=[
                 np.min(self.data_table.time_mod),
                 np.max(self.data_table.time_mod),
-                np.min(np.mean(self.bed_for_plot, axis=0)),
-                np.max(np.mean(self.bed_for_plot, axis=0)),
+                np.min(np.mean(flux_data["conduction"], axis=0)),
+                np.max(np.mean(flux_data["conduction"], axis=0)),
             ],
             ax=axs[2, 0],
         )
@@ -843,15 +836,15 @@ class HeatFlux:
         # Sixth Subplot
         self.plc.make_single_plot(
             x=self.data_table.time_mod,
-            y=np.mean(self.sensible_for_plot, axis=0),
+            y=np.mean(flux_data["sensible"], axis=0),
             title="Sensible Heat Flux",
             xlabel="Time (min)",
             ylabel=None,
             axis=[
                 np.min(self.data_table.time_mod),
                 np.max(self.data_table.time_mod),
-                np.min(np.mean(self.sensible_for_plot, axis=0)),
-                np.max(np.mean(self.sensible_for_plot, axis=0)),
+                np.min(np.mean(flux_data["sensible"], axis=0)),
+                np.max(np.mean(flux_data["sensible"], axis=0)),
             ],
             ax=axs[2, 1],
             marker="y",
@@ -859,25 +852,25 @@ class HeatFlux:
         plt.tight_layout()
         return fig
 
-    def make_comparison_plot(self):
+    def make_comparison_plot(self, flux_data):
         fig = self.plc.heat_flux_comparison(
             x=self.data_table.time_mod,
-            y1=np.mean(self.heat_flux_for_plot / 60, axis=0),
+            y1=np.mean(flux_data["heatflux"] / 60, axis=0),
             marker1="k",
             label1="Total Heat Flux",
-            y2=np.mean(self.shortwave_for_plot, axis=0),
+            y2=np.mean(flux_data["solarflux"], axis=0),
             marker2="r",
             label2="Solar Radiation",
-            y3=np.mean(self.longwave_for_plot, axis=0),
+            y3=np.mean(flux_data["long"], axis=0),
             marker3="b",
             label3="Longwave Radiation",
-            y4=np.mean(self.latent_for_plot, axis=0),
+            y4=np.mean(flux_data["evap"], axis=0),
             marker4="g",
             label4="Latent Heat Flux",
-            y5=np.mean(self.bed_for_plot, axis=0),
+            y5=np.mean(flux_data["conduction"], axis=0),
             marker5="c",
             label5="Streambed Conduction",
-            y6=np.mean(self.sensible_for_plot, axis=0),
+            y6=np.mean(flux_data["sensible"], axis=0),
             marker6="m",
             label6="Sensible Heat Flux",
             title="Energy Fluxes",
