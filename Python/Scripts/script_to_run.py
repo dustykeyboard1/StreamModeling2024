@@ -57,7 +57,7 @@ def script_to_run():
 
     heat_flux.create_hlux_plots(temp_mod, flux_data)
     create_hflux_errors_plots(
-        (temp - temp_dt), dist_temp, temp, temp_mod, dist_mod, time_temp
+        (temp - temp_dt), dist_temp, temp, temp_mod, dist_mod, time_temp, time_mod
     )
     hflux_sens = HfluxSens(root_dir)
     high_low_dict = hflux_sens.hflux_sens(

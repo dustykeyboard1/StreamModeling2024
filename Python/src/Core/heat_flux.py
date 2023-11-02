@@ -710,12 +710,12 @@ class HeatFlux:
         ylab = "Distance (m)"
         clab = "Temperature (°C)"
         fig = self.plc.make_residual_plot(
-            t,
-            xlab,
-            ylab,
-            plot_title,
-            clab,
-            [
+            data=t,
+            xlabel=xlab,
+            ylabel=ylab,
+            title=plot_title,
+            colorbar_label=clab,
+            extent=[
                 np.min(self.data_table.time_mod),
                 np.max(self.data_table.time_mod),
                 np.min(self.data_table.dist_mod),

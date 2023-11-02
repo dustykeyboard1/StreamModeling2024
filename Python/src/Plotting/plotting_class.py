@@ -150,13 +150,11 @@ class Plotting:
         """
 
         fig, ax = plt.subplots()
-        plt.imshow(data, aspect="auto", cmap="jet", origin="lower", extent=None)
+        plt.imshow(data, aspect="auto", cmap="jet", origin="lower", extent=extent)
         plt.colorbar(label=colorbar_label)
-        plt.axis("square")
         plt.title(title, fontsize=11, fontweight="bold")
         plt.xlabel(xlabel, fontsize=9)
         plt.ylabel(ylabel, fontsize=9)
-        plt.autoscale(enable=True)
         plt.tight_layout()
         ax.invert_yaxis()
         return fig
@@ -200,7 +198,9 @@ class Plotting:
         plt.tight_layout()
         return fig
 
-    def make_two_line_plot(self, dist_temp, temp, temp_mod, dist_mod, time_temp):
+    def make_two_line_plot(
+        self, dist_temp, temp, temp_mod, dist_mod, time_temp, time_mod
+    ):
         fig, axs = plt.subplots(2, 1)
         axs[0].plot(
             dist_temp,
@@ -232,8 +232,8 @@ class Plotting:
 
         # Create matching plot from MATLAB code.
         # Incorrect Graph, coming back for beta
-        axs[1].plot(dist_temp, np.mean(temp, axis=1), "b", linewidth=1.5)
-        axs[1].plot(dist_mod, np.mean(temp_mod, axis=1), "r", linewidth=1.5)
+        axs[1].plot(time_temp, np.mean(temp, axis=0), "b", linewidth=1.5)
+        axs[1].plot(time_mod, np.mean(temp_mod, axis=0), "r", linewidth=1.5)
 
         mean_temp = np.mean(temp, axis=0)
         mean_temp_mod = np.mean(temp_mod, axis=0)
