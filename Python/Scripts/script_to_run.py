@@ -56,16 +56,16 @@ def script_to_run():
     time_mod = data_table.time_mod
 
     heat_flux.create_hlux_plots(temp_mod, flux_data)
-    sys.exit()
     create_hflux_errors_plots(
         (temp - temp_dt), dist_temp, temp, temp_mod, dist_mod, time_temp
     )
-    # handle_errors(time_mod, time_temp, temp, temp_dt, temp_mod, dist_temp, dist_mod)
     hflux_sens = HfluxSens(root_dir)
-    hflux_sens.hflux_sens(data_table, [-0.01, 0.01], [-2, 2], [-0.1, 0.1], [-0.1, 0.1])
+    high_low_dict = hflux_sens.hflux_sens(
+        data_table, [-0.01, 0.01], [-2, 2], [-0.1, 0.1], [-0.1, 0.1]
+    )
 
-    sens = hflux_sens.create_new_results(temp_mod)
-    hflux_sens.make_sens_plots(data_table)
+    sens = hflux_sens.create_new_results(temp_mod, high_low_dict)
+    hflux_sens.make_sens_plots(data_table, sens)
 
     # Save output to CSV files using Numpy.
     # np.savetxt() - https://numpy.org/doc/stable/reference/generated/numpy.savetxt.html
