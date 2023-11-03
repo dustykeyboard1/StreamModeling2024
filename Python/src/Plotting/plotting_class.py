@@ -184,6 +184,36 @@ class Plotting:
         xlabel,
         ylabel,
     ):
+        """
+        Creates the heat flux camparison plot.
+
+        Args:
+            x (ndarry): x data for the plot.
+            y1 (ndarry): the first set of y data.
+            marker1 (char): type of marker to use for y1.
+            label1 (str): the label for y1 data.
+            y2 (ndarry): the second set of y data.
+            marker2 (char): type of marker to use for y2.
+            label2 (str): the label for y2 data.
+            y3 (ndarry): the third set of y data.
+            marker3 (char): type of marker to use for y3.
+            label3 (str): the label for y3 data.
+            y4 (ndarry): the fourth set of y data.
+            marker4 (char): type of marker to use for y4.
+            label4 (str): the label for y4 data.
+            y5 (ndarry): the fifth set of y data.
+            marker5 (char): type of marker to use for y5.
+            label5 (str): the label for y5 data.
+            y6 (ndarry): the sixth set of y data.
+            marker6 (char): type of marker to use for y6.
+            label6 (str): the label for y6 data.
+            title (str): the title of the plot.
+            xlabel (str): the x axis label.
+            ylabel (str): the y axis label.
+
+        Returns:
+            fig (matplotlib figure): figure containing the 6 lines.
+        """
         fig = plt.figure()
         plt.plot(x, y1, marker1, label=label1)
         plt.plot(x, y2, marker2, label=label2)
@@ -201,6 +231,19 @@ class Plotting:
     def make_two_line_plot(
         self, dist_temp, temp, temp_mod, dist_mod, time_temp, time_mod
     ):
+        """
+        Creates a 2 line plot.
+
+        Args:
+            dist_temp (ndarray): ndarray contains the distance-temperature data.
+            temp (ndarray): ndarray containing the temperature data.
+            temp_mod (ndarray): ndarray containing the distance modulus data.
+            time_temp (ndarray): ndarray containing time-temperature data.
+            time_mod (ndarray): ndarray containing the time modulus data.
+
+        Returns:
+            fig (matplotlib figure): Figure containing 2 line plot.
+        """
         fig, axs = plt.subplots(2, 1)
         axs[0].plot(
             dist_temp,
@@ -254,26 +297,16 @@ class Plotting:
         plt.tight_layout()
         return fig
 
-    def save_plots(self, *args, path):
+    def make_bar_charts(self, change):
         """
-        Takes a list of figures and saves them to a pdf.
+        Creates a bar chart figure to compare the difference in values between Discharge, GW Temp, VTS, and, "Shade"
 
         Args:
-            *args ([figures]): list of figures to save.
+            change (ndarray): ndarray array containing the data for differences.
 
-        Return:
-            None
+        Returns:
+            fig (matplotlib figure): figure containing bar chart.
         """
-        pdf_path = os.path.join(os.getcwd(), "Results", "PDFs", f"{path}.pdf")
-        print(f"Saving PDF to {pdf_path}...")
-        plots_pdf = PdfPages(pdf_path)
-        for fig in args:
-            plots_pdf.savefig(fig)
-        plots_pdf.close()
-        plt.close("all")
-        print("Done!")
-
-    def make_bar_charts(self, change):
         fig = plt.figure()
         # Bar Chart - https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.bar.html#matplotlib.pyplot.bar
         plt.bar(
@@ -299,3 +332,22 @@ class Plotting:
         plt.legend(loc="best")
         plt.tight_layout()
         return fig
+
+    def save_plots(self, *args, path):
+        """
+        Takes a list of figures and saves them to a pdf.
+
+        Args:
+            *args ([figures]): list of figures to save.
+
+        Return:
+            None
+        """
+        pdf_path = os.path.join(os.getcwd(), "Results", "PDFs", f"{path}.pdf")
+        print(f"Saving PDF to {pdf_path}...")
+        plots_pdf = PdfPages(pdf_path)
+        for fig in args:
+            plots_pdf.savefig(fig)
+        plots_pdf.close()
+        plt.close("all")
+        print("Done!")

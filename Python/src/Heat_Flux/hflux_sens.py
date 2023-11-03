@@ -29,6 +29,15 @@ class HfluxSens:
 
     @staticmethod
     def heat_flux_wrapper(data_table):
+        """
+        Wrapper for calling heat flux.
+
+        Args:
+            data_table (Data table class object): Class object containing ndarrays of data.
+
+        Returns:
+            Result from heat flux calculations.
+        """
         return HeatFlux(data_table).crank_nicolson_method()
 
     @staticmethod
@@ -66,9 +75,17 @@ class HfluxSens:
         shade_high_low,
     ):
         """
-        Implementation of hflux_sens.m
-        Parameters: data_table,dis_high_low,t_l_high_low,vts_high_low,shade_high_low
-        Returns: Sens - dictionary
+        Creates and returns a dictionary with new high and low values.
+
+        Args:
+            data_table (data table class object): Class object containing ndarrays of data.
+            dis_high_low (ndarray): Ndarray containing distance high and low data.
+            t_l_high_low (ndarray): Ndarray containing time high and low data.
+            vts_high_low (ndarray): Ndarray containing vts high and low data.
+            shade_high_low (ndarray): Ndarray containg shade high and low data.
+
+        Returns:
+            High_low_values ({ndarray}): Dictionary containing high and low values.
         """
 
         print("Calculating high and low values...")
@@ -180,6 +197,16 @@ class HfluxSens:
         return high_low_values
 
     def create_new_results(self, base_result, high_low_dict):
+        """
+        Creates and returns a new sensitiviity dictionary
+
+        Args:
+            Base_result (ndarray): ndarray containing the temperature modulus data.
+            high_low_dict ({ndarray}): Dictionary containing high low values calculated from hflux_sens function.
+
+        Returns:
+            Sens ({ndarary}): Dictionary containing sensitivity values.
+        """
         new_data_list = [
             high_low_dict["input_data_lowdis"],
             high_low_dict["input_data_highdis"],
@@ -271,11 +298,18 @@ class HfluxSens:
         )
         return change
 
-    ####################################################################################################
-    # Make sensitivity plots.
-    # Following all axes, line, label and function parameters from MATLAB code.
     # Reshape used to align plotting structures - https://numpy.org/doc/stable/reference/generated/numpy.reshape.html
     def make_sens_plots(self, data_table, sens):
+        """
+        Creates and saves plots for sensitiity calculations
+
+        Args:
+            Data_table (Data table class object): Class object containing ndarrays of data.
+            Sens ({ndarrays}): Sensitivity Dictionary calculted from create_new_results function.
+
+        Returns:
+            None
+        """
         fig, ax = plt.subplots(2, 2)
 
         self.plc.make_three_line_plot(

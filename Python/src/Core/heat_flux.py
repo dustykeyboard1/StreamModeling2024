@@ -696,6 +696,16 @@ class HeatFlux:
         return (rmse / (np.max(temp) - np.min(temp))) * 100
 
     def create_hlux_plots(self, temp_mod, flux_data):
+        """
+        Main method for creating and saving heat flux plots.
+
+        Args:
+            temp_mod (ndarray): ndarray containing the time component.
+            flux_data ({ndarray}): dictionary containing other ndarrays for plotting.
+
+        Returns:
+            None.
+        """
         hflux_resiudal = self.flux_residual_plot(temp_mod)
         hflux_3d = self.hlfux_3d_plot(temp_mod)
         hflux_subplots = self.make_subplots(flux_data)
@@ -705,6 +715,15 @@ class HeatFlux:
         )
 
     def flux_residual_plot(self, t):
+        """
+        Makes a call to the plotting class and returns a heat map figure.
+
+        Args:
+            t (ndarray): numpy array containing time data.
+
+        Returns:
+            fig (matplotlib figure): figure containing heat map.
+        """
         plot_title = "Modeled Stream Temperature"
         xlab = "Time (min)"
         ylab = "Distance (m)"
@@ -726,7 +745,13 @@ class HeatFlux:
 
     def hlfux_3d_plot(self, t):
         """
-        Creates and saves all hflux plots
+        Makes a call to the plotting class and returns a 3d figure.
+
+        Args:
+            t (ndarray): numpy array containing time data.
+
+        Returns:
+            fig (matplotlib figure): figure containing 3d plot.
         """
         plot_title = "Modeled Stream Temperature"
         ylab = "Time (min)"
@@ -746,6 +771,15 @@ class HeatFlux:
         return fig
 
     def make_subplots(self, flux_data):
+        """
+        Creates a figure of 6 subplots.
+
+        Args:
+            flux_data ({ndarray}): dictionary containing ndarrys for data to plot.
+
+        Returns:
+            fig (matplotlib figure): Figure containing all 6 subplots.
+        """
         fig, axs = plt.subplots(3, 2)
 
         # First Subplot
@@ -853,6 +887,15 @@ class HeatFlux:
         return fig
 
     def make_comparison_plot(self, flux_data):
+        """
+        Creates a figure with 6 different values on the same plot to compare.
+
+        Args:
+            flux_data ({ndarray}): dictionary containing ndarrys for data to plot.
+
+        Returns:
+            fig (matplotlib figure): Figure containing all 6 values on a single plot.
+        """
         fig = self.plc.heat_flux_comparison(
             x=self.data_table.time_mod,
             y1=np.mean(flux_data["heatflux"] / 60, axis=0),

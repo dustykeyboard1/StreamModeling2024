@@ -10,6 +10,20 @@ from Python.src.Plotting.plotting_class import Plotting
 def create_hflux_errors_plots(
     residuals, dist_temp, temp, temp_mod, dist_mod, time_temp, time_mod
 ):
+    """
+    Creates and saves a PDF with all hflux error plots.
+
+    Args:
+        residuals (ndarray): ndarray containing the data for the heat map.
+        dist_temp (ndarray): ndarray contains the distance-temperature data.
+        temp (ndarray): ndarray containing the temperature data.
+        temp_mod (ndarray): ndarray containing the distance modulus data.
+        time_temp (ndarray): ndarray containing time-temperature data.
+        time_mod (ndarray): ndarray containing the time modulus data.
+
+    Returns:
+        None.
+    """
     plc = Plotting()
     fig1 = plc.make_residual_plot(
         residuals,
