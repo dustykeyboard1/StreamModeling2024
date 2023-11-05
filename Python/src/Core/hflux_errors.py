@@ -27,7 +27,7 @@ def handle_errors(time_mod, time_temp, temp, temp_dt, temp_mod, dist_temp, dist_
 
     Args:
     *args (list): list of 6 or 7 arguements to be assigned in one of these 2 orders:
-                1: time_mod, dist_mod, temp_mod, dist_temp, time_temp, temp, unattend
+                1: time_mod, dist_mod, temp_mod, dist_temp, time_temp, temp, output_suppression
                 2: time_mod, dist_mod, temp_mod, dist_temp, time_temp, temp
 
     Return:
@@ -40,11 +40,11 @@ def handle_errors(time_mod, time_temp, temp, temp_dt, temp_mod, dist_temp, dist_
     """
 
     # Initialize variables.
-    unattend = False
+    output_suppression = False
 
     # Begin plotting...
     # Set all labels/titles, font parametets, and axis ratio limits according to MATLAB code.
-    if not unattend:
+    if not output_suppression:
         _, ax = plt.subplots()
         residuals = temp - temp_dt
         # Create 2D image from 2D ndarray.

@@ -226,7 +226,7 @@ class HeatFlux:
         return width_m, area_m, wp_m
 
     def _calculate_reservoir_volumes(self, area_m, r, timesteps):
-        if not self.data_table.unattend:
+        if not self.data_table.output_suppression:
             print(
                 "Computing volumes of nodes, discharge rates and groundwater inflow rates..."
             )
@@ -277,7 +277,7 @@ class HeatFlux:
         return q_l
 
     def crank_nicolson_method(self):
-        unattend = self.data_table.unattend
+        output_suppression = self.data_table.output_suppression
         time_mod = self.data_table.time_mod
         timesteps = len(time_mod)
 
@@ -374,7 +374,7 @@ class HeatFlux:
         # The values for d are temperature-dependent, so they change each time step.
         # Once d is computed, use that d value and the
         # matrix A to solve for the temperature for each time step.
-        if not unattend:
+        if not output_suppression:
             print(
                 "Computing d-values, heat fluxes and solving for stream temperatures..."
             )

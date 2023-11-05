@@ -87,7 +87,7 @@ def hflux(input_data):
         year, month, day, hour, minute, lat, lon, t_zone, time_met, time_mod
     )
 
-    if not unattend:
+    if not output_suppression:
         print("...done!")
         print()
         print("Determining time steps and nodes...")
@@ -95,7 +95,7 @@ def hflux(input_data):
     timesteps = len(time_mod)
     dt = max(time_mod) / (len(time_mod) - 1)
 
-    if not unattend:
+    if not output_suppression:
         print("...done!")
         print()
         print("Interpolating longitudinal data in space...")
@@ -119,7 +119,7 @@ def hflux(input_data):
         bed_temp_m[i] = interpolation(dist_bed, bed_temp[i], dist_mod)
     bed_temp_m = np.array(bed_temp_m).transpose()
 
-    if not unattend:
+    if not output_suppression:
         print("...done!")
         print()
         print("Interpolating temporal data in time...")
@@ -212,14 +212,14 @@ def hflux(input_data):
     wind_speed_mat = np.array([wind_speed_dt] * r)
     cl = np.array([c_dt] * r)
 
-    if not unattend:
+    if not output_suppression:
         print("...done!")
         print()
 
     ###############################################################
     # STEP 1: compute volumes of each reservoir (node) in the model
     # checked!
-    if not unattend:
+    if not output_suppression:
         print(
             "Computing volumes of nodes, discharge rates and groundwater inflow rates..."
         )
@@ -256,13 +256,13 @@ def hflux(input_data):
     q_half_min = q_half * 60
     q_l_min = q_l * 60
 
-    if not unattend:
+    if not output_suppression:
         print("...done!")
         print()
 
-    # method 2 creates overflow and the example_data uses method 1
-    method = 1
-    match method:
+    # shortwave_radiation_method 2 creates overflow and the example_data uses shortwave_radiation_method 1
+    shortwave_radiation_method = 1
+    match shortwave_radiation_method:
         case 1:
             ###############################################################
             # STEP 5: Calculate coefficients of the tridiagonal matrix (a, b, c)
@@ -331,7 +331,7 @@ def hflux(input_data):
             # The values for d are temperature-dependent, so they change each time step.
             # Once d is computed, use that d value and the
             # matrix A to solve for the temperature for each time step.
-            if not unattend:
+            if not output_suppression:
                 print(
                     "Computing d-values, heat fluxes and solving for stream temperatures..."
                 )
@@ -558,7 +558,7 @@ def hflux(input_data):
 
         #     print(heat_flux)
 
-    if not unattend:
+    if not output_suppression:
         print("...done!")
         print()
 
@@ -743,7 +743,7 @@ def hflux(input_data):
     plots_pdf.close()
     plt.close("all")
 
-    if method == 1:
+    if shortwave_radiation_method == 1:
         matrix_data = {}
         matrix_data["a"] = a
         matrix_data["b"] = b
