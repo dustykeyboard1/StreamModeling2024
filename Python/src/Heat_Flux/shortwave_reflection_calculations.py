@@ -4,26 +4,35 @@ import scipy
 import math
 import pytz
 
+"""
+Author: James Gallagher, Violet Shi, Michael Scoleri
+File: shortwave_reflection_calculations.py
+Date: 10-19-2023
+Functionality: Compute Shortwave Reflection values
+"""
+
 class ShortwaveReflectionCalculations:
     def hflux_shortwave_refl(
             self, year, month, day, hour, minute, lat, lon, t_zone, time_met, time_mod
         ):
             """
-            Input:
-            Note: must all be for the same time period and distance (ie same size)
-            year = year during which measurements were taken (ie. 2012)
-            month = month during which measurements were taken (ie. 6)
-            day = day during which measurements were taken (ie. 18)
-            hour = hour during which measurements were taken (ie. 22) (military time)
-            min = minute during which measurements were taken (ie. 5)
-            time_met = times at which meteorological data are known, in minutes (met
-                data includes air temp, rel humidity, wind speed, and solar rad)
-            lat = latitude (positive for northern hemisphere, negative for southern)
-            lon = longitude (positive for eastern hemisphere, negative for western)
-            t_zone = indicates the time zone correction factor (East = 5, Central = 6, Mountain = 7, Pacific = 8)
-            time_mod = model times at which temperatures will be computed for heat budget, in minutes
-            Output:
-                [sol_refl] = portion of solar radiation reflected off the surface of the stream
+            Calculate the portion of solar radiation reflected off the surface of the stream
+
+            Args: 
+                year (ndarray): year during which measurements were taken.
+                month (ndarray): month during which measurements were taken.
+                day (ndarray): day during which measurements were taken. 
+                hour (ndarray): hour during which measurements were taken. Format is military time.
+                min (ndarray): minute during which measurements were taken.
+                time_met (ndarray): times at which meteorological data are known, in minutes. met
+                    data includes air temp, rel humidity, wind speed, and solar rad.
+                lat (float): latitude. Positive for northern hemisphere, negative for southern.
+                lon (float): longitude. Positive for eastern hemisphere, negative for western.
+                t_zone (int)= indicates the time zone correction factor (East = 5, Central = 6, Mountain = 7, Pacific = 8).
+                time_mod (ndarray): model times at which temperatures will be computed for heat budget, in minutes.
+
+            Returns:
+                sol_refl (ndarray): an array of solar radiation
             """
             time_frac = np.zeros(len(year))
             sol_zen = np.zeros(len(year))
@@ -47,8 +56,16 @@ class ShortwaveReflectionCalculations:
                 time_met, self._fresnel_reflectivity(sol_zen)
             )(time_mod)
 
-    ### Calculate freznel's reflectivity
     def _fresnel_reflectivity(self, alpha_rad):
+        """
+        Computes fresnel's reflectivity
+
+        Args:
+            alpha_rad (ndarray): The alpha radiation reflecting off the stream.
+        
+        Returns:
+            An ndarray of fresnel's reflectivity values for each radiation value.
+        """
         n = 1.333
         ah = np.zeros(len(alpha_rad))
         for i in range(len(alpha_rad)):
@@ -65,9 +82,23 @@ class ShortwaveReflectionCalculations:
         return ah
 
     def _solar_position(self, t_dst, t_zone, year, month, day, hour, minute, lat, lon):
-        '''
+        """
         Calculates the sun's position relative to the stream's position
-        '''
+
+        Args:
+            t_dst (ndarray): A fraction representative of the hour and minute for a given measurement.
+            t_zone (int): indicates the time zone correction factor (East = 5, Central = 6, Mountain = 7, Pacific = 8).
+            year (ndarray): year during which measurements were taken.
+            month (ndarray): month during which measurements were taken.
+            day (ndarray): day during which measurements were taken. 
+            hour (ndarray): hour during which measurements were taken. Format is military time.
+            min (ndarray): minute during which measurements were taken.
+            lat (float): latitude. Positive for northern hemisphere, negative for southern.
+            lon (float): longitude. Positive for eastern hemisphere, negative for western.
+
+        Returns:
+            An ndarray of the sun's position relative to the stream's.
+        """
         
         t_gmt = t_dst + (t_zone / 24.0)
         a1 = round(year / 100)
@@ -145,20 +176,35 @@ class ShortwaveReflectionCalculations:
 
 
     def _daylight_savings_time(self, year, month, day, t_zone):
-        '''
+        """
         Determines if dst is active for the current year, month, day, time zone parameters
         CITE: https://thispointer.com/check-if-date-is-daylight-saving-in-python/
         DESC: Used to determine if dst is active
-        '''
+
+        Args:
+            year (ndarray): year during which measurements were taken.
+            month (ndarray): month during which measurements were taken.
+            day (ndarray): day during which measurements were taken. 
+            t_zone (int): indicates the time zone correction factor (East = 5, Central = 6, Mountain = 7, Pacific = 8).
+
+        Returns:
+            True if DST is active, and False otherwise
+        """
         timezone = pytz.timezone(self._match_timezones(t_zone))
         year, month, day, = int(year.item()), int(month.item()), int(day.item()) # converting numpy vals to python ints
         date = timezone.localize(datetime(year, month, day))
         return date.dst() != timedelta(0)
 
     def _match_timezones(self, t_zone):
-        '''
+        """
         Matches the time zones from a numerical input into a pytz input so we can determine dst
-        '''
+
+        Args:
+            t_zone (int): indicates the time zone correction factor (East = 5, Central = 6, Mountain = 7, Pacific = 8).
+        
+        Returns:
+            A string corresponding to the time zone integer
+        """
         match t_zone:
             case 5:
                 return 'US/Eastern'
