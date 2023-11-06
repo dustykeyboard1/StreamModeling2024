@@ -18,6 +18,7 @@ sys.path.append(root_dir)
 
 from src.Utilities.interpolation import interpolation
 
+
 def handle_errors(time_mod, time_temp, temp, temp_dt, temp_mod, dist_temp, dist_mod):
     """
     Checks for errors related to the heat flux calculations.
@@ -40,92 +41,6 @@ def handle_errors(time_mod, time_temp, temp, temp_dt, temp_mod, dist_temp, dist_
 
     # Initialize variables.
     unattend = False
-    # num_args = len(args)
-
-    # # Check if the number of arguments is correct.
-    # if num_args not in [6, 7]:
-    #     raise ValueError("Invalid number of arguments")
-
-    # # Assign arguments to variables based on number of arguments.
-    # if num_args == 7:
-    #     time_mod, dist_mod, temp_mod, dist_temp, time_temp, temp, unattend = args
-    # else:
-    #     time_mod, dist_mod, temp_mod, dist_temp, time_temp, temp = args
-
-    # # Check for Boolean.
-    # if not unattend:
-    #     print("Checking input arguments...")
-
-    # # Type check variables to ensure they are column vectors by checking number of dimnesions and shape.
-    # # ndim - https://numpy.org/doc/stable/reference/generated/numpy.ndarray.ndim.html
-    # # shape - https://numpy.org/doc/stable/reference/generated/numpy.shape.html
-    # if time_mod.ndim != 1:
-    #     raise TypeError("Time_m must be a column vector")
-    # if dist_mod.ndim != 1:
-    #     raise TypeError("Dist_m must be a column vector")
-    # if time_temp.ndim != 1:
-    #     raise TypeError("Time_temp must be a column vector")
-    # if dist_temp.ndim != 1:
-    #     raise TypeError("Dist_temp must be a column vector.")
-
-    # # Ensure temp_mod and temp are ndarrays.
-    # # Isinstance - https://docs.python.org/3/library/functions.html#isinstance
-    # if not isinstance(temp_mod, np.ndarray):
-    #     raise TypeError("Temp_mod must be a numpy array representing a matrix.")
-    # if not isinstance(temp, np.ndarray):
-    #     raise TypeError("Temp must be a numpy array representing a matrix.")
-
-    # if not unattend:
-    #     print("...Done!")
-    #     print("    ")
-    #     print("Resampling data to original spatial and temporal resolution...")
-
-    # # Performs linear interpolation using dist_mod, temp_mod and dist_temp at each time step.
-    # # Stores in temp_dx.
-    # result_list = []
-    # for i in range(len(time_mod)):
-    #     result = interpolation(dist_mod, temp_mod[:, i], dist_temp)
-    #     result_list.append(result)
-    # temp_dx = np.array(result_list).transpose()
-
-    # # Performs linear interpolation using time_mod, temp_dx, time_temp at each time step.
-    # # Stores in temp_dt.
-
-    # result_list = []
-    # for i in range(len(dist_temp)):
-    #     result = interpolation(time_mod, temp_dx[i, :], time_temp)
-    #     result_list.append(result)
-    # temp_dt = np.array(result_list)
-
-    # if not unattend:
-    #     print("...Done!")
-    #     print("    ")
-    #     print("Calculating error metrics...")
-
-    # # Start Calculating error metrics according to MATLAB code...
-
-    # # Percent Relative Error
-    # temp = temp.transpose()
-    # rel_err = ((temp - temp_dt) / temp) * 100
-
-    # # Mean Residual Error
-    # me = np.sum(temp - temp_dt) / np.size(temp)
-
-    # # Mean absolute Resiudal Error
-    # mae = np.sum(np.abs(temp - temp_dt)) / np.size(temp)
-
-    # # Mean Squared Error
-    # mse = np.sum((temp - temp_dt) ** 2) / np.size(temp)
-
-    # # Root Mean Squared Error
-    # rmse = np.sqrt(np.sum((temp - temp_dt) ** 2) / np.size(temp))
-
-    # # Normalized Root Mean Square
-    # nrmse = (rmse / (np.max(temp) - np.min(temp))) * 100
-
-    # if not unattend:
-    #     print("...Done!")
-    #     print("     ")
 
     # Begin plotting...
     # Set all labels/titles, font parametets, and axis ratio limits according to MATLAB code.
