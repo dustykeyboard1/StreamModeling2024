@@ -2,7 +2,7 @@
 Author: Violet Shi
 File: data_table_class.py
 Date: 11-05-2023
-Functionality: Construct a dataTable class for reading and storing data from the input file.
+Functionality: Construct dataTable class for reading and storing data from the input file.
 """
 
 import pandas as pd
@@ -355,17 +355,21 @@ class DataTable:
         """
         Create a new instance of data_table that's based on the original data_table with some sheets changed 
 
-        Args: sheet_to_change_name (string or [strings]): the names of the sheets to be changed 
-              new_value (ndarrays or [ndarrays]): new values of the sheets to be changed 
+        Args: sheet_to_change_name (string): the name of the sheet to be changed 
+              new_value (ndarrays): new values of the sheet to be changed 
 
         Returns: modified_data_table (DataTable): new modified data table
         """
         modified_data_table = deepcopy(self)
-        if type(sheet_to_change_name) == list:
-            for i in range(len(sheet_to_change_name)):
-                setattr(modified_data_table, sheet_to_change_name[i], new_value[i])
-        else:
-            setattr(modified_data_table, sheet_to_change_name, new_value)
+        sheet_to_change = getattr(modified_data_table, sheet_to_change_name)
+        i = 0
+        for key, _ in sheet_to_change.items():
+            if sheet_to_change_name == "dis_data" and key == "Q":
+                sheet_to_change[key] = np.vstack((new_value[i], new_value[i+1]))
+                i+=2
+            else:
+                sheet_to_change[key] = new_value[i]
+                i+=1
 
         return modified_data_table
 

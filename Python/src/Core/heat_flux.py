@@ -1,3 +1,10 @@
+"""
+Author: Violet Shi
+File: heat_flux.py
+Date: 11-05-2023
+Functionality: Construct heatflux class to implement Crank Nicolson method and 
+                                                     the second order Runge-Kutta method
+"""
 import numpy as np
 import os
 import sys

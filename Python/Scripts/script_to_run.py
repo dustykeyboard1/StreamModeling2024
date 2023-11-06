@@ -50,13 +50,6 @@ def script_to_run():
     rmse = heat_flux.calculate_root_mean_square_error(temp, temp_dt)
     nrmse = heat_flux.calculate_normalized_root_mean_square_error(rmse, temp)
 
-    print(type(rel_err))
-    print(type(me))
-    print(type(mae))
-    print(type(mse))
-    print(type(rmse))
-    print(type(nrmse))
-
     dist_temp = data_table.dist_temp
     dist_mod = data_table.dist_mod
     time_temp = data_table.time_temp
