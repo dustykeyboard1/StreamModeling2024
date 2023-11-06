@@ -1,5 +1,5 @@
 """
-Author: Violet Shi
+Author: Violet Shi, Michael Scoleri
 File: heat_flux.py
 Date: 11-05-2023
 Functionality: Construct heatflux class to implement Crank Nicolson method and 
@@ -134,7 +134,7 @@ class HeatFlux:
 
     def _interpolate_data(self, r):
         """
-        Interpolate all data given through time so that there are values at every time step and 
+        Interpolate all data given through time so that there are values at every time step and
         interpolate all input data given longitudinally so that there are values at every node.
 
         Args: r (int): the length of model distances along the reach where temperature will be calculated(dist_mod)
@@ -221,11 +221,11 @@ class HeatFlux:
 
     def _interpolate_discharge_m(self):
         """
-        Interpolate discharge through time so that there are values at every time step and 
+        Interpolate discharge through time so that there are values at every time step and
         interpolate discharge given longitudinally so that there are values at every node.
 
         Args: None
-        Returns: interpolated discharge 
+        Returns: interpolated discharge
         """
         # Need to transpose discharge_m to make sure it has the same shape
         # As discharge_m in Matlab.
@@ -245,8 +245,8 @@ class HeatFlux:
         Calculate width-depth-discharge relationship.
 
         Args: discharge_m (ndarray): interpolated known discharge rates, in m3/s, along the reach at each dist
-        Returns: width_m (ndarray): interpolated stream width at each dist in meters through time 
-                 area_m (ndarray): assumes triangular cross sectional area 
+        Returns: width_m (ndarray): interpolated stream width at each dist in meters through time
+                 area_m (ndarray): assumes triangular cross sectional area
                  wetted_perimeter_m (ndarray): interpolated wetted perimeter through time and space for triangular cross section
         """
         theta, dim_q, depth_m = self._interpolate_width_and_depth()
@@ -264,7 +264,6 @@ class HeatFlux:
             * (depth_m ** (8 / 3))
         ) / (2 * dim_q)
 
-        
         depth_m = (
             (2 * n_s * discharge_m)
             / (
@@ -275,7 +274,6 @@ class HeatFlux:
             )
         ) ** (3 / 8)
 
-        
         width_m = (
             2
             * tan_theta
@@ -295,7 +293,7 @@ class HeatFlux:
 
         area_m = 0.5 * depth_m * width_m
         area_m = area_m.transpose()
-        
+
         wetted_perimeter_m = (2 * (depth_m / cos_theta)).transpose()
         width_m = width_m.transpose()
         depth_m = depth_m.transpose()
@@ -310,7 +308,7 @@ class HeatFlux:
               r (int): the length of model distances along the reach where temperature will be calculated(dist_mod)
               timesteps (int): the length of model times at which temperatures will be computed for heat budget(time_mod)
 
-        Returns: volume (ndarray): 
+        Returns: volume (ndarray):
         """
         if not self.data_table.output_suppression:
             print(
@@ -341,7 +339,7 @@ class HeatFlux:
         )
 
         return volume
-    
+
     def _linearly_calculate_reservoir_edges_discharge_rates(
         self, r, timesteps, discharge_m
     ):
@@ -352,7 +350,7 @@ class HeatFlux:
               timesteps (int): the length of model times at which temperatures will be computed for heat budget(time_mod)
               discharge_m (ndarray): interpolated known discharge rates, in m3/s, along the reach at each dist
 
-        Returns: q_half (ndarray): discharge rates at reservoir edges using linear interpolation 
+        Returns: q_half (ndarray): discharge rates at reservoir edges using linear interpolation
                                    (n-values are upstream of node n values)
         """
         q_half = np.empty((r + 1, timesteps))
@@ -371,7 +369,7 @@ class HeatFlux:
         Compute lateral groundwater discharge rates to each node based on longtudinal changes in streamflow.
 
         Args: r (int): the length of model distances along the reach where temperature will be calculated(dist_mod)
-              q_half (ndarray): discharge rates at reservoir edges using linear interpolation 
+              q_half (ndarray): discharge rates at reservoir edges using linear interpolation
                                 (n-values are upstream of node n values)
         Returns: q_l (ndarray): lateral groundwater discharge rates to each node based on longtudinal changes in streamflow
         """
@@ -410,9 +408,11 @@ class HeatFlux:
         dt = max(time_mod) / (timesteps - 1)
 
         discharge_m = self._interpolate_discharge_m()
-        width_m, area_m, wetted_perimeter_m = self._calculate_width_depth_discharge_relationship(
-            discharge_m
-        )
+        (
+            width_m,
+            area_m,
+            wetted_perimeter_m,
+        ) = self._calculate_width_depth_discharge_relationship(discharge_m)
         volume = self._calculate_reservoir_volumes(area_m, r, timesteps)
 
         q_half_min = self._linearly_calculate_reservoir_edges_discharge_rates(
@@ -484,7 +484,7 @@ class HeatFlux:
         b[:, timesteps - 1] = (
             1 + o[:, timesteps - 1] - p[:, timesteps - 1] + q[:, timesteps - 1]
         )
-        
+
         c = np.empty((r, timesteps))
         c[:, : timesteps - 1] = (
             (dt * q_half_min[1:, 1:]).transpose() / quad_volume
@@ -794,11 +794,11 @@ class HeatFlux:
 
     def calculate_temp_dt(self, temp_mod):
         """
-        Resample the modeled temperature data to the same temporal and 
+        Resample the modeled temperature data to the same temporal and
         spatial scales as the measured temperature data.
 
         Args: temp_mod (ndarray): modeled temperature
-        Returns: temp_dt(ndarray): Resampled the modeled temperature data that has the same temporal and 
+        Returns: temp_dt(ndarray): Resampled the modeled temperature data that has the same temporal and
                                     spatial scales as the measured temperature data
         """
         time_mod = self.data_table.time_mod
@@ -826,7 +826,7 @@ class HeatFlux:
         Calculate percent relative error.
 
         Args: temp (ndarry): measured temperature data
-              temp_dt (ndarray): Resampled the modeled temperature data that has the same temporal and 
+              temp_dt (ndarray): Resampled the modeled temperature data that has the same temporal and
                                  spatial scales as the measured temperature data
 
         Returns: percent_relative_error (ndarray)
@@ -838,7 +838,7 @@ class HeatFlux:
         Calculate mean residual error.
 
         Args: temp (ndarry): measured temperature data
-              temp_dt (ndarray): Resampled the modeled temperature data that has the same temporal and 
+              temp_dt (ndarray): Resampled the modeled temperature data that has the same temporal and
                                  spatial scales as the measured temperature data
 
         Returns: mean_residual_error (float)
@@ -850,7 +850,7 @@ class HeatFlux:
         Calculate mean absolute residual error.
 
         Args: temp (ndarry): measured temperature data
-              temp_dt (ndarray): Resampled the modeled temperature data that has the same temporal and 
+              temp_dt (ndarray): Resampled the modeled temperature data that has the same temporal and
                                  spatial scales as the measured temperature data
 
         Returns: mean_absolute_residual_error (float)
@@ -862,7 +862,7 @@ class HeatFlux:
         Calculate mean square error.
 
         Args: temp (ndarry): measured temperature data
-              temp_dt (ndarray): Resampled the modeled temperature data that has the same temporal and 
+              temp_dt (ndarray): Resampled the modeled temperature data that has the same temporal and
                                  spatial scales as the measured temperature data
 
         Returns: mean_squared_error (float)
@@ -874,16 +874,18 @@ class HeatFlux:
         Calculate root mean square error.
 
         Args: temp (ndarry): measured temperature data
-              temp_dt (ndarray): Resampled the modeled temperature data that has the same temporal and 
+              temp_dt (ndarray): Resampled the modeled temperature data that has the same temporal and
                                  spatial scales as the measured temperature data
 
         Returns: root_mean_squared_error (float)
         """
         return np.sqrt(np.sum((temp - temp_dt) ** 2) / np.size(temp))
 
-    def calculate_normalized_root_mean_square_error(self, root_mean_squared_error, temp):
+    def calculate_normalized_root_mean_square_error(
+        self, root_mean_squared_error, temp
+    ):
         """
-        Calculate normalized root mean square error. 
+        Calculate normalized root mean square error.
 
         Args: root_mean_squared_error (float): the root mean squared error to be normalized
               temp (ndarry): measured temperature data
