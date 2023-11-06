@@ -753,20 +753,15 @@ class HeatFlux:
         Returns:
             fig (matplotlib figure): figure containing 3d plot.
         """
-        plot_title = "Modeled Stream Temperature"
-        ylab = "Time (min)"
-        xlab = "Distance (m)"
-        zlab = "Temp (°C)"
-        cbar = "Temperature (°C)"
         fig = self.plc.make3dplot(
             self.data_table.time_mod,
             self.data_table.dist_mod,
             t,
-            xlab,
-            ylab,
-            zlab,
-            cbar,
-            plot_title,
+            ylabel="Distance (m)",
+            xlabel="Time (min)",
+            zlabel="Temp (°C)",
+            colorbar_label="Temperature (°C)",
+            title="Modeled Stream Temperature",
         )
         return fig
 
