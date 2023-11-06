@@ -953,7 +953,7 @@ class HeatFlux:
         fig = self.plc.make3dplot(
             self.data_table.time_mod,
             self.data_table.dist_mod,
-            t,
+            temp_mod,
             ylabel="Distance (m)",
             xlabel="Time (min)",
             zlabel="Temp (°C)",
