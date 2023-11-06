@@ -49,8 +49,8 @@ class Plotting:
         # Create a surface plot
         # Make x, y axis take different length - https://stackoverflow.com/questions/46607106/python-3d-plot-with-different-array-sizes
         x_sized, y_sized = np.meshgrid(x, y)
-        # ax.plot_surface() - https://matplotlib.org/stable/plot_types/3D/surface3d_simple.html#plot-surface-x-y-z
 
+        # ax.plot_surface() - https://matplotlib.org/stable/plot_types/3D/surface3d_simple.html#plot-surface-x-y-z
         surface = ax.plot_surface(
             x_sized, y_sized, z, cmap="jet", rstride=10, cstride=10
         )
