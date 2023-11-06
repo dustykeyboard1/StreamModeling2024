@@ -90,7 +90,7 @@ class HfluxSens:
 
         print("Calculating high and low values...")
         high_low_values = {}
-        data_table.unattend = True
+        data_table.output_suppression = True
 
         # Create low and high values for each parameter.
         high_low_values["dis_data_1"] = data_table.discharge.transpose()

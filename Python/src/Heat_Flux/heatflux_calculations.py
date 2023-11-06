@@ -298,15 +298,15 @@ class HeatFluxCalculations:
             sensible (ndarray): sensible heat flux values for each position along the stream
             bed (ndarray): the heat flux through the stream bed at each location
         """
-        eq1 = settings[0][0]  # Shortwave radiation equation method
+        eq1 = settings["shortwave radiation method"]  # Shortwave radiation equation method
         ## 1 = Equation [3] in text, includes correction for reflection
         ## 2 = Equation [4] in text, includes albedo correction
 
-        eq2 = settings[0][1]  # Latent Heat Flux Equation
+        eq2 = settings["latent heat flux equation"]  # Latent Heat Flux Equation
         ## 1 = Equation [14] in text, Penman equation
         ## 2 = Equation [17] in text, mass transfer method
 
-        eq3 = settings[0][2]  # Sensible Heat Equation
+        eq3 = settings["sensible heat equation"]  # Sensible Heat Equation
         ## 1 = Equation [20] in text, Bowen ratio method
         ## 2 = Equation [24] in text, from Dingman, 1994
 

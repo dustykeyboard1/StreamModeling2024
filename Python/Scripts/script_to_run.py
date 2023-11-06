@@ -46,9 +46,9 @@ def script_to_run():
     rel_err = heat_flux.calculate_percent_relative_error(temp, temp_dt)
     me = heat_flux.calculate_mean_residual_error(temp, temp_dt)
     mae = heat_flux.calculate_mean_absolute_residual_error(temp, temp_dt)
-    mse = heat_flux.calculate_mean_squared_error(temp, temp_dt)
-    rmse = heat_flux.calculate_root_mean_squared_error(temp, temp_dt)
-    nrmse = heat_flux.calculate_normalized_root_mean_square(rmse, temp)
+    mse = heat_flux.calculate_mean_square_error(temp, temp_dt)
+    rmse = heat_flux.calculate_root_mean_square_error(temp, temp_dt)
+    nrmse = heat_flux.calculate_normalized_root_mean_square_error(rmse, temp)
 
     dist_temp = data_table.dist_temp
     dist_mod = data_table.dist_mod

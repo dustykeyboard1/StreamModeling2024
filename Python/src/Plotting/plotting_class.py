@@ -14,7 +14,7 @@ import os
 class Plotting:
     def __init__(self):
         """
-        Initizlize the plotting class.
+        Initialize the plotting class.
         """
         pass
 
