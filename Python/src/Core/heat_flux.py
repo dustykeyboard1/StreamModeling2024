@@ -950,20 +950,15 @@ class HeatFlux:
         Returns:
             fig (matplotlib figure): figure containing 3d plot.
         """
-        plot_title = "Modeled Stream Temperature"
-        ylab = "Time (min)"
-        xlab = "Distance (m)"
-        zlab = "Temp (°C)"
-        cbar = "Temperature (°C)"
         fig = self.plc.make3dplot(
             self.data_table.time_mod,
             self.data_table.dist_mod,
-            temp_mod,
-            xlab,
-            ylab,
-            zlab,
-            cbar,
-            plot_title,
+            t,
+            ylabel="Distance (m)",
+            xlabel="Time (min)",
+            zlabel="Temp (°C)",
+            colorbar_label="Temperature (°C)",
+            title="Modeled Stream Temperature",
         )
         return fig
 
@@ -1095,7 +1090,7 @@ class HeatFlux:
         """
         fig = self.plc.heat_flux_comparison(
             x=self.data_table.time_mod,
-            y1=np.mean(flux_data["heatflux"] / self.MINUTE_TO_SECOND_CONVERSION, axis=0),
+            y1=np.mean(flux_data["heatflux"], axis=0),
             marker1="k",
             label1="Total Heat Flux",
             y2=np.mean(flux_data["solarflux"], axis=0),

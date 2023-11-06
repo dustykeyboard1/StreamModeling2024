@@ -4,28 +4,28 @@ import math
 import scipy
 from .shortwave_reflection_calculations import ShortwaveReflectionCalculations
 
-class HeatFluxCalculations:
-    """
-    Class that calculates the total heat entering and leaving a stream
-    for a width of stream section over time in a way that can be called by
-    hflux.m.
-    The net heat flux is a function of shortwave radiation,
-    longwave radiation, evaporation (latent heat), sensible heat, and
-    bed conduction.
-    """
+"""
+Author: James Gallagher, Violet Shi, Michael Scoleri
+File: heatflux_calculations.py
+Date: 10-19-2023
+Functionality: Calculates the total heat entering and leaving a stream
+for a width of stream section over time
+"""
 
+class HeatFluxCalculations:
     def _hflux_shortwave(self, solar_rad, shade, sol_refl, eq1):
         """
-        Inputs:
-            solar_rad = total incoming solar radiation data at each time_met
-                (program interpolates in time)
-            shade = values for shading (0 to 1, with 0 being min shading and 1 being max shading)
-            sol_refl = portion of solar radiation that is reflected off the surface of the stream
-            eq1 = case1 uses the Ouellet, et al. 2012 and Boyd and Kasper, 2003 methods
-                case2 uses the Magnusson, et al. 2012 nethod
-                *This switch was set in hflux_flux.m
-        Outputs:
-            shortwave = shortwave radiation (W/m^2)
+        Computes shortwave radiation impacting the stream's surface.
+
+        Args:
+            solar_rad (ndarray): total incoming solar radiation data at each time_met.
+            shade (float): values for shading (0 to 1, with 0 being min shading and 1 being max shading).
+            sol_refl (ndarray): portion of solar radiation that is reflected off the surface of the stream.
+            eq1 (int): case1 uses the Ouellet, et al. 2012 and Boyd and Kasper, 2003 methods;
+                       case2 uses the Magnusson, et al. 2012 nethod.
+        
+        Returns:
+            shortwave (ndarray): an array shortwave radiation with units (W/m^2).
         """
         match eq1:
             case 1:
@@ -38,13 +38,20 @@ class HeatFluxCalculations:
 
     def _hflux_longwave(self, air_temp, water_temp, rel_hum, cl, vts):
         """
-        Input:
-        Note: must all be for the same time period and distance (ie same size)
-        air_temp = an array of air temperature values (deg C)
-        rel_hum = an array of relative humidity values (unitless)
-        water_temp = an array of values for stream temperature (deg C)
-        vts = view to sky coefficient (0-1)
-        cl = cloud cover (0-1)
+        Computes longwave radiation impacting the stream's surface.
+
+        Args:
+            air_temp (ndarray): air temperature values (deg C)
+            rel_hum (ndarray): relative humidity values (unitless)
+            water_temp (ndarray): values for stream temperature (deg C)
+            vts (ndarry): view to sky coefficient (0-1)
+            cl (ndarray): cloud cover (0-1)
+        
+        Returns:
+            longwave (ndarray): an array longwave radiation with units (W/m^2).
+            atm_rad (ndarray): atmospheric longwave radiation
+            back_rad (ndarray): back radiation from the stream
+            land_rad (ndarray): radiation from the landcover
         """
 
         ### Stefan-Boltzman constant
@@ -65,17 +72,20 @@ class HeatFluxCalculations:
         self, water_temp, air_temp, rel_hum, wind_speed, shortwave, longwave, z, eq2
     ):
         """
-        Input:
-          Note: must all be for the same time period and distance (ie same size)
-          shortwave = an array of values for solar radiation (W/m^2)
-          longwave = an array of values for longwave radiation (W/m^2)
-          rel_hum = an array of relative humidity values (unitless)
-          water_temp = an array of values for stream temperature (deg C)
-          wind_speed = an array of wind speed values (m/s)
-          z = elevation of station where met data was obtained (m)
-          eq2 = case1 uses the Penman Method to calculate latent heat flux
-                case2 uses the Mass Transfer Method to calculate latent heat flux
-                      *This switch is set in hflux_flux.m
+        Computes the latent heat flux for the stream
+
+        Args:
+            shortwave (ndarray): an array of values for solar radiation (W/m^2)
+            longwave (ndarray): an array of values for longwave radiation (W/m^2)
+            rel_hum (ndarray): an array of relative humidity values (unitless)
+            water_temp (ndarray): an array of values for stream temperature (deg C)
+            wind_speed (ndarray): an array of wind speed values (m/s)
+            z (int): elevation of station where met data was obtained (m)
+            eq2 (int): case1 uses the Penman Method to calculate latent heat flux
+                       case2 uses the Mass Transfer Method to calculate latent heat flux
+
+        Returns:
+            latent (ndarray): latent heat flux values for each position along the stream                      
         """
         c_air = 1004  # heat capacity of the air (J/kg deg C)
         rho_water = 1000  # Density of water (kg/m^3)
@@ -120,18 +130,20 @@ class HeatFluxCalculations:
         self, water_temp, air_temp, rel_hum, wind_speed, z, latent, eq3
     ):
         """
-        Input:
-        Note: must all be for the same time period and distance (ie same size)
-        air_temp = an array of air temperature values (deg C)
-        rel_hum = an array of relative humidity values (unitless)
-        water_temp = an array of values for stream temperature (deg C)
-        wind_speed = an array of wind speed values (m/s)
-        z = elevation of station where met data was obtained (m)
-        latent = latent heat fulx (W/m^2)
-        eq3 = case1 calculates the sensible heat transfer based on the Bowen ratio heat flux
-              case2 calculates sensible heat transfer based on temperature differences,
-                    Dingman, 1994
-                    *This switch is set in hflux_flux.m
+        Computes the sensible heat flux for the stream
+
+        Args:
+            air_temp (ndarray): an array of air temperature values (deg C)
+
+            rel_hum (ndarray): an array of relative humidity values (unitless)
+            water_temp (ndarray): an array of values for stream temperature (deg C)
+            wind_speed (ndarray): an array of wind speed values (m/s)
+            z (int): elevation of station where met data was obtained (m)
+            latent (ndarray): latent heat fulx (W/m^2)
+            eq3 (int): case1 calculates the sensible heat transfer based on the Bowen ratio heat flux
+                       case2 calculates sensible heat transfer based on temperature differences, Dingman, 1994
+        Returns:
+            sensible (ndarray): sensible heat flux values for each position along the stream
         """
         match eq3:
             case 1:
@@ -165,19 +177,19 @@ class HeatFluxCalculations:
         self, sed_type, water_temp, bed_temp, depth_of_measure, width_m, wp_m
     ):
         """
-        Inputs:
-            hflux_bed.m calculates the heat flux through the stream bed
-            Inputs:
-            sed_type = a single value or array of type 'cell' that describe the
-                    sediment type as clay, sand, gravel, or cobbles
-            water_temp: water tempature
-            bed_temp: stream bed temprature measurements
-            depth_of_meas: depth below the stream bed that temperature measurements
+        Calculates the heat flux through the stream bed
+        
+        Args:
+            sed_type (ndarray): sediment type of the stream. Accepted values are: clay, sand, gravel, or cobbles.
+            water_temp (ndarray): water tempature
+            bed_temp (ndarray): stream bed temprature measurements
+            depth_of_meas (ndarray): depth below the stream bed that temperature measurements
             were collected
-            width_m: width of the stream (meters)
-            WP_m: wetted perimeter of the stream bed (meters)
-            Output:
-            bed: the heat flux through the stream bed
+            width_m (ndarray): width of the stream (meters)
+            WP_m (ndarray): wetted perimeter of the stream bed (meters)
+        
+        Returns:
+            bed (ndarray): the heat flux through the stream bed at each location
         """
         k_sed = np.empty(len(sed_type))
         for i in range(len(sed_type)):
@@ -197,7 +209,14 @@ class HeatFluxCalculations:
 
     def _sensible_saturated_vp(self, water_temp_value):
         """
-        Saturated vapor pressure using stream temp, used exclusively in sensible calculations
+        Saturated vapor pressure using the stream's water temperature. 
+        Used exclusively in sensible calculations.
+
+        Args:
+            water_temp_value (float): A singluar value of water_temp
+        
+        Returns:
+            The Saturation vapor pressure of that water_temp value
         """
         return 0.61275 * math.exp(
             (17.27 * water_temp_value) / (237.3 + water_temp_value)
@@ -205,13 +224,25 @@ class HeatFluxCalculations:
 
     def _saturation_vp_air(self, air_temp_value):
         """
-        The saturation vapor pressure equation for air
+        Saturated vapor pressure using the stream's air temperature. 
+
+        Args:
+            water_temp_value (float): A singluar value of air_temp
+        
+        Returns:
+            The Saturation vapor pressure of that air temperature value
         """
         return 0.611 * math.exp((17.27 * air_temp_value) / (237.2 + air_temp_value))
 
     def _saturation_vp_water(self, water_temp_value):
         """
-        Saturated vapor pressure at the stream surface (water)
+        Saturated vapor pressure using the stream's water temperature. 
+
+        Args:
+            water_temp_value (float): A singluar value of water_temp
+        
+        Returns:
+            The Saturation vapor pressure of that water_temp value
         """
         return 0.611 * math.exp((17.27 * water_temp_value) / (237.3 + water_temp_value))
 
@@ -235,24 +266,37 @@ class HeatFluxCalculations:
         width_m,
     ):
         """
-        Function that is called from hflux
-        Input:
-            settings = an array of values specifying solution methods
-            solar_rad = an array of values for solar radiation (W/m^2)
-            air_temp = an array of air temperature values (deg C)
-            rel_hum = an array of relative humidity values (unitless)
-            water_temp = an array of values for stream temperature (deg C)
-            wind_speed = an array of wind speed values (m/s)
-            z = elevation of station where met data was obtained (m)
-            bed_temp=array of bed temperatures
-            depth_of_meas=distance between stream temp measurement and stream bed
-            temperature
-            shade = amount of shade (0-1)
-            cl = cloud cover (0-1)
+        Computes the total heat entering and leaving a stream
 
-        Output:
-            net, shortwave, longwave, atm, back, land, latent, sensible, bed =
-            heat fluxes to be employed by hflux
+        Args:
+            settings (ndarray): an array of values specifying solution methods
+            solar_rad (ndarray): an array of values for solar radiation (W/m^2)
+            air_temp (ndarray): an array of air temperature values (deg C)
+            rel_hum (ndarray): an array of relative humidity values (unitless)
+            water_temp (ndarray): an array of values for stream temperature (deg C)
+            wind_speed (ndarray): an array of wind speed values (m/s)
+            z (int)= elevation of station where met data was obtained (m)
+            sed_type (ndarray): sediment type of the stream. Accepted values are: clay, sand, gravel, or cobbles.
+            bed_temp (ndarray): array of bed temperatures
+            depth_of_meas (ndarray): distance between stream temp measurement and stream bed
+            temperature
+            shade (ndarray): amount of shade (0-1)
+            vts (ndarry): view to sky coefficient (0-1)
+            cl (ndarray): cloud cover (0-1)
+            sol_refl (ndarray): portion of solar radiation that is reflected off the surface of the stream.
+            WP_m (ndarray): wetted perimeter of the stream bed (meters)
+            width_m (ndarray): width of the stream (meters)
+
+        Returns:
+            net (ndarry): summed heat fluxe values from shortwave, longwave, latent, sensible, and bed
+            shortwave (ndarry): shortwave radiation values
+            longwave (ndarry): longwave radiation values
+            atm (ndarray): atmospheric longwave radiation
+            back (ndarray): back radiation from the stream
+            land (ndarray): radiation from the landcover
+            latent (ndarray): latent heat flux values for each position along the stream                      
+            sensible (ndarray): sensible heat flux values for each position along the stream
+            bed (ndarray): the heat flux through the stream bed at each location
         """
         eq1 = settings["shortwave radiation method"]  # Shortwave radiation equation method
         ## 1 = Equation [3] in text, includes correction for reflection
@@ -311,11 +355,16 @@ class HeatFluxCalculations:
 
     def hflux_bed_sed(self, sed_type, dist_bed, dist_mod):
         """
-        Inputs:
-        sed_type = a single value or array of type 'cell' that describe the
-                    sediment type as clay, sand, gravel, or cobbles
-        dist_bed = distances in meters where the sediment type was observed
-        dist_mod = interpolated distances in meters used in the model
+        Interpolates bed sediment input to the entire length of the stream
+
+        Args:
+            sed_type (ndarray): sediment type of the stream. Accepted values are: clay, sand, gravel, or cobbles.
+            dist_bed (ndarray): distances in meters where the sediment type was observed.
+            dist_mod (ndarray): interpolated distances in meters used in the model.
+        
+        Returns:
+            An array of interpolated values for the sediment type
+            
         """
         sed_type_int = np.empty(len(sed_type))
         for index in range(len(sed_type)):
@@ -341,5 +390,24 @@ class HeatFluxCalculations:
         return scipy.interpolate.interp1d(dist_bed, sed_type_int, "nearest")(dist_mod)
 
     def hflux_shortwave_refl(self, year, month, day, hour, minute, lat, lon, t_zone, time_met, time_mod):
+        """
+        Calculate the portion of solar radiation reflected off the surface of the stream
+
+        Args: 
+            year (ndarray): year during which measurements were taken.
+            month (ndarray): month during which measurements were taken.
+            day (ndarray): day during which measurements were taken. 
+            hour (ndarray): hour during which measurements were taken. Format is military time.
+            min (ndarray): minute during which measurements were taken.
+            time_met (ndarray): times at which meteorological data are known, in minutes. met
+                data includes air temp, rel humidity, wind speed, and solar rad.
+            lat (float): latitude. Positive for northern hemisphere, negative for southern.
+            lon (float): longitude. Positive for eastern hemisphere, negative for western.
+            t_zone (int)= indicates the time zone correction factor (East = 5, Central = 6, Mountain = 7, Pacific = 8).
+            time_mod (ndarray): model times at which temperatures will be computed for heat budget, in minutes.
+
+        Returns:
+            sol_refl (ndarray): an array of solar radiation
+        """
         shortwave_reflection_calculations = ShortwaveReflectionCalculations()
         return shortwave_reflection_calculations.hflux_shortwave_refl(year, month, day, hour, minute, lat, lon, t_zone, time_met, time_mod)
