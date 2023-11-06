@@ -1,5 +1,5 @@
 """
-Author: Michael Scoleri
+Author: Michael Scoleri, Violet Shi, James Gallagher
 Date: 09-22-23
 File: script_to_run.py
 Functionality: Coordinate the entire program
