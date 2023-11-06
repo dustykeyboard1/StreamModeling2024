@@ -66,6 +66,28 @@ class HfluxSens:
         print("Closed multithreading executer.")
         return results
 
+    @staticmethod
+    def singlethread_call(input_data_list, base_result):
+        """
+        Calls heat_flux.py in a single thread
+
+        Args:
+            input_data_list ([dict]): list of dictionaries to be used as the parameter for hflux.py
+
+        Return:
+            results ({ndarray, {ndarrarys}, {ndarrays}})
+        """
+        print()
+        print("Beginning calls to hflux...")
+        results = [base_result]
+        for result, _, _, _ in map(HfluxSens.heat_flux_wrapper, input_data_list):
+            results.append(result)
+            print("Finished a call!")
+
+        print()
+        print("Sensitivity values computed.")
+        return results
+
     def hflux_sens(
         self,
         data_table,
@@ -196,7 +218,7 @@ class HfluxSens:
         )
         return high_low_values
 
-    def create_new_results(self, base_result, high_low_dict):
+    def create_new_results(self, base_result, high_low_dict, multithread=True):
         """
         Creates and returns a new sensitiviity dictionary
 
@@ -218,9 +240,12 @@ class HfluxSens:
             high_low_dict["input_data_highshade"],
         ]
 
-        results = self.multithreading_call(
-            input_data_list=new_data_list, base_result=base_result
-        )
+        if multithread:
+            results = self.multithreading_call(
+                input_data_list=new_data_list, base_result=base_result
+            )
+        else:
+            results = self.singlethread_call(input_data_list=new_data_list, base_result=base_result)
 
         temp_mod_base = results[0]
         temp_mod_lowdis = results[1]
@@ -299,7 +324,7 @@ class HfluxSens:
         return change
 
     # Reshape used to align plotting structures - https://numpy.org/doc/stable/reference/generated/numpy.reshape.html
-    def make_sens_plots(self, data_table, sens):
+    def make_sens_plots(self, data_table, sens, return_graphs=False):
         """
         Creates and saves plots for sensitiity calculations
 
@@ -358,3 +383,6 @@ class HfluxSens:
         fig2 = self.plc.make_bar_charts(change)
 
         self.plc.save_plots(fig, fig2, path="hflux_sens")
+
+        if return_graphs:
+            return fig, fig2

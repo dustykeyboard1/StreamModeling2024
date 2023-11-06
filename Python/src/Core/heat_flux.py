@@ -892,7 +892,7 @@ class HeatFlux:
         """
         return (root_mean_squared_error / (np.max(temp) - np.min(temp))) * 100
 
-    def create_hlux_plots(self, temp_mod, flux_data):
+    def create_hlux_plots(self, temp_mod, flux_data, return_graphs=False):
         """
         Main method for creating and saving heat flux plots.
 
@@ -910,6 +910,8 @@ class HeatFlux:
         self.plc.save_plots(
             hflux_resiudal, hflux_3d, hflux_subplots, comparison_plot, path="hflux"
         )
+        if return_graphs:
+            return hflux_resiudal, hflux_3d, hflux_subplots, comparison_plot
 
     def flux_residual_plot(self, temp_mod):
         """

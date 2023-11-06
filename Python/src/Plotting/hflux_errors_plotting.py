@@ -8,7 +8,7 @@ from Python.src.Plotting.plotting_class import Plotting
 
 
 def create_hflux_errors_plots(
-    residuals, dist_temp, temp, temp_mod, dist_mod, time_temp, time_mod
+    residuals, dist_temp, temp, temp_mod, dist_mod, time_temp, time_mod, return_graphs=False
 ):
     """
     Creates and saves a PDF with all hflux error plots.
@@ -37,3 +37,5 @@ def create_hflux_errors_plots(
         dist_temp, temp, temp_mod, dist_mod, time_temp, time_mod
     )
     plc.save_plots(fig1, fig2, path="hflux_errors")
+    if return_graphs:
+        return fig1, fig2
