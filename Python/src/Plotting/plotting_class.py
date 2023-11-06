@@ -260,39 +260,40 @@ class Plotting:
         mean_temp_axis1 = np.mean(temp, axis=1)
         mean_temp_mod_axis1 = np.mean(temp_mod, axis=1)
         # Set the X and Y limites according to MATLAB code.
-        plt.xlim([np.min(dist_temp), np.max(dist_temp)])
-        plt.ylim(
+        axs[0].set_xlim([np.min(dist_temp), np.max(dist_temp)])
+        axs[0].set_ylim(
             [
                 min(mean_temp_axis1.min(), mean_temp_mod_axis1.min()),
                 max(mean_temp_axis1.max(), mean_temp_mod_axis1.max()),
             ]
         )
 
-        plt.title("Stream Temperature Along the Reach", fontsize=11, fontweight="bold")
-        plt.xlabel("Distance Downstream (m)", fontsize=9)
-        plt.ylabel("Temperature (°C)", fontsize=9)
-        plt.legend(["Measured", "Modeled"], loc="best")
+        axs[0].set_title(
+            "Stream Temperature Along the Reach", fontsize=11, fontweight="bold"
+        )
+        axs[0].set_xlabel("Distance Downstream (m)", fontsize=9)
+        axs[0].set_ylabel("Temperature (°C)", fontsize=9)
+        axs[0].legend(["Measured", "Modeled"], loc="best")
 
         # Create matching plot from MATLAB code.
-        # Incorrect Graph, coming back for beta
         axs[1].plot(time_temp, np.mean(temp, axis=0), "b", linewidth=1.5)
         axs[1].plot(time_mod, np.mean(temp_mod, axis=0), "r", linewidth=1.5)
 
         mean_temp = np.mean(temp, axis=0)
         mean_temp_mod = np.mean(temp_mod, axis=0)
         # Set the X and Y limits according to matlab code.
-        plt.xlim([np.min(time_temp), np.max(time_temp)])
-        plt.ylim(
+        axs[1].set_xlim([np.min(time_temp), np.max(time_temp)])
+        axs[1].set_ylim(
             [
                 min(mean_temp.min(), mean_temp_mod.min()) - 1,
                 max(mean_temp.max(), mean_temp_mod.max()) + 1,
             ]
         )
 
-        plt.title("Stream Temperature Over Time", fontsize=11, fontweight="bold")
-        plt.xlabel("Time (min)", fontsize=9)
-        plt.ylabel("Temperature (°C)", fontsize=9)
-        plt.legend(["Measured", "Modeled"], loc="best")
+        axs[1].set_title("Stream Temperature Over Time", fontsize=11, fontweight="bold")
+        axs[1].set_xlabel("Time (min)", fontsize=9)
+        axs[1].set_ylabel("Temperature (°C)", fontsize=9)
+        axs[1].legend(["Measured", "Modeled"], loc="best")
 
         plt.tight_layout()
         return fig
