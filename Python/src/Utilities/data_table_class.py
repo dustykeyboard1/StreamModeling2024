@@ -324,16 +324,16 @@ class DataTable:
         return self.cloud_data["Cloud Cover"]
     
     @property
-    def lat(self):
+    def latitude(self):
         """
-        Initialize variable lat
+        Initialize variable latitude
         """
         return self.site_info["site_info"][0, 0]
 
     @property
-    def lon(self):
+    def longitude(self):
         """
-        Initialize variable lon
+        Initialize variable longitude
         """
         return self.site_info["site_info"][0, 1]
 
@@ -355,8 +355,8 @@ class DataTable:
         """
         Create a new instance of data_table that's based on the original data_table with some sheets changed 
 
-        Args: sheet_to_change_name (string or a list of strings): the names of the sheets to be changed 
-              new_value (ndarrays or a list of ndarrays): new values of the sheets to be changed 
+        Args: sheet_to_change_name (string or [strings]): the names of the sheets to be changed 
+              new_value (ndarrays or [ndarrays]): new values of the sheets to be changed 
 
         Returns: modified_data_table (DataTable): new modified data table
         """
