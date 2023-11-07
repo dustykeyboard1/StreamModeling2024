@@ -35,6 +35,8 @@ def script_to_run():
     # Read in input data from helper funciton.
     filename = os.path.join(os.getcwd(), "Data", "example_data.xlsx")
     data_table = DataTable(filename)
+    
+    output_suppression = data_table.output_suppression
 
     heat_flux = HeatFlux(data_table)
     # Use helper functions (hflux(), handle_errors() and sens())  to calculate values.
@@ -64,7 +66,7 @@ def script_to_run():
         data_table, [-0.01, 0.01], [-2, 2], [-0.1, 0.1], [-0.1, 0.1]
     )
 
-    sens = hflux_sens.create_new_results(temp_mod, high_low_dict)
+    sens = hflux_sens.create_new_results(temp_mod, high_low_dict, output_suppression)
     hflux_sens.make_sens_plots(data_table, sens)
 
     # Save output to CSV files using Numpy.
@@ -84,7 +86,8 @@ def script_to_run():
     np.savetxt(f"{path}/sensible_data.csv", flux_data["sensible"], delimiter=",")
     np.savetxt(f"{path}/conduction_data.csv", flux_data["conduction"], delimiter=",")
 
-    print("...Done!")
+    if not output_suppression:
+        print("...Done!")
 
 
 if __name__ == "__main__":

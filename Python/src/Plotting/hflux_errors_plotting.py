@@ -1,6 +1,5 @@
 import os
 import sys
-import matplotlib.pyplot as plt
 
 root_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
 sys.path.append(root_dir)
@@ -8,7 +7,14 @@ from Python.src.Plotting.plotting_class import Plotting
 
 
 def create_hflux_errors_plots(
-    residuals, dist_temp, temp, temp_mod, dist_mod, time_temp, time_mod, return_graphs=False
+    residuals,
+    dist_temp,
+    temp,
+    temp_mod,
+    dist_mod,
+    time_temp,
+    time_mod,
+    return_graphs=False,
 ):
     """
     Creates and saves a PDF with all hflux error plots.

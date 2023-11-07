@@ -16,6 +16,7 @@ import scipy.sparse.linalg as linalg
 # Find the root directory dynmimically. https://stackoverflow.com/questions/73230007/how-can-i-set-a-root-directory-dynamically
 root_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
 sys.path.append(root_dir)
+
 from src.Utilities.interpolation import interpolation
 from src.Heat_Flux.heatflux_calculations import HeatFluxCalculations
 from src.Plotting.plotting_class import Plotting
@@ -310,10 +311,6 @@ class HeatFlux:
 
         Returns: volume (ndarray):
         """
-        if not self.data_table.output_suppression:
-            print(
-                "Computing volumes of nodes, discharge rates and groundwater inflow rates..."
-            )
         volume = np.empty((r, timesteps))
         volume[0] = (
             self.data_table.dist_mod[1] - self.data_table.dist_mod[0]
@@ -400,6 +397,12 @@ class HeatFlux:
                                         in W/m2, at each node and time_step
         """
         output_suppression = self.data_table.output_suppression
+        sed = self._calculate_hflux_bed_sed()
+        sol_refl = self._calculate_sol_refl()
+
+        if not output_suppression:
+            print("Determining time steps and nodes...")
+
         time_mod = self.data_table.time_mod
         timesteps = len(time_mod)
 
@@ -407,20 +410,18 @@ class HeatFlux:
         r = len(dist_mod)
         dt = max(time_mod) / (timesteps - 1)
 
+        if not output_suppression:
+            print("...done!\n")
+            print(
+                "Interpolating longitudinal data in space and interpolating temporal data in time..."
+            )
+
         discharge_m = self._interpolate_discharge_m()
         (
             width_m,
             area_m,
             wetted_perimeter_m,
         ) = self._calculate_width_depth_discharge_relationship(discharge_m)
-        volume = self._calculate_reservoir_volumes(area_m, r, timesteps)
-
-        q_half_min = self._linearly_calculate_reservoir_edges_discharge_rates(
-            r, timesteps, discharge_m
-        )
-        q_l_min = self._compute_lateral_groundwater_discharge_rates_through_longtudinal_changes(
-            r, q_half_min
-        )
 
         (
             t_l_m,
@@ -436,15 +437,34 @@ class HeatFlux:
             temp_x0_dt,
         ) = self._interpolate_data(r)
 
-        sed = self._calculate_hflux_bed_sed()
-        sol_refl = self._calculate_sol_refl()
         bed_temp_dt = self._interpolate_bed_temp_dt(r)
+
+        if not output_suppression:
+            print("...done!\n")
+            print(
+                "Computing volumes of nodes, discharge rates and groundwater inflow rates..."
+            )
+
+        volume = self._calculate_reservoir_volumes(area_m, r, timesteps)
+
+        q_half_min = self._linearly_calculate_reservoir_edges_discharge_rates(
+            r, timesteps, discharge_m
+        )
+        q_l_min = self._compute_lateral_groundwater_discharge_rates_through_longtudinal_changes(
+            r, q_half_min
+        )
+
+        if not output_suppression:
+            print("...done!\n")
 
         ###############################################################
         # Calculate coefficients of the tridiagonal matrix (a, b, c)
         # and set coefficients at the boundaries. Use a, b and c to create the A
         # matrix.  Note that a, b and c are constant in time as long as Q,
         # volume, and q_l are constant with time.
+
+        if not output_suppression:
+            print("Computing A matrix coefficients...")
 
         # Prepare to calculate coefficients of the tridiagonal matrix(a, b, c)
         double_volume = 2 * volume[:, 0]
@@ -497,6 +517,9 @@ class HeatFlux:
         q_c = ((dt * q_l_min).transpose() / double_volume).transpose()
         b_c = (1 + o_c - p_c + q_c).transpose()
         c_c = ((dt * q_half_min[1:, :]).transpose() / quad_volume).transpose()
+
+        if not output_suppression:
+            print("...done!\n")
 
         ###############################################################
         # Calculate right hand side (d).
@@ -679,6 +702,9 @@ class HeatFlux:
         flux_data["evap"] = latent
         flux_data["sensible"] = sensible
         flux_data["conduction"] = bed
+
+        if not output_suppression:
+            print("...done!\n")
 
         return temp_mod, matrix_data, node_data, flux_data
 
@@ -910,7 +936,7 @@ class HeatFlux:
         hflux_subplots = self.make_subplots(flux_data)
         comparison_plot = self.make_comparison_plot(flux_data)
         self.plc.save_plots(
-            hflux_resiudal, hflux_3d, hflux_subplots, comparison_plot, path="hflux"
+            hflux_resiudal, hflux_3d, hflux_subplots, comparison_plot, path="hflux",
         )
         if return_graphs:
             return hflux_resiudal, hflux_3d, hflux_subplots, comparison_plot

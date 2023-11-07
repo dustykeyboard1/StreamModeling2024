@@ -1,4 +1,4 @@
-'''
+"""
 Author:
 Michael Scoleri
 Violet Shi 
@@ -10,11 +10,11 @@ Filename: interpolation.py
 
 Function: 
 Provides an equivalent function in Python for Matlab's interp1 function.
-'''
+"""
 import scipy
 import numpy as np
 
-'''
+"""
 The interpolate function in matlab, which has the following structure:
 interp1(x, v, xq, method), where... 
     x is the x-values of the known points
@@ -39,16 +39,16 @@ with a two step python function:
         array.append(f(query_point))            # This gives us a 1D array
 
 We can use scipy's interp1d function to accomplish the same thing as Matlab's interp1 function
-'''
+"""
 
-'''
+"""
 An equivalent interpolation function to matlab
 Returns a 1-D array of interpolated values
-'''
+"""
+
 
 def interpolation(x, y, xq, method="linear"):
-    if method == 'pchip':
+    if method == "pchip":
         return scipy.interpolate.PchipInterpolator(x, y)(xq)
     else:
         return scipy.interpolate.interp1d(x, y, method)(xq)
-

@@ -9,6 +9,7 @@ import pandas as pd
 import numpy as np
 from copy import deepcopy
 
+
 class DataTable:
     def __init__(self, file_name):
         """
@@ -21,12 +22,16 @@ class DataTable:
 
         # storing all data sheets as attribute to prepare for automatically updating column variables later
         self.settings = input_data["settings"]
-        self.temp = input_data["temp"]['temp']
+
+        if not self.output_suppression:
+            print("Assigning variable names...")
+
+        self.temp = input_data["temp"]["temp"]
         self.time_mod_raw = input_data["time_mod"]
         self.dist_mod_raw = input_data["dist_mod"]
         self.temp_x0_data = input_data["temp_x0_data"]
         self.temp_t0_data = input_data["temp_t0_data"]
-        self.dim_data = input_data["dim_data"]  
+        self.dim_data = input_data["dim_data"]
         self.dis_data = input_data["dis_data"]
         self.time_dis_raw = input_data["time_dis"]
         self.t_l_data = input_data["T_L_data"]
@@ -37,6 +42,9 @@ class DataTable:
         self.shade_data = input_data["shade_data"]
         self.cloud_data = input_data["cloud_data"]
         self.site_info = input_data["site_info"]
+
+        if not self.output_suppression:
+            print("...done!\n")
 
         # check if the format of the data is correct after reading in the input file
         self._format_checking_after_reading()
@@ -79,7 +87,7 @@ class DataTable:
         Initialize variable time_mod
         """
         return self.time_mod_raw["Time"]
-    
+
     @property
     def dist_mod(self):
         """
@@ -121,7 +129,7 @@ class DataTable:
         Initialize variable dist_stdim
         """
         return self.dim_data["Distance"]
-    
+
     # p.s. this is commented out in the original Matlab file
     # @property
     # def area(self):
@@ -140,21 +148,21 @@ class DataTable:
         Initialize variable depth
         """
         return self.dim_data["Depth"]
-    
+
     @property
     def discharge_stdim(self):
         """
         Initialize variable discharge_stdim
         """
         return self.dim_data["Discharge"]
-    
+
     @property
     def dist_dis(self):
         """
         Initialize variable discharge_stdim
         """
         return self.dis_data["Distance"]
-    
+
     @property
     def discharge(self):
         """
@@ -189,21 +197,21 @@ class DataTable:
         Initialize variable year
         """
         return self.met_data["Year"]
-    
+
     @property
     def month(self):
         """
         Initialize variable month
         """
         return self.met_data["Month"]
-    
+
     @property
     def day(self):
         """
         Initialize variable day
         """
         return self.met_data["Day"]
-    
+
     @property
     def hour(self):
         """
@@ -224,7 +232,7 @@ class DataTable:
         Initialize variable time_met
         """
         return self.met_data["Time"]
-    
+
     @property
     def solar_rad_in(self):
         """
@@ -238,14 +246,14 @@ class DataTable:
         Initialize variable air_temp_in
         """
         return self.met_data["Air Temperature"]
-    
+
     @property
     def rel_hum_in(self):
         """
         Initialize variable rel_hum_in
         """
         return self.met_data["Relative Humidity"]
-    
+
     @property
     def wind_speed_in(self):
         """
@@ -266,49 +274,51 @@ class DataTable:
         Initialize variable depth_of_meas
         """
         return self.bed_data1["Depth of Measurement"]
-    
+
     @property
     def time_bed(self):
         """
         Initialize variable time_bed
         """
-        return np.array([self.bed_data2["bed_data2"][0, 0], self.bed_data2["bed_data2"][1, 0]])
-    
+        return np.array(
+            [self.bed_data2["bed_data2"][0, 0], self.bed_data2["bed_data2"][1, 0]]
+        )
+
     @property
     def bed_temp(self):
         """
         Initialize variable bed_temp
         """
         return self.bed_data2["bed_data2"][0:, 1:]
-    
+
     @property
     def sed_type(self):
         """
         Initialize variable sed_type
         """
-        return self.sed_type_raw['sed_type'][0]
-    
+        return self.sed_type_raw["sed_type"][0]
+
     @property
     def dist_shade(self):
         """
         Initialize variable dist_shade
         """
         return self.shade_data["Distance"]
-    
+
     @property
     def shade(self):
         """
         Initialize variable shade
         """
         return self.shade_data["Shade "]
-    
+
     @property
     def vts(self):
         """
         Initialize variable vts
         """
         return self.shade_data["View to Sky"]
-    
+
     @property
     def time_cloud(self):
         """
@@ -322,7 +332,7 @@ class DataTable:
         Initialize variable c_in
         """
         return self.cloud_data["Cloud Cover"]
-    
+
     @property
     def latitude(self):
         """
@@ -343,20 +353,20 @@ class DataTable:
         Initialize variable t_zone
         """
         return self.site_info["site_info"][0, 2]
-    
+
     @property
     def z(self):
         """
         Initialize variable z
         """
         return self.site_info["site_info"][0, 3]
-    
+
     def modify_data_table(self, sheet_to_change_name, new_value):
         """
-        Create a new instance of data_table that's based on the original data_table with some sheets changed 
+        Create a new instance of data_table that's based on the original data_table with some sheets changed
 
-        Args: sheet_to_change_name (string): the name of the sheet to be changed 
-              new_value (ndarrays): new values of the sheet to be changed 
+        Args: sheet_to_change_name (string): the name of the sheet to be changed
+              new_value (ndarrays): new values of the sheet to be changed
 
         Returns: modified_data_table (DataTable): new modified data table
         """
@@ -365,11 +375,11 @@ class DataTable:
         i = 0
         for key, _ in sheet_to_change.items():
             if sheet_to_change_name == "dis_data" and key == "Q":
-                sheet_to_change[key] = np.vstack((new_value[i], new_value[i+1]))
-                i+=2
+                sheet_to_change[key] = np.vstack((new_value[i], new_value[i + 1]))
+                i += 2
             else:
                 sheet_to_change[key] = new_value[i]
-                i+=1
+                i += 1
 
         return modified_data_table
 
@@ -390,7 +400,7 @@ class DataTable:
         """
         Read in the settings sheet and format it into a dictionary
 
-        Args: settings (ndarray): the raw data from the settings sheet 
+        Args: settings (ndarray): the raw data from the settings sheet
         Returns: sheet (dictonary): keys are the method names and values are the integer value
         """
         methods = settings[0]
@@ -400,7 +410,7 @@ class DataTable:
         for i in range(method_names_size):
             sliced_column_name = self._slice_column_name(method_names[i], " (")
             sheet[sliced_column_name] = methods[i]
-            
+
         return sheet
 
     def _input_reader(self, file_name):
@@ -408,7 +418,7 @@ class DataTable:
         Read from the input file
 
         Args: file_name (string): The name of the input file
-        Returns: input_data (dictionary): A dictionary whose indices are sheets' names and 
+        Returns: input_data (dictionary): A dictionary whose indices are sheets' names and
                                                             values are the corresponding sheet data
         """
         data = pd.ExcelFile(file_name)
@@ -427,23 +437,33 @@ class DataTable:
                 if "Unnamed:" not in column_names[0]:
                     num_cols = len(column_names)
                     for i in range(num_cols):
-                        sliced_column_name = self._slice_column_name(column_names[i], " (")
+                        sliced_column_name = self._slice_column_name(
+                            column_names[i], " ("
+                        )
                         if sliced_column_name in sheet.keys():
-                            sheet[sliced_column_name] = np.vstack((sheet[sliced_column_name],column_values[i]))
-                        else:   
+                            sheet[sliced_column_name] = np.vstack(
+                                (sheet[sliced_column_name], column_values[i])
+                            )
+                        else:
                             sheet[sliced_column_name] = column_values[i]
                 else:
                     sheet[sheet_name] = column_values
             input_data[sheet_name] = sheet
 
         return input_data
-    
+
     def _format_checking_during_reading(self, col_num, sheet_name):
         """
         Check the format of the data to see if they have desirable shapes
-        """ 
-        if sheet_name in ("temp_x0_data", "temp_t0_data", "T_L_data",
-                        "bed_data1", "cloud_data") and col_num != 2:
+
+        Args: col_num (int): the total number of columns in the given sheet
+              sheet_name (string): the name of the sheet to be checked
+        """
+        if (
+            sheet_name
+            in ("temp_x0_data", "temp_t0_data", "T_L_data", "bed_data1", "cloud_data")
+            and col_num != 2
+        ):
             print(sheet_name + " must contain 2 columns of data!")
         elif sheet_name == "dim_data" and col_num != 5:
             print(sheet_name + " must contain 5 columns of data!")
@@ -451,17 +471,20 @@ class DataTable:
             print(sheet_name + " must contain 10 columns of data!")
         elif sheet_name == "shade_data" and col_num != 3:
             print(sheet_name + " must contain 3 columns of data!")
-        elif sheet_name in ("site_info", "time_mod", "dist_mod", "sed_type") and col_num != 1: 
+        elif (
+            sheet_name in ("site_info", "time_mod", "dist_mod", "sed_type")
+            and col_num != 1
+        ):
             print(sheet_name + " must contain 1 columns of data!")
 
     def _format_checking_after_reading(self):
         """
         Check the format of the data to see if they have desirable shapes
-        """ 
+        """
         if not self.output_suppression:
             print("Checking input arguments...")
 
-        # Type check variables to ensure they are column vectors by checking number of dimnesions and shape. 
+        # Type check variables to ensure they are column vectors by checking number of dimnesions and shape.
         # ndim - https://numpy.org/doc/stable/reference/generated/numpy.ndarray.ndim.html
         # shape - https://numpy.org/doc/stable/reference/generated/numpy.shape.html
         if self.time_mod.ndim != 1:
@@ -477,8 +500,6 @@ class DataTable:
         # Isinstance - https://docs.python.org/3/library/functions.html#isinstance
         if not isinstance(self.temp, np.ndarray):
             raise TypeError("Temp must be a numpy array representing a matrix.")
-        
+
         if not self.output_suppression:
-            print('...Done!')
-
-
+            print("...done!\n")

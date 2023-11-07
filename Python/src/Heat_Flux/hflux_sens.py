@@ -5,10 +5,9 @@ File: hflux_sens.py
 Functionality: Implementation of hflux_sens.m
 """
 
-import os
 import sys
-from matplotlib.backends.backend_pdf import PdfPages
 from concurrent.futures import ProcessPoolExecutor
+import multiprocessing
 from Python.src.Core.heat_flux import HeatFlux
 from Python.src.Plotting.plotting_class import Plotting
 import numpy as np
@@ -41,7 +40,7 @@ class HfluxSens:
         return HeatFlux(data_table).crank_nicolson_method()
 
     @staticmethod
-    def multithreading_call(input_data_list, base_result):
+    def multithreading_call(output_suppression, input_data_list, base_result):
         """
         Implements Multi-threading for calls to hflux.py
 
@@ -54,20 +53,25 @@ class HfluxSens:
         results = [base_result]
 
         # Launching Parallel Tasks - https://docs.python.org/3/library/concurrent.futures.html
-        print()
-        print("Beginning Multi-threaded calls to hflux...")
-        with ProcessPoolExecutor(max_workers=7) as executor:
+        if not output_suppression:
+            print()
+            print("Beginning Multi-threaded calls to hflux...")
+
+        cpu_count = multiprocessing.cpu_count()
+        with ProcessPoolExecutor(max_workers=cpu_count//2) as executor:
             for result, _, _, _ in executor.map(
                 HfluxSens.heat_flux_wrapper, input_data_list
             ):
                 results.append(result)
             executor.shutdown()
-        print()
-        print("Closed multithreading executer.")
+
+        if not output_suppression:
+            print("...closed multithreading executer...")
+
         return results
 
     @staticmethod
-    def singlethread_call(input_data_list, base_result):
+    def singlethread_call(output_suppression, input_data_list, base_result):
         """
         Calls heat_flux.py in a single thread
 
@@ -77,15 +81,20 @@ class HfluxSens:
         Return:
             results ({ndarray, {ndarrarys}, {ndarrays}})
         """
-        print()
-        print("Beginning calls to hflux...")
+        if not output_suppression:
+            print()
+            print("Beginning calls to hflux...")
+
         results = [base_result]
         for result, _, _, _ in map(HfluxSens.heat_flux_wrapper, input_data_list):
             results.append(result)
-            print("Finished a call!")
+            if not output_suppression:
+                print("Finished a call!")
 
-        print()
-        print("Sensitivity values computed.")
+        if not output_suppression:
+            print()
+            print("Sensitivity values computed.")
+
         return results
 
     def hflux_sens(
@@ -109,11 +118,13 @@ class HfluxSens:
         Returns:
             High_low_values ({ndarray}): Dictionary containing high and low values.
         """
+        output_suppression = data_table.output_suppression
+        if not output_suppression:
+            print("Calculating high and low values...")
 
-        print("Calculating high and low values...")
-        high_low_values = {}
         data_table.output_suppression = True
 
+        high_low_values = {}
         # Create low and high values for each parameter.
         high_low_values["dis_data_1"] = data_table.discharge.transpose()
         high_low_values["dis_low"] = high_low_values["dis_data_1"] + dis_high_low[0]
@@ -187,9 +198,9 @@ class HfluxSens:
             ]
         )
 
-        print("...Done!")
-        print("     ")
-        print("Running HLUX for the base, high, and low cases.")
+        if not output_suppression:
+            print("...done!\n")
+            print("Running HLUX for the base, high, and low cases...")
 
         # Create multiple copies of data_table for and modifying specifc keys.
         high_low_values["input_data_lowdis"] = data_table.modify_data_table(
@@ -218,7 +229,7 @@ class HfluxSens:
         )
         return high_low_values
 
-    def create_new_results(self, base_result, high_low_dict, multithread=True):
+    def create_new_results(self, base_result, high_low_dict, output_suppression, multithread=True):
         """
         Creates and returns a new sensitiviity dictionary
 
@@ -242,10 +253,12 @@ class HfluxSens:
 
         if multithread:
             results = self.multithreading_call(
-                input_data_list=new_data_list, base_result=base_result
+                output_suppression, input_data_list=new_data_list, base_result=base_result
             )
         else:
-            results = self.singlethread_call(input_data_list=new_data_list, base_result=base_result)
+            results = self.singlethread_call(
+                output_suppression, input_data_list=new_data_list, base_result=base_result
+            )
 
         temp_mod_base = results[0]
         temp_mod_lowdis = results[1]
@@ -257,9 +270,9 @@ class HfluxSens:
         temp_mod_lowshade = results[7]
         temp_mod_highshade = results[8]
 
-        print("...Done!")
-        print("     ")
-        print("Writing output data.")
+        if not output_suppression:
+            print("...Done!\n")
+            print("Writing output data...\n")
 
         # Store outputs from hflux to dictionaries.
         base = {"temp": temp_mod_base, "mean": np.mean(temp_mod_base, axis=1)}
