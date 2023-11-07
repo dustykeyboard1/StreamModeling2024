@@ -4,13 +4,28 @@ import os
 from PySide6 import QtCore, QtWidgets
 
 import matplotlib
-matplotlib.use('QtAgg')
+
+matplotlib.use("QtAgg")
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg
 from matplotlib.figure import Figure
 from matplotlib.backends.backend_pdf import PdfPages
 
 from PySide6.QtCore import Qt, QDir
-from PySide6.QtWidgets import QFileDialog, QSlider, QCheckBox, QApplication, QMainWindow, QPushButton, QGridLayout, QLabel, QWidget, QVBoxLayout, QLineEdit, QFormLayout, QHBoxLayout
+from PySide6.QtWidgets import (
+    QFileDialog,
+    QSlider,
+    QCheckBox,
+    QApplication,
+    QMainWindow,
+    QPushButton,
+    QGridLayout,
+    QLabel,
+    QWidget,
+    QVBoxLayout,
+    QLineEdit,
+    QFormLayout,
+    QHBoxLayout,
+)
 from PySide6.QtGui import QPixmap
 
 # Dynamically find and set the root directory.
@@ -32,14 +47,15 @@ FILE_INPUT_TEXT_WIDTH = 250
 BROWSE_BUTTON_WIDTH = 75
 ERROR_COLOR = "red"
 
+
 class TitleBanner(QLabel):
     def __init__(self, text):
         """
         Creates a stylized QLabel to serve as the title banner
-        
+
         Args:
             text (str): text to be displayed
-        
+
         Returns:
             None
         """
@@ -47,14 +63,15 @@ class TitleBanner(QLabel):
         self.setStyleSheet("QLabel {font-size : 16pt; font-weight: bold;}")
         self.setAlignment(Qt.AlignCenter)
 
+
 class ErrorMessage(QLabel):
     def __init__(self, text):
         """
         Creates a stylized QLabel to serve as an error message
-        
+
         Args:
             text (str): text to be displayed
-        
+
         Returns:
             None
         """
@@ -62,15 +79,16 @@ class ErrorMessage(QLabel):
         self.setText(text)
         self.setStyleSheet("QLabel { color : " + ERROR_COLOR + " }")
 
+
 class SettingsInput(QLineEdit):
     def __init__(self, label, placeholdertext):
         """
         Creates a stylized QLabel to serve as the title banner
-        
+
         Args:
             label (str): the label (text to the left) of the line edit
             placeholdertext (str): text that appears in the line edit when no other text is present
-        
+
         Returns:
             None
         """
@@ -78,14 +96,14 @@ class SettingsInput(QLineEdit):
         self.setPlaceholderText(placeholdertext)
         self._label = label
         self.setFixedWidth(LINEEDIT_WIDTH)
-    
+
     def get_text(self):
         """
         Returns the text contained in the settingsinput line edit
-        
+
         Args:
             None
-        
+
         Returns:
             The text in the line edit
         """
@@ -94,10 +112,10 @@ class SettingsInput(QLineEdit):
     def get_placeholdertext(self):
         """
         Returns the placeholder text contained in the settingsinput line edit
-        
+
         Args:
             None
-        
+
         Returns:
             The placeholder text in the line edit
         """
@@ -106,24 +124,25 @@ class SettingsInput(QLineEdit):
     def get_label(self):
         """
         Returns the label contained in the settingsinput line edit
-        
+
         Args:
             None
-        
+
         Returns:
             The label of the line edit
         """
         return self._label
 
+
 class FileInput(QLineEdit):
     def __init__(self, label, placeholder):
         """
         Creates a file input line edit to accept files
-        
+
         Args:
             label (str): the label (text to the left) of the file input
             placeholdertext (str): text that appears in the file input when no other text is present
-        
+
         Returns:
             None
         """
@@ -131,14 +150,14 @@ class FileInput(QLineEdit):
         self.setPlaceholderText(placeholder)
         self._label = label
         self.setFixedWidth(FILE_INPUT_TEXT_WIDTH)
-    
+
     def get_text(self):
         """
         Returns the text contained in the file input line edit
-        
+
         Args:
             None
-        
+
         Returns:
             The text in the line edit
         """
@@ -147,10 +166,10 @@ class FileInput(QLineEdit):
     def get_placeholdertext(self):
         """
         Returns the placeholder text contained in the file input line edit
-        
+
         Args:
             None
-        
+
         Returns:
             The placeholder text in the line edit
         """
@@ -159,17 +178,26 @@ class FileInput(QLineEdit):
     def get_label(self):
         """
         Returns the label contained in the file input line edit
-        
+
         Args:
             None
-        
+
         Returns:
             The label of the line edit
         """
         return self._label
 
+
 class SubmitButton(QPushButton):
-    def __init__(self, form, input_filename, settings, sensitivities, output_settings, output_file_location):
+    def __init__(
+        self,
+        form,
+        input_filename,
+        settings,
+        sensitivities,
+        output_settings,
+        output_file_location,
+    ):
         """
         Creating a button so we can submit our inputs to hflux
 
@@ -182,7 +210,7 @@ class SubmitButton(QPushButton):
             output_file_location (str): The path to where the output files should be written to
 
         Returns:
-            None        
+            None
         """
         super().__init__("Submit")
         self._form = form
@@ -193,7 +221,7 @@ class SubmitButton(QPushButton):
         self._output_settings = output_settings
         self._results = []
         self.clicked.connect(self.get_input)
-    
+
     def get_input(self):
         """
         Builds up a results array of all the inputs we passed in
@@ -202,7 +230,7 @@ class SubmitButton(QPushButton):
             None
 
         Returns:
-            None 
+            None
         """
         self.clear_errors()
         self._results += self.get_input_filename()
@@ -210,10 +238,10 @@ class SubmitButton(QPushButton):
         self._results += self.get_sensitivities()
         self._results += self.get_output_settings()
         self._results += [self._output_filename.get_text()]
-        if (self.validate_submission()):
+        if self.validate_submission():
             window.call_hflux(self._results)
         self._results = []
-        
+
     def clear_errors(self):
         """
         Gets rid of error messages when we call Submit, so as to avoid lingering error messages
@@ -222,10 +250,10 @@ class SubmitButton(QPushButton):
             None
 
         Returns:
-            None 
+            None
         """
         rows = self._form.rowCount()
-        while (rows > STARTER_ROWS):
+        while rows > STARTER_ROWS:
             self._form.removeRow(STARTER_ROWS + 1)
             rows -= 1
 
@@ -237,11 +265,11 @@ class SubmitButton(QPushButton):
             None
 
         Returns:
-            A singleton array containing the filename 
+            A singleton array containing the filename
         """
         filename = self._input_filename.get_text()
         return [filename]
-        
+
     def get_settings(self):
         """
         Returns the values from settings as an array. Also checks for erroneous values in these inputs
@@ -255,14 +283,28 @@ class SubmitButton(QPushButton):
         results = []
         for l in self._settings:
             value = l.get_text()
-            if value != '1' and value != '2' and value != "":
+            if value != "1" and value != "2" and value != "":
                 if len(value) > 20:
-                    self._form.addRow(ErrorMessage("Incorrect Value: " + value[:20] + "... in setting: " + l.get_label()))
+                    self._form.addRow(
+                        ErrorMessage(
+                            "Incorrect Value: "
+                            + value[:20]
+                            + "... in setting: "
+                            + l.get_label()
+                        )
+                    )
                 else:
-                    self._form.addRow(ErrorMessage("Incorrect Value: " + value + " in setting: " + l.get_label()))
+                    self._form.addRow(
+                        ErrorMessage(
+                            "Incorrect Value: "
+                            + value
+                            + " in setting: "
+                            + l.get_label()
+                        )
+                    )
             results.append(l.get_text())
         return results
-    
+
     def get_sensitivities(self):
         """
         Returns the values from the sensitivity sliders in an array
@@ -292,7 +334,7 @@ class SubmitButton(QPushButton):
         for out in self._output_settings:
             results.append(out.isChecked())
         return results
-    
+
     def validate_submission(self):
         """
         Ensures that all inputs are valid. Currently, we check:
@@ -309,18 +351,23 @@ class SubmitButton(QPushButton):
         if not os.path.exists(filename):
             self._form.addRow(ErrorMessage("Input path/file must be valid"))
             return False
-        
+
         settings = self._results[1:5]
         for val in settings:
-            if val != '2' and val != '1' and val != "":
+            if val != "2" and val != "1" and val != "":
                 return False
-        
+
         output_path = self._results[-1]
         save_to_pdf = self._results[-2]
         if save_to_pdf and (not os.path.exists(output_path)):
-            self._form.addRow(ErrorMessage("Save to PDF was selected, but an invalid path was provided"))
+            self._form.addRow(
+                ErrorMessage(
+                    "Save to PDF was selected, but an invalid path was provided"
+                )
+            )
             return False
         return True
+
 
 class SensitivitySlider(QSlider):
     def __init__(self, label, min, max, step, tick_pos, tick_interval):
@@ -346,11 +393,11 @@ class SensitivitySlider(QSlider):
         self.setTickPosition(tick_pos)
         self.setTickInterval(tick_interval)
         self.valueChanged.connect(self.update_value)
-    
+
     def get_label(self):
         """
         Returns the label of the tick slider
-        
+
         Args:
             None
 
@@ -369,8 +416,9 @@ class SensitivitySlider(QSlider):
         Returns:
             None
         """
-        self._label.setText(self._label.text()[:self._label.text().find(":")])
+        self._label.setText(self._label.text()[: self._label.text().find(":")])
         self._label.setText(self._label.text() + ": " + str(self.value()))
+
 
 class BrowseFileButton(QPushButton):
     def __init__(self, lineedit):
@@ -379,7 +427,7 @@ class BrowseFileButton(QPushButton):
 
         Args:
             lineedit (QLineEdit): The lineedit object that this browse button is associated with
-        
+
         Returns:
             None
         """
@@ -394,12 +442,15 @@ class BrowseFileButton(QPushButton):
 
         Args:
             None
-        
+
         Returns:
             None
         """
-        file_name, _ = QFileDialog.getOpenFileName(self, 'Select Input File', QDir.rootPath() , '*.xlsx')
+        file_name, _ = QFileDialog.getOpenFileName(
+            self, "Select Input File", QDir.rootPath(), "*.xlsx"
+        )
         self._lineedit.setText(file_name)
+
 
 class BrowsePathButton(QPushButton):
     def __init__(self, lineedit):
@@ -408,7 +459,7 @@ class BrowsePathButton(QPushButton):
 
         Args:
             lineedit (QLineEdit): The lineedit object that this browse button is associated with
-        
+
         Returns:
             None
         """
@@ -423,12 +474,15 @@ class BrowsePathButton(QPushButton):
 
         Args:
             None
-        
+
         Returns:
             None
         """
-        path_name = QFileDialog.getExistingDirectory(self, "Select Output Location", QDir.rootPath())
+        path_name = QFileDialog.getExistingDirectory(
+            self, "Select Output Location", QDir.rootPath()
+        )
         self._lineedit.setText(path_name)
+
 
 class HfluxGraph(QtWidgets.QMainWindow):
     def __init__(self, figure, figure_name):
@@ -438,7 +492,7 @@ class HfluxGraph(QtWidgets.QMainWindow):
         Args:
             figure (Figure): The Matplotlib figure to be displayed by the GUI
             figure_name (str): The name of the window title
-        
+
         Returns:
             None
         """
@@ -448,14 +502,15 @@ class HfluxGraph(QtWidgets.QMainWindow):
         self.setWindowTitle(figure_name)
         self.show()
 
-class HfluxCalculations():
+
+class HfluxCalculations:
     def __init__(self, settings_input):
         """
         Handles hflux calculations once we submit our input parameters
 
         Args:
             settings_input (array): The array that contains all settings information
-        
+
         Returns:
             None
         """
@@ -467,7 +522,7 @@ class HfluxCalculations():
 
         Args:
             None
-        
+
         Returns:
             None
         """
@@ -476,7 +531,9 @@ class HfluxCalculations():
         pdfpath = self._settings_input[-1]
         filename = self._settings_input[0]
         data_table = DataTable(filename)
-        
+
+        output_suppression = data_table.output_suppression
+
         self.change_settings(data_table, self._settings_input)
 
         heat_flux = HeatFlux(data_table)
@@ -498,9 +555,21 @@ class HfluxCalculations():
         time_temp = data_table.time_temp
         time_mod = data_table.time_mod
 
-        hflux_resiudal, hflux_3d, hflux_subplots, comparison_plot = heat_flux.create_hlux_plots(temp_mod, flux_data, return_graphs=True)
+        (
+            hflux_resiudal,
+            hflux_3d,
+            hflux_subplots,
+            comparison_plot,
+        ) = heat_flux.create_hlux_plots(temp_mod, flux_data, return_graphs=True)
         errorsfig1, errorsfig2 = create_hflux_errors_plots(
-            (temp - temp_dt), dist_temp, temp, temp_mod, dist_mod, time_temp, time_mod, return_graphs=True
+            (temp - temp_dt),
+            dist_temp,
+            temp,
+            temp_mod,
+            dist_mod,
+            time_temp,
+            time_mod,
+            return_graphs=True,
         )
 
         hflux_sens = HfluxSens(root_dir)
@@ -508,19 +577,44 @@ class HfluxCalculations():
             data_table, [-0.01, 0.01], [-2, 2], [-0.1, 0.1], [-0.1, 0.1]
         )
 
-        sens = hflux_sens.create_new_results(temp_mod, high_low_dict, multithread=False)
-        sensfig1, sensfig2 = hflux_sens.make_sens_plots(data_table, sens, return_graphs=True)
+        sens = hflux_sens.create_new_results(temp_mod, high_low_dict, output_suppression, multithread=False)
+        sensfig1, sensfig2 = hflux_sens.make_sens_plots(
+            data_table, sens, return_graphs=True
+        )
 
-        print("Calculations have finished!") 
-        
+        print("Calculations have finished!")
+
         if display_graphs:
-            self.create_graphs(hflux_resiudal, hflux_3d, hflux_subplots, comparison_plot, errorsfig1, errorsfig2, sensfig1, sensfig2)    
-    
+            self.create_graphs(
+                hflux_resiudal,
+                hflux_3d,
+                hflux_subplots,
+                comparison_plot,
+                errorsfig1,
+                errorsfig2,
+                sensfig1,
+                sensfig2,
+            )
+
         if savepdf:
-            self.savepdfs(pdfpath, [hflux_resiudal, hflux_3d, hflux_subplots, comparison_plot], [errorsfig1, errorsfig2], [sensfig1, sensfig2])
+            self.savepdfs(
+                pdfpath,
+                [hflux_resiudal, hflux_3d, hflux_subplots, comparison_plot],
+                [errorsfig1, errorsfig2],
+                [sensfig1, sensfig2],
+            )
 
-
-    def create_graphs(self, hflux_residual, hflux_3d, hflux_subplots, comparison_plot, errorsfig1, errorsfig2, sensfig1, sensfig2):
+    def create_graphs(
+        self,
+        hflux_residual,
+        hflux_3d,
+        hflux_subplots,
+        comparison_plot,
+        errorsfig1,
+        errorsfig2,
+        sensfig1,
+        sensfig2,
+    ):
         """
         Displays the graphs created in hflux
 
@@ -533,20 +627,24 @@ class HfluxCalculations():
             errorsfig2 (Figure): A graph displaying the Stream Temperature over time compared to our model
             sensfig1 (Figure): A graph detailing the sensitivity of various recorded values
             sensfig2 (Figure): A graph detailing the sensitivity of various input values
-        
+
         Returns:
             None
         """
-        self.hflux_residual = HfluxGraph(hflux_residual, "2D Modelled Stream Temperature")
+        self.hflux_residual = HfluxGraph(
+            hflux_residual, "2D Modelled Stream Temperature"
+        )
         self.hflux_3d = HfluxGraph(hflux_3d, "3D Modelled Stream Temperature")
-        self.hflux_subplots = HfluxGraph(hflux_subplots, "Modelled Heat Flux and Radiation")
+        self.hflux_subplots = HfluxGraph(
+            hflux_subplots, "Modelled Heat Flux and Radiation"
+        )
         self.comparison_plot = HfluxGraph(comparison_plot, "Energy Models")
         self.errorsfig1 = HfluxGraph(errorsfig1, "Modelled Temperature Residuals")
         self.errorsfig2 = HfluxGraph(errorsfig2, "Stream Temperature")
         self.sensfig1 = HfluxGraph(sensfig1, "Sensitivity of Recorded Values")
         self.sensfig2 = HfluxGraph(sensfig2, "Sensitivity of Inputs")
-    
-    def savepdfs(pdfpath, hflux_plots, errors_plots, sensitivity_plots):
+
+    def savepdfs(self, pdfpath, hflux_plots, errors_plots, sensitivity_plots):
         """
         Saves hflux graphs to pdfs
 
@@ -554,7 +652,7 @@ class HfluxCalculations():
             hflux_plots (array): An array of hflux plots
             errors_plots (array): An array of hflux_errors plots
             sensitivity_plots (array): An array of sensitivity plots
-        
+
         Returns:
             None
         """
@@ -564,13 +662,13 @@ class HfluxCalculations():
 
         for fig in hflux_plots:
             hflux_pdf.savefig(fig)
-        
+
         for fig in errors_plots:
             errors_pdf.savefig(fig)
-        
+
         for fig in sensitivity_plots:
             sensitivity_pdf.savefig(fig)
-        
+
         hflux_pdf.close()
         errors_pdf.close()
         sensitivity_pdf.close()
@@ -582,7 +680,7 @@ class HfluxCalculations():
         Args:
             data_table (DataTable): the data table that contains all information in the user's Excel file
             settings_input (array): An array of input from the user detailing which methods they want
-        
+
         Returns:
             None
         """
@@ -592,19 +690,20 @@ class HfluxCalculations():
         eq4 = settings_input[4]
         print(data_table.settings)
 
-        if eq1 != '':
+        if eq1 != "":
             data_table.settings["solution method"] = int(eq1)
-        
-        if eq2 != '':
+
+        if eq2 != "":
             data_table.settings["shortwave radiation method"] = int(eq2)
-        
-        if eq3 != '':
+
+        if eq3 != "":
             data_table.settings["latent heat flux equation"] = int(eq3)
-            
-        if eq4 != '':
+
+        if eq4 != "":
             data_table.settings["sensible heat equation"] = int(eq4)
 
-        print(data_table.settings) 
+        print(data_table.settings)
+
 
 # Subclass QMainWindow to customize your application's main window
 class MainWindow(QWidget):
@@ -614,25 +713,25 @@ class MainWindow(QWidget):
 
         Args:
             None
-        
+
         Returns:
             None
         """
         super().__init__()
         self.setWindowTitle("HFLUX Stream Temperature Solver")
-        
+
         self.setFixedWidth(GUI_WIDTH)
         self.setFixedHeight(GUI_HEIGHT)
 
         ### Creating the logo and title banner
-        pixmap = QPixmap(os.path.join(os.getcwd(),"Demo", "hlfux_logo.png"))
+        pixmap = QPixmap(os.path.join(os.getcwd(), "Demo", "hlfux_logo.png"))
         hflux_logo = QLabel()
         hflux_logo.setPixmap(pixmap)
 
         form = QFormLayout()
         form.addRow(TitleBanner("HFLUX Stream Temperature Solver"))
         form.addRow(hflux_logo)
-        
+
         ### Creating the file input and browse button
         input_filename, browser = self.create_file_input("Required: Excel File", "Path")
         form.addRow(input_filename.get_label(), browser)
@@ -643,26 +742,37 @@ class MainWindow(QWidget):
         graphs, pdf = self.create_output_options(form)
 
         ### Creating the output path and browse button
-        output_file_location, browser = self.create_path_output("File Path (if saving to PDF)", "Please enter a file path")
+        output_file_location, browser = self.create_path_output(
+            "File Path (if saving to PDF)", "Please enter a file path"
+        )
         form.addRow(output_file_location.get_label(), browser)
 
         ### Creating the submit button and adding it to the form
-        submit = SubmitButton(form, input_filename, [method, equation1, equation2, equation3], [sens1, sens2, sens3], [graphs, pdf], output_file_location)
+        submit = SubmitButton(
+            form,
+            input_filename,
+            [method, equation1, equation2, equation3],
+            [sens1, sens2, sens3],
+            [graphs, pdf],
+            output_file_location,
+        )
         form.addRow(submit)
         self.setLayout(form)
 
         ### Centering the GUI on the screen
         qr = self.frameGeometry()
         cp = self.screen().availableSize()
-        self.move((cp.width() / 2) - (GUI_WIDTH / 2), (cp.height() / 2) - (GUI_HEIGHT / 2))
-        
+        self.move(
+            (cp.width() / 2) - (GUI_WIDTH / 2), (cp.height() / 2) - (GUI_HEIGHT / 2)
+        )
+
     def create_settings(self, form):
         """
         Creates the settings input for the GUI
 
         Args:
             form (QFormLayout): The main form layout for the GUI
-        
+
         Returns:
             method (SettingsInput): The settingsinput that refers to the method
             equation1 (SettingsInput): The settingsinput that refers to the shortwave radiation method
@@ -670,51 +780,85 @@ class MainWindow(QWidget):
             equation3 (SettingsInput): The settingsinput that refers to the sensible heat equation
 
         """
-        method = SettingsInput("Solution Method", "Crank-Nicolson (1) or 2nd Order Runge-Kutta (2)")
-        equation1 = SettingsInput("Shortwave Radiation Method", "Correction for Reflection (1) or Albedo Correction (2)")
-        equation2 = SettingsInput("Latent Heat Flux Equation", "Penman (1) or Mass Transfer Method (2)")
-        equation3 = SettingsInput("Sensible Heat Equation", "Bowen Ratio Method (1) or Dingman 1994 (2)")
+        method = SettingsInput(
+            "Solution Method", "Crank-Nicolson (1) or 2nd Order Runge-Kutta (2)"
+        )
+        equation1 = SettingsInput(
+            "Shortwave Radiation Method",
+            "Correction for Reflection (1) or Albedo Correction (2)",
+        )
+        equation2 = SettingsInput(
+            "Latent Heat Flux Equation", "Penman (1) or Mass Transfer Method (2)"
+        )
+        equation3 = SettingsInput(
+            "Sensible Heat Equation", "Bowen Ratio Method (1) or Dingman 1994 (2)"
+        )
 
-        form.addRow(QLabel("\nEquation Settings. Providing no value defaults to the Excel Sheet"))
+        form.addRow(
+            QLabel(
+                "\nEquation Settings. Providing no value defaults to the Excel Sheet"
+            )
+        )
         form.addRow(method.get_label(), method)
         form.addRow(equation1.get_label(), equation1)
         form.addRow(equation2.get_label(), equation2)
         form.addRow(equation3.get_label(), equation3)
 
         return method, equation1, equation2, equation3
-    
+
     def create_sensitivity_sliders(self, form):
         """
         Creates the sensitivity sliders for the GUI
 
         Args:
             form (QFormLayout): The main form layout for the GUI
-        
+
         Returns:
-            sens1 (SensitivitySlider): The first sensitivityslider 
+            sens1 (SensitivitySlider): The first sensitivityslider
             sens2 (SensitivitySlider): The second sensitivityslider
-            sens3 (SensitivitySlider): The third sensitivityslider 
+            sens3 (SensitivitySlider): The third sensitivityslider
         """
         form.addRow(QLabel("\nSensitivity Sliders"))
-        sens1 = SensitivitySlider(QLabel("Sensitivity 1"), min=-50, max=50, step=1, tick_pos=QSlider.TicksBelow, tick_interval=1)
+        sens1 = SensitivitySlider(
+            QLabel("Sensitivity 1"),
+            min=-50,
+            max=50,
+            step=1,
+            tick_pos=QSlider.TicksBelow,
+            tick_interval=1,
+        )
         form.addRow(sens1.get_label(), sens1)
 
-        sens2 = SensitivitySlider(QLabel("Sensitivity 2"), min=-50, max=50, step=1, tick_pos=QSlider.TicksBelow, tick_interval=1)
+        sens2 = SensitivitySlider(
+            QLabel("Sensitivity 2"),
+            min=-50,
+            max=50,
+            step=1,
+            tick_pos=QSlider.TicksBelow,
+            tick_interval=1,
+        )
         form.addRow(sens2.get_label(), sens2)
 
         sens3 = QSlider(Qt.Horizontal)
-        sens3 = SensitivitySlider(QLabel("Sensitivity 3"), min=-50, max=50, step=1, tick_pos=QSlider.TicksBelow, tick_interval=1)
+        sens3 = SensitivitySlider(
+            QLabel("Sensitivity 3"),
+            min=-50,
+            max=50,
+            step=1,
+            tick_pos=QSlider.TicksBelow,
+            tick_interval=1,
+        )
         form.addRow(sens3.get_label(), sens3)
 
         return sens1, sens2, sens3
-    
+
     def create_output_options(self, form):
         """
         Creates the output options for the GUI
 
         Args:
             form (QFormLayout): The main form layout for the GUI
-        
+
         Returns:
             graphs (QCheckBox): The checkbox corresponding to whether the user wants the graphs to display
             pdf (QCheckBox): The cehckbox corresponding to whether the user wants to save the graphs to a PDF
@@ -737,12 +881,12 @@ class MainWindow(QWidget):
         Args:
             label (str): The label for a FileInput line edit
             placeholdertext (str): The placeholdertext for a FileInput line edit
-        
+
         Returns:
-            input_filename (FileInput): The file input object that contains the user's desired path 
+            input_filename (FileInput): The file input object that contains the user's desired path
             filebrowser (BrowseFileButton): The browse file button that allows the user to browse
         """
-        filebrowser = QHBoxLayout()        
+        filebrowser = QHBoxLayout()
         input_filename = FileInput(label, placeholdertext)
         filebrowser.addWidget(input_filename)
         filebrowser.addWidget(BrowseFileButton(input_filename))
@@ -755,12 +899,12 @@ class MainWindow(QWidget):
         Args:
             label (str): The label for a FileInput line edit
             placeholdertext (str): The placeholdertext for a FileInput line edit
-        
+
         Returns:
-            output_path (FileInput): The file input object that contains the user's desired path 
+            output_path (FileInput): The file input object that contains the user's desired path
             filebrowser (BrowsePathButton): The browse path button that allows the user to browse
         """
-        filebrowser = QHBoxLayout()        
+        filebrowser = QHBoxLayout()
         output_path = FileInput(label, placeholdertext)
         filebrowser.addWidget(output_path)
         filebrowser.addWidget(BrowsePathButton(output_path))
@@ -769,16 +913,17 @@ class MainWindow(QWidget):
     def call_hflux(self, settings_input):
         """
         Makes a call to hfluxCalculations
-        
+
         Args:
             settings_input (array): An array of the user's input options
-        
+
         Returns:
             None
         """
         self.hf = HfluxCalculations(settings_input)
         self.hf.hflux()
-        
+
+
 app = QApplication(sys.argv)
 window = MainWindow()
 window.show()

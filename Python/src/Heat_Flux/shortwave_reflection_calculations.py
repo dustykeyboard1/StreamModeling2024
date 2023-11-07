@@ -11,50 +11,51 @@ Date: 10-19-2023
 Functionality: Compute Shortwave Reflection values
 """
 
+
 class ShortwaveReflectionCalculations:
     def hflux_shortwave_refl(
-            self, year, month, day, hour, minute, lat, lon, t_zone, time_met, time_mod
-        ):
-            """
-            Calculate the portion of solar radiation reflected off the surface of the stream
+        self, year, month, day, hour, minute, lat, lon, t_zone, time_met, time_mod
+    ):
+        """
+        Calculate the portion of solar radiation reflected off the surface of the stream
 
-            Args: 
-                year (ndarray): year during which measurements were taken.
-                month (ndarray): month during which measurements were taken.
-                day (ndarray): day during which measurements were taken. 
-                hour (ndarray): hour during which measurements were taken. Format is military time.
-                min (ndarray): minute during which measurements were taken.
-                time_met (ndarray): times at which meteorological data are known, in minutes. met
-                    data includes air temp, rel humidity, wind speed, and solar rad.
-                lat (float): latitude. Positive for northern hemisphere, negative for southern.
-                lon (float): longitude. Positive for eastern hemisphere, negative for western.
-                t_zone (int)= indicates the time zone correction factor (East = 5, Central = 6, Mountain = 7, Pacific = 8).
-                time_mod (ndarray): model times at which temperatures will be computed for heat budget, in minutes.
+        Args:
+            year (ndarray): year during which measurements were taken.
+            month (ndarray): month during which measurements were taken.
+            day (ndarray): day during which measurements were taken.
+            hour (ndarray): hour during which measurements were taken. Format is military time.
+            min (ndarray): minute during which measurements were taken.
+            time_met (ndarray): times at which meteorological data are known, in minutes. met
+                data includes air temp, rel humidity, wind speed, and solar rad.
+            lat (float): latitude. Positive for northern hemisphere, negative for southern.
+            lon (float): longitude. Positive for eastern hemisphere, negative for western.
+            t_zone (int)= indicates the time zone correction factor (East = 5, Central = 6, Mountain = 7, Pacific = 8).
+            time_mod (ndarray): model times at which temperatures will be computed for heat budget, in minutes.
 
-            Returns:
-                sol_refl (ndarray): an array of solar radiation
-            """
-            time_frac = np.zeros(len(year))
-            sol_zen = np.zeros(len(year))
-            for i in range(len(year)):
-                time_frac[i] = (hour[i] * (1 / 24)) + (minute[i] * (1 / 24) * (1 / 60))
-                if self._daylight_savings_time(year[i], month[i], day[i], t_zone):
-                    time_frac[i] += 1 / 24
-                sol_zen[i] = self._solar_position(
-                    time_frac[i],
-                    t_zone,
-                    year[i],
-                    month[i],
-                    day[i],
-                    hour[i],
-                    minute[i],
-                    lat,
-                    lon,
-                )
+        Returns:
+            sol_refl (ndarray): an array of solar radiation
+        """
+        time_frac = np.zeros(len(year))
+        sol_zen = np.zeros(len(year))
+        for i in range(len(year)):
+            time_frac[i] = (hour[i] * (1 / 24)) + (minute[i] * (1 / 24) * (1 / 60))
+            if self._daylight_savings_time(year[i], month[i], day[i], t_zone):
+                time_frac[i] += 1 / 24
+            sol_zen[i] = self._solar_position(
+                time_frac[i],
+                t_zone,
+                year[i],
+                month[i],
+                day[i],
+                hour[i],
+                minute[i],
+                lat,
+                lon,
+            )
 
-            return scipy.interpolate.PchipInterpolator(
-                time_met, self._fresnel_reflectivity(sol_zen)
-            )(time_mod)
+        return scipy.interpolate.PchipInterpolator(
+            time_met, self._fresnel_reflectivity(sol_zen)
+        )(time_mod)
 
     def _fresnel_reflectivity(self, alpha_rad):
         """
@@ -62,7 +63,7 @@ class ShortwaveReflectionCalculations:
 
         Args:
             alpha_rad (ndarray): The alpha radiation reflecting off the stream.
-        
+
         Returns:
             An ndarray of fresnel's reflectivity values for each radiation value.
         """
@@ -90,7 +91,7 @@ class ShortwaveReflectionCalculations:
             t_zone (int): indicates the time zone correction factor (East = 5, Central = 6, Mountain = 7, Pacific = 8).
             year (ndarray): year during which measurements were taken.
             month (ndarray): month during which measurements were taken.
-            day (ndarray): day during which measurements were taken. 
+            day (ndarray): day during which measurements were taken.
             hour (ndarray): hour during which measurements were taken. Format is military time.
             min (ndarray): minute during which measurements were taken.
             lat (float): latitude. Positive for northern hemisphere, negative for southern.
@@ -99,7 +100,7 @@ class ShortwaveReflectionCalculations:
         Returns:
             An ndarray of the sun's position relative to the stream's.
         """
-        
+
         t_gmt = t_dst + (t_zone / 24.0)
         a1 = round(year / 100)
         b1 = 2 - a1 + round(a1 / 4)
@@ -174,7 +175,6 @@ class ShortwaveReflectionCalculations:
         )
         return math.acos(m)
 
-
     def _daylight_savings_time(self, year, month, day, t_zone):
         """
         Determines if dst is active for the current year, month, day, time zone parameters
@@ -184,14 +184,22 @@ class ShortwaveReflectionCalculations:
         Args:
             year (ndarray): year during which measurements were taken.
             month (ndarray): month during which measurements were taken.
-            day (ndarray): day during which measurements were taken. 
+            day (ndarray): day during which measurements were taken.
             t_zone (int): indicates the time zone correction factor (East = 5, Central = 6, Mountain = 7, Pacific = 8).
 
         Returns:
             True if DST is active, and False otherwise
         """
         timezone = pytz.timezone(self._match_timezones(t_zone))
-        year, month, day, = int(year.item()), int(month.item()), int(day.item()) # converting numpy vals to python ints
+        (
+            year,
+            month,
+            day,
+        ) = (
+            int(year.item()),
+            int(month.item()),
+            int(day.item()),
+        )  # converting numpy vals to python ints
         date = timezone.localize(datetime(year, month, day))
         return date.dst() != timedelta(0)
 
@@ -201,19 +209,18 @@ class ShortwaveReflectionCalculations:
 
         Args:
             t_zone (int): indicates the time zone correction factor (East = 5, Central = 6, Mountain = 7, Pacific = 8).
-        
+
         Returns:
             A string corresponding to the time zone integer
         """
         match t_zone:
             case 5:
-                return 'US/Eastern'
+                return "US/Eastern"
             case 6:
-                return 'US/Central'
+                return "US/Central"
             case 7:
-                return 'US/Mountain'
+                return "US/Mountain"
             case 8:
-                return 'US/Pacific'
+                return "US/Pacific"
             case _:
                 return None
-        

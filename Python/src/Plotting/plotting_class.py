@@ -351,4 +351,4 @@ class Plotting:
             plots_pdf.savefig(fig)
         plots_pdf.close()
         plt.close("all")
-        print("Done!")
+        print("...done!\n")
