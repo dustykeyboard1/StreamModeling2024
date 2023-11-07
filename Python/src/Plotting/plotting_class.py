@@ -345,10 +345,13 @@ class Plotting:
             None
         """
         pdf_path = os.path.join(os.getcwd(), "Results", "PDFs", f"{path}.pdf")
+
         print(f"Saving PDF to {pdf_path}...")
+
         plots_pdf = PdfPages(pdf_path)
         for fig in args:
             plots_pdf.savefig(fig)
         plots_pdf.close()
         plt.close("all")
+
         print("...done!\n")

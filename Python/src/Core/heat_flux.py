@@ -936,7 +936,7 @@ class HeatFlux:
         hflux_subplots = self.make_subplots(flux_data)
         comparison_plot = self.make_comparison_plot(flux_data)
         self.plc.save_plots(
-            hflux_resiudal, hflux_3d, hflux_subplots, comparison_plot, path="hflux"
+            hflux_resiudal, hflux_3d, hflux_subplots, comparison_plot, path="hflux",
         )
         if return_graphs:
             return hflux_resiudal, hflux_3d, hflux_subplots, comparison_plot

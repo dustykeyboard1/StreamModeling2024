@@ -35,7 +35,7 @@ def script_to_run():
     # Read in input data from helper funciton.
     filename = os.path.join(os.getcwd(), "Data", "example_data.xlsx")
     data_table = DataTable(filename)
-
+    
     output_suppression = data_table.output_suppression
 
     heat_flux = HeatFlux(data_table)

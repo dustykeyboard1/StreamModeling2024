@@ -7,6 +7,7 @@ Functionality: Implementation of hflux_sens.m
 
 import sys
 from concurrent.futures import ProcessPoolExecutor
+import multiprocessing
 from Python.src.Core.heat_flux import HeatFlux
 from Python.src.Plotting.plotting_class import Plotting
 import numpy as np
@@ -56,7 +57,8 @@ class HfluxSens:
             print()
             print("Beginning Multi-threaded calls to hflux...")
 
-        with ProcessPoolExecutor(max_workers=7) as executor:
+        cpu_count = multiprocessing.cpu_count()
+        with ProcessPoolExecutor(max_workers=cpu_count//2) as executor:
             for result, _, _, _ in executor.map(
                 HfluxSens.heat_flux_wrapper, input_data_list
             ):
