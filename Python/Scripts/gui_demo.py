@@ -656,9 +656,9 @@ class HfluxCalculations:
         Returns:
             None
         """
-        hflux_pdf = PdfPages(os.path.join(pdfpath, "hflux"))
-        errors_pdf = PdfPages(os.path.join(pdfpath, "hflux_errors"))
-        sensitivity_pdf = PdfPages(os.path.join(pdfpath, "hflux_errors"))
+        hflux_pdf = PdfPages(os.path.join(pdfpath, "hflux.pdf"))
+        errors_pdf = PdfPages(os.path.join(pdfpath, "hflux_errors.pdf"))
+        sensitivity_pdf = PdfPages(os.path.join(pdfpath, "hflux_sens.pdf"))
 
         for fig in hflux_plots:
             hflux_pdf.savefig(fig)
