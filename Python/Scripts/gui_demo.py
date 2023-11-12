@@ -1,5 +1,7 @@
 import sys
 import os
+import numpy as np
+import datetime
 
 from PySide6 import QtCore, QtWidgets
 
@@ -10,7 +12,7 @@ from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg
 from matplotlib.figure import Figure
 from matplotlib.backends.backend_pdf import PdfPages
 
-from PySide6.QtCore import Qt, QDir
+from PySide6.QtCore import Qt, QDir, QThread
 from PySide6.QtWidgets import (
     QFileDialog,
     QSlider,
@@ -25,6 +27,7 @@ from PySide6.QtWidgets import (
     QLineEdit,
     QFormLayout,
     QHBoxLayout,
+    QProgressDialog
 )
 from PySide6.QtGui import QPixmap
 
@@ -39,12 +42,12 @@ from Python.src.Utilities.data_table_class import DataTable
 from Python.src.Plotting.hflux_errors_plotting import create_hflux_errors_plots
 from Python.src.Heat_Flux.hflux_sens import HfluxSens
 
-STARTER_ROWS = 16
+STARTER_ROWS = 18
 GUI_WIDTH = 500
 GUI_HEIGHT = 747
-LINEEDIT_WIDTH = 330
+LINEEDIT_WIDTH = 310
 FILE_INPUT_TEXT_WIDTH = 250
-BROWSE_BUTTON_WIDTH = 75
+BROWSE_BUTTON_WIDTH = 60
 ERROR_COLOR = "red"
 
 
@@ -358,11 +361,12 @@ class SubmitButton(QPushButton):
                 return False
 
         output_path = self._results[-1]
-        save_to_pdf = self._results[-2]
-        if save_to_pdf and (not os.path.exists(output_path)):
+        save_to_pdf = self._results[-3]
+        save_to_csv = self._results[-2]
+        if (save_to_pdf or save_to_csv) and (not os.path.exists(output_path)):
             self._form.addRow(
                 ErrorMessage(
-                    "Save to PDF was selected, but an invalid path was provided"
+                    "Save to PDF/CSV was selected, but an invalid path was provided"
                 )
             )
             return False
@@ -526,15 +530,18 @@ class HfluxCalculations:
         Returns:
             None
         """
-        display_graphs = self._settings_input[-3]
-        savepdf = self._settings_input[-2]
-        pdfpath = self._settings_input[-1]
+        display_graphs = self._settings_input[-4]
+        savepdf = self._settings_input[-3]
+        savecsv = self._settings_input[-2]
+        output_path  = self._settings_input[-1]
         filename = self._settings_input[0]
+        print(filename, output_path, savecsv, savepdf, display_graphs)
         data_table = DataTable(filename)
 
-        output_suppression = data_table.output_suppression
-
+        data_table.output_suppression = 1
+        
         self.change_settings(data_table, self._settings_input)
+        self.change_sensitivities(data_table, self._settings_input)
 
         heat_flux = HeatFlux(data_table)
         # Use helper functions (hflux(), handle_errors() and sens())  to calculate values.
@@ -577,13 +584,21 @@ class HfluxCalculations:
             data_table, [-0.01, 0.01], [-2, 2], [-0.1, 0.1], [-0.1, 0.1]
         )
 
-        sens = hflux_sens.create_new_results(temp_mod, high_low_dict, output_suppression, multithread=False)
+        sens = hflux_sens.create_new_results(temp_mod, high_low_dict, output_suppression=True, multithread=False)
         sensfig1, sensfig2 = hflux_sens.make_sens_plots(
             data_table, sens, return_graphs=True
         )
 
         print("Calculations have finished!")
 
+        if savecsv or savepdf:
+            self.savedata(
+                output_path, savepdf, savecsv, temp_mod, data_table, flux_data, rel_err,
+                [hflux_resiudal, hflux_3d, hflux_subplots, comparison_plot],
+                [errorsfig1, errorsfig2],
+                [sensfig1, sensfig2],
+            )
+        
         if display_graphs:
             self.create_graphs(
                 hflux_resiudal,
@@ -594,14 +609,6 @@ class HfluxCalculations:
                 errorsfig2,
                 sensfig1,
                 sensfig2,
-            )
-
-        if savepdf:
-            self.savepdfs(
-                pdfpath,
-                [hflux_resiudal, hflux_3d, hflux_subplots, comparison_plot],
-                [errorsfig1, errorsfig2],
-                [sensfig1, sensfig2],
             )
 
     def create_graphs(
@@ -643,6 +650,31 @@ class HfluxCalculations:
         self.errorsfig2 = HfluxGraph(errorsfig2, "Stream Temperature")
         self.sensfig1 = HfluxGraph(sensfig1, "Sensitivity of Recorded Values")
         self.sensfig2 = HfluxGraph(sensfig2, "Sensitivity of Inputs")
+
+    def savedata(self, path, savepdf, savecsv, temp_mod, data_table, flux_data, rel_err, hflux_plots, errors_plots, sensitivity_plots):
+        dt = datetime.datetime.now().strftime("%Y-%m-%d--H%HM%MS%S")
+        folder = "HF_" + dt
+        path = os.path.join(path, folder)
+        os.mkdir(path)
+        if savecsv:
+            self.savecsvs(path, temp_mod, data_table, flux_data, rel_err)
+        if savepdf:
+            self.savepdfs(path, hflux_plots, errors_plots, sensitivity_plots)
+    
+    def savecsvs(self, path, temp_mod, data_table, flux_data, rel_err):
+        np.savetxt(f"{path}/temp_mod.csv", temp_mod, delimiter=",")
+        np.savetxt(f"{path}/temp.csv", data_table.temp, delimiter=",")
+        np.savetxt(f"{path}/rel_err.csv", rel_err, delimiter=",")
+        np.savetxt(f"{path}/heatflux_data.csv", flux_data["heatflux"], delimiter=",")
+        np.savetxt(f"{path}/solarflux_data.csv", flux_data["solarflux"], delimiter=",")
+        np.savetxt(f"{path}/solar_refl_data.csv", flux_data["solar_refl"], delimiter=",")
+        np.savetxt(f"{path}/long_data.csv", flux_data["long"], delimiter=",")
+        np.savetxt(f"{path}/atmflux_data.csv", flux_data["atmflux"], delimiter=",")
+        np.savetxt(f"{path}/landflux_data.csv", flux_data["landflux"], delimiter=",")
+        np.savetxt(f"{path}/backrad_data.csv", flux_data["backrad"], delimiter=",")
+        np.savetxt(f"{path}/evap_data.csv", flux_data["evap"], delimiter=",")
+        np.savetxt(f"{path}/sensible_data.csv", flux_data["sensible"], delimiter=",")
+        np.savetxt(f"{path}/conduction_data.csv", flux_data["conduction"], delimiter=",")
 
     def savepdfs(self, pdfpath, hflux_plots, errors_plots, sensitivity_plots):
         """
@@ -703,7 +735,15 @@ class HfluxCalculations:
             data_table.settings["sensible heat equation"] = int(eq4)
 
         print(data_table.settings)
+    
+    def change_sensitivities(self, data_table, settings_input):
+        air_temp = int(settings_input[5])
+        water_temp = int(settings_input[6])
+        shade = int(settings_input[7])
 
+        data_table.met_data["Air Temperature"] = data_table.met_data["Air Temperature"] * (1 + (air_temp / 100.0))
+        data_table.t_l_data["Temperature"] = data_table.t_l_data["Temperature"] * (1 + (water_temp / 100.0))
+        data_table.shade_data["Shade "] = np.clip(data_table.shade_data["Shade "] * (1 + (shade / 100.0)), 0, 1)
 
 # Subclass QMainWindow to customize your application's main window
 class MainWindow(QWidget):
@@ -724,7 +764,7 @@ class MainWindow(QWidget):
         self.setFixedHeight(GUI_HEIGHT)
 
         ### Creating the logo and title banner
-        pixmap = QPixmap(os.path.join(os.getcwd(), "Demo", "hlfux_logo.png"))
+        pixmap = QPixmap(os.path.join(os.getcwd(),  "Demo", "hlfux_logo.png"))
         hflux_logo = QLabel()
         hflux_logo.setPixmap(pixmap)
 
@@ -739,7 +779,7 @@ class MainWindow(QWidget):
         ### Creating all input fields (settings, sliders, output options)
         method, equation1, equation2, equation3 = self.create_settings(form)
         sens1, sens2, sens3 = self.create_sensitivity_sliders(form)
-        graphs, pdf = self.create_output_options(form)
+        graphs, pdf, csv = self.create_output_options(form)
 
         ### Creating the output path and browse button
         output_file_location, browser = self.create_path_output(
@@ -753,7 +793,7 @@ class MainWindow(QWidget):
             input_filename,
             [method, equation1, equation2, equation3],
             [sens1, sens2, sens3],
-            [graphs, pdf],
+            [graphs, pdf, csv],
             output_file_location,
         )
         form.addRow(submit)
@@ -799,6 +839,7 @@ class MainWindow(QWidget):
                 "\nEquation Settings. Providing no value defaults to the Excel Sheet"
             )
         )
+
         form.addRow(method.get_label(), method)
         form.addRow(equation1.get_label(), equation1)
         form.addRow(equation2.get_label(), equation2)
@@ -818,35 +859,35 @@ class MainWindow(QWidget):
             sens2 (SensitivitySlider): The second sensitivityslider
             sens3 (SensitivitySlider): The third sensitivityslider
         """
-        form.addRow(QLabel("\nSensitivity Sliders"))
+        form.addRow(QLabel("\nSensitivity Sliders: Values Represent Percent Changes to the Parameter"))
         sens1 = SensitivitySlider(
-            QLabel("Sensitivity 1"),
+            QLabel("Air Temperature: 0"),
             min=-50,
             max=50,
-            step=1,
+            step=5,
             tick_pos=QSlider.TicksBelow,
-            tick_interval=1,
+            tick_interval=5,
         )
         form.addRow(sens1.get_label(), sens1)
 
         sens2 = SensitivitySlider(
-            QLabel("Sensitivity 2"),
+            QLabel("Water Temperature: 0"),
             min=-50,
             max=50,
-            step=1,
+            step=5,
             tick_pos=QSlider.TicksBelow,
-            tick_interval=1,
+            tick_interval=5,
         )
         form.addRow(sens2.get_label(), sens2)
 
         sens3 = QSlider(Qt.Horizontal)
         sens3 = SensitivitySlider(
-            QLabel("Sensitivity 3"),
+            QLabel("Shade: 0"),
             min=-50,
             max=50,
-            step=1,
+            step=5,
             tick_pos=QSlider.TicksBelow,
-            tick_interval=1,
+            tick_interval=5,
         )
         form.addRow(sens3.get_label(), sens3)
 
@@ -867,12 +908,14 @@ class MainWindow(QWidget):
 
         graphs = QCheckBox("Display Graphs")
         graphs.setChecked(True)
-        pdf = QCheckBox("Save to PDF")
+        pdf = QCheckBox("Save Graphs to PDF")
+        csv = QCheckBox("Save CSV data")
 
         form.addRow(graphs)
         form.addRow(pdf)
+        form.addRow(csv)
 
-        return graphs, pdf
+        return graphs, pdf, csv
 
     def create_file_input(self, label, placeholdertext):
         """
@@ -922,6 +965,7 @@ class MainWindow(QWidget):
         """
         self.hf = HfluxCalculations(settings_input)
         self.hf.hflux()
+
 
 
 app = QApplication(sys.argv)
