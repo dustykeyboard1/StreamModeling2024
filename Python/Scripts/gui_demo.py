@@ -27,7 +27,7 @@ from PySide6.QtWidgets import (
     QLineEdit,
     QFormLayout,
     QHBoxLayout,
-    QProgressDialog
+    QProgressDialog,
 )
 from PySide6.QtGui import QPixmap
 
@@ -215,7 +215,7 @@ class SubmitButton(QPushButton):
         Returns:
             None
         """
-        super().__init__("Submit")
+        super().__init__("Run Calculations")
         self._form = form
         self._input_filename = input_filename
         self._output_filename = output_file_location
@@ -530,12 +530,12 @@ class HfluxCalculations:
         Returns:
             None
         """
+        run_sens = self._settings_input[-5]
         display_graphs = self._settings_input[-4]
         savepdf = self._settings_input[-3]
         savecsv = self._settings_input[-2]
         output_path  = self._settings_input[-1]
         filename = self._settings_input[0]
-        print(filename, output_path, savecsv, savepdf, display_graphs)
         data_table = DataTable(filename)
 
         data_table.output_suppression = 1
@@ -579,21 +579,24 @@ class HfluxCalculations:
             return_graphs=True,
         )
 
-        hflux_sens = HfluxSens(root_dir)
-        high_low_dict = hflux_sens.hflux_sens(
-            data_table, [-0.01, 0.01], [-2, 2], [-0.1, 0.1], [-0.1, 0.1]
-        )
+        if run_sens:
+            hflux_sens = HfluxSens(root_dir)
+            high_low_dict = hflux_sens.hflux_sens(
+                data_table, [-0.01, 0.01], [-2, 2], [-0.1, 0.1], [-0.1, 0.1]
+            )
 
-        sens = hflux_sens.create_new_results(temp_mod, high_low_dict, output_suppression=True, multithread=False)
-        sensfig1, sensfig2 = hflux_sens.make_sens_plots(
-            data_table, sens, return_graphs=True
-        )
+            sens = hflux_sens.create_new_results(temp_mod, high_low_dict, output_suppression=True, multithread=False)
+            sensfig1, sensfig2 = hflux_sens.make_sens_plots(
+                data_table, sens, return_graphs=True
+            )
+        else:
+            sensfig1, sensfig2 = None, None
 
         print("Calculations have finished!")
 
         if savecsv or savepdf:
             self.savedata(
-                output_path, savepdf, savecsv, temp_mod, data_table, flux_data, rel_err,
+                output_path, run_sens, savepdf, savecsv, temp_mod, data_table, flux_data, rel_err,
                 [hflux_resiudal, hflux_3d, hflux_subplots, comparison_plot],
                 [errorsfig1, errorsfig2],
                 [sensfig1, sensfig2],
@@ -601,6 +604,7 @@ class HfluxCalculations:
         
         if display_graphs:
             self.create_graphs(
+                run_sens,
                 hflux_resiudal,
                 hflux_3d,
                 hflux_subplots,
@@ -613,6 +617,7 @@ class HfluxCalculations:
 
     def create_graphs(
         self,
+        run_sens,
         hflux_residual,
         hflux_3d,
         hflux_subplots,
@@ -648,18 +653,19 @@ class HfluxCalculations:
         self.comparison_plot = HfluxGraph(comparison_plot, "Energy Models")
         self.errorsfig1 = HfluxGraph(errorsfig1, "Modelled Temperature Residuals")
         self.errorsfig2 = HfluxGraph(errorsfig2, "Stream Temperature")
-        self.sensfig1 = HfluxGraph(sensfig1, "Sensitivity of Recorded Values")
-        self.sensfig2 = HfluxGraph(sensfig2, "Sensitivity of Inputs")
+        if run_sens:
+            self.sensfig1 = HfluxGraph(sensfig1, "Sensitivity of Recorded Values")
+            self.sensfig2 = HfluxGraph(sensfig2, "Sensitivity of Inputs")
 
-    def savedata(self, path, savepdf, savecsv, temp_mod, data_table, flux_data, rel_err, hflux_plots, errors_plots, sensitivity_plots):
-        dt = datetime.datetime.now().strftime("%Y-%m-%d--H%HM%MS%S")
+    def savedata(self, path, run_sens, savepdf, savecsv, temp_mod, data_table, flux_data, rel_err, hflux_plots, errors_plots, sensitivity_plots):
+        dt = datetime.datetime.now().strftime("%Y-%m-%d--%H%M%S")
         folder = "HF_" + dt
         path = os.path.join(path, folder)
         os.mkdir(path)
         if savecsv:
             self.savecsvs(path, temp_mod, data_table, flux_data, rel_err)
         if savepdf:
-            self.savepdfs(path, hflux_plots, errors_plots, sensitivity_plots)
+            self.savepdfs(path, run_sens, hflux_plots, errors_plots, sensitivity_plots)
     
     def savecsvs(self, path, temp_mod, data_table, flux_data, rel_err):
         np.savetxt(f"{path}/temp_mod.csv", temp_mod, delimiter=",")
@@ -676,7 +682,7 @@ class HfluxCalculations:
         np.savetxt(f"{path}/sensible_data.csv", flux_data["sensible"], delimiter=",")
         np.savetxt(f"{path}/conduction_data.csv", flux_data["conduction"], delimiter=",")
 
-    def savepdfs(self, pdfpath, hflux_plots, errors_plots, sensitivity_plots):
+    def savepdfs(self, pdfpath, run_sens, hflux_plots, errors_plots, sensitivity_plots):
         """
         Saves hflux graphs to pdfs
 
@@ -690,21 +696,22 @@ class HfluxCalculations:
         """
         hflux_pdf = PdfPages(os.path.join(pdfpath, "hflux.pdf"))
         errors_pdf = PdfPages(os.path.join(pdfpath, "hflux_errors.pdf"))
-        sensitivity_pdf = PdfPages(os.path.join(pdfpath, "hflux_sens.pdf"))
-
+        
         for fig in hflux_plots:
             hflux_pdf.savefig(fig)
 
         for fig in errors_plots:
             errors_pdf.savefig(fig)
-
-        for fig in sensitivity_plots:
-            sensitivity_pdf.savefig(fig)
-
+        
         hflux_pdf.close()
         errors_pdf.close()
-        sensitivity_pdf.close()
 
+        if run_sens:
+            sensitivity_pdf = PdfPages(os.path.join(pdfpath, "hflux_sens.pdf"))
+            for fig in sensitivity_plots:
+                sensitivity_pdf.savefig(fig)
+            sensitivity_pdf.close()
+        
     def change_settings(self, data_table, settings_input):
         """
         Changes the data_table from our excel file based on the user's input
@@ -779,7 +786,7 @@ class MainWindow(QWidget):
         ### Creating all input fields (settings, sliders, output options)
         method, equation1, equation2, equation3 = self.create_settings(form)
         sens1, sens2, sens3 = self.create_sensitivity_sliders(form)
-        graphs, pdf, csv = self.create_output_options(form)
+        sens, graphs, pdf, csv = self.create_output_options(form)
 
         ### Creating the output path and browse button
         output_file_location, browser = self.create_path_output(
@@ -793,7 +800,7 @@ class MainWindow(QWidget):
             input_filename,
             [method, equation1, equation2, equation3],
             [sens1, sens2, sens3],
-            [graphs, pdf, csv],
+            [sens, graphs, pdf, csv],
             output_file_location,
         )
         form.addRow(submit)
@@ -859,7 +866,7 @@ class MainWindow(QWidget):
             sens2 (SensitivitySlider): The second sensitivityslider
             sens3 (SensitivitySlider): The third sensitivityslider
         """
-        form.addRow(QLabel("\nSensitivity Sliders: Values Represent Percent Changes to the Parameter"))
+        form.addRow(QLabel("\nInput Sliders: Values Represent Percent Changes to the Parameter"))
         sens1 = SensitivitySlider(
             QLabel("Air Temperature: 0"),
             min=-50,
@@ -906,16 +913,18 @@ class MainWindow(QWidget):
         """
         form.addRow(QLabel("\nOutput Options"))
 
+        sens = QCheckBox("Run Sensitivity Calculations")
         graphs = QCheckBox("Display Graphs")
         graphs.setChecked(True)
         pdf = QCheckBox("Save Graphs to PDF")
         csv = QCheckBox("Save CSV data")
 
+        form.addRow(sens)
         form.addRow(graphs)
         form.addRow(pdf)
         form.addRow(csv)
 
-        return graphs, pdf, csv
+        return sens, graphs, pdf, csv
 
     def create_file_input(self, label, placeholdertext):
         """
@@ -969,6 +978,7 @@ class MainWindow(QWidget):
 
 
 app = QApplication(sys.argv)
+app.setStyle("Breeze")
 window = MainWindow()
 window.show()
 sys.exit(app.exec())
