@@ -2,6 +2,7 @@ import sys
 import os
 import numpy as np
 import datetime
+import time
 
 from PySide6 import QtCore, QtWidgets
 
@@ -12,7 +13,7 @@ from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg
 from matplotlib.figure import Figure
 from matplotlib.backends.backend_pdf import PdfPages
 
-from PySide6.QtCore import Qt, QDir, QThread
+from PySide6.QtCore import Qt, QDir, QThread, QObject, Signal
 from PySide6.QtWidgets import (
     QFileDialog,
     QSlider,
@@ -27,7 +28,7 @@ from PySide6.QtWidgets import (
     QLineEdit,
     QFormLayout,
     QHBoxLayout,
-    QProgressDialog,
+    QProgressBar,
 )
 from PySide6.QtGui import QPixmap
 
@@ -507,7 +508,11 @@ class HfluxGraph(QtWidgets.QMainWindow):
         self.show()
 
 
-class HfluxCalculations:
+class HfluxCalculations(QObject):
+    finished = Signal()
+    progress = Signal(str)
+    figure_progress = Signal(list)
+
     def __init__(self, settings_input):
         """
         Handles hflux calculations once we submit our input parameters
@@ -518,9 +523,10 @@ class HfluxCalculations:
         Returns:
             None
         """
+        super().__init__()
         self._settings_input = settings_input
 
-    def hflux(self):
+    def run(self):
         """
         Runs all of the hflux calculations, displays graphs, and saves data
 
@@ -530,23 +536,34 @@ class HfluxCalculations:
         Returns:
             None
         """
+        self.progress.emit("Beginning Calculations, 0")
         run_sens = self._settings_input[-5]
         display_graphs = self._settings_input[-4]
         savepdf = self._settings_input[-3]
         savecsv = self._settings_input[-2]
-        output_path  = self._settings_input[-1]
+        output_path = self._settings_input[-1]
         filename = self._settings_input[0]
+        self.progress.emit("Reading Data, 3")
         data_table = DataTable(filename)
 
+        self.progress.emit("Finished Data Reading, 5")
+
         data_table.output_suppression = 1
-        
+
+        self.progress.emit("Customizing Input, 6")
+
         self.change_settings(data_table, self._settings_input)
         self.change_sensitivities(data_table, self._settings_input)
+
+        self.progress.emit("Finished Customizing Input, 7")
+        self.progress.emit("Beginning Heat Flux Calculations, 8")
 
         heat_flux = HeatFlux(data_table)
         # Use helper functions (hflux(), handle_errors() and sens())  to calculate values.
         # Helper functions will also plot and display results.
         temp_mod, matrix_data, node_data, flux_data = heat_flux.crank_nicolson_method()
+        self.progress.emit("Finished Heat Flux Calculations, 70")
+        self.progress.emit("Beginning Error Calculations, 71")
         temp_dt = heat_flux.calculate_temp_dt(temp_mod)
 
         temp = data_table.temp.transpose()
@@ -556,6 +573,7 @@ class HfluxCalculations:
         mse = heat_flux.calculate_mean_square_error(temp, temp_dt)
         rmse = heat_flux.calculate_root_mean_square_error(temp, temp_dt)
         nrmse = heat_flux.calculate_normalized_root_mean_square_error(rmse, temp)
+        self.progress.emit("Finished Error Calculations, 80")
 
         dist_temp = data_table.dist_temp
         dist_mod = data_table.dist_mod
@@ -585,79 +603,108 @@ class HfluxCalculations:
                 data_table, [-0.01, 0.01], [-2, 2], [-0.1, 0.1], [-0.1, 0.1]
             )
 
-            sens = hflux_sens.create_new_results(temp_mod, high_low_dict, output_suppression=True, multithread=False)
+            sens = hflux_sens.create_new_results(
+                temp_mod, high_low_dict, output_suppression=True, multithread=False
+            )
             sensfig1, sensfig2 = hflux_sens.make_sens_plots(
                 data_table, sens, return_graphs=True
             )
         else:
             sensfig1, sensfig2 = None, None
 
-        print("Calculations have finished!")
+        self.progress.emit("Calculations have finished!, 95")
+        time.sleep(0.5)
+        self.progress.emit("Writing Output, 96")
 
         if savecsv or savepdf:
             self.savedata(
-                output_path, run_sens, savepdf, savecsv, temp_mod, data_table, flux_data, rel_err,
+                output_path,
+                run_sens,
+                savepdf,
+                savecsv,
+                temp_mod,
+                data_table,
+                flux_data,
+                rel_err,
                 [hflux_resiudal, hflux_3d, hflux_subplots, comparison_plot],
                 [errorsfig1, errorsfig2],
                 [sensfig1, sensfig2],
             )
-        
+
+        self.progress.emit("Displaying Graphs, 99")
         if display_graphs:
-            self.create_graphs(
-                run_sens,
-                hflux_resiudal,
-                hflux_3d,
-                hflux_subplots,
-                comparison_plot,
-                errorsfig1,
-                errorsfig2,
-                sensfig1,
-                sensfig2,
+            self.figure_progress.emit(
+                [
+                    run_sens,
+                    hflux_resiudal,
+                    hflux_3d,
+                    hflux_subplots,
+                    comparison_plot,
+                    errorsfig1,
+                    errorsfig2,
+                    sensfig1,
+                    sensfig2,
+                ]
             )
 
-    def create_graphs(
+        self.finished.emit()
+
+    # def create_graphs(
+    #     self,
+    #     run_sens,
+    #     hflux_residual,
+    #     hflux_3d,
+    #     hflux_subplots,
+    #     comparison_plot,
+    #     errorsfig1,
+    #     errorsfig2,
+    #     sensfig1,
+    #     sensfig2,
+    # ):
+    #     """
+    #     Displays the graphs created in hflux
+
+    #     Args:
+    #         hflux_residual (Figure): A 2D graph of stream temperature
+    #         hflux_3d (Figure): A 3D graph of stream temperature
+    #         hflux_subplots (Figure): A graph with several subplots showing various radiation values
+    #         comparison_plot (Figure): A graph with the above radiation values on a single axis
+    #         errorsfig1 (Figure): A graph displaying the modelled temperature residuals
+    #         errorsfig2 (Figure): A graph displaying the Stream Temperature over time compared to our model
+    #         sensfig1 (Figure): A graph detailing the sensitivity of various recorded values
+    #         sensfig2 (Figure): A graph detailing the sensitivity of various input values
+
+    #     Returns:
+    #         None
+    #     """
+    #     self.hflux_residual = HfluxGraph(
+    #         hflux_residual, "2D Modelled Stream Temperature"
+    #     )
+    #     self.hflux_3d = HfluxGraph(hflux_3d, "3D Modelled Stream Temperature")
+    #     self.hflux_subplots = HfluxGraph(
+    #         hflux_subplots, "Modelled Heat Flux and Radiation"
+    #     )
+    #     self.comparison_plot = HfluxGraph(comparison_plot, "Energy Models")
+    #     self.errorsfig1 = HfluxGraph(errorsfig1, "Modelled Temperature Residuals")
+    #     self.errorsfig2 = HfluxGraph(errorsfig2, "Stream Temperature")
+    #     if run_sens:
+    #         self.sensfig1 = HfluxGraph(sensfig1, "Sensitivity of Recorded Values")
+    #         self.sensfig2 = HfluxGraph(sensfig2, "Sensitivity of Inputs")
+
+    def savedata(
         self,
+        path,
         run_sens,
-        hflux_residual,
-        hflux_3d,
-        hflux_subplots,
-        comparison_plot,
-        errorsfig1,
-        errorsfig2,
-        sensfig1,
-        sensfig2,
+        savepdf,
+        savecsv,
+        temp_mod,
+        data_table,
+        flux_data,
+        rel_err,
+        hflux_plots,
+        errors_plots,
+        sensitivity_plots,
     ):
-        """
-        Displays the graphs created in hflux
-
-        Args:
-            hflux_residual (Figure): A 2D graph of stream temperature
-            hflux_3d (Figure): A 3D graph of stream temperature
-            hflux_subplots (Figure): A graph with several subplots showing various radiation values
-            comparison_plot (Figure): A graph with the above radiation values on a single axis
-            errorsfig1 (Figure): A graph displaying the modelled temperature residuals
-            errorsfig2 (Figure): A graph displaying the Stream Temperature over time compared to our model
-            sensfig1 (Figure): A graph detailing the sensitivity of various recorded values
-            sensfig2 (Figure): A graph detailing the sensitivity of various input values
-
-        Returns:
-            None
-        """
-        self.hflux_residual = HfluxGraph(
-            hflux_residual, "2D Modelled Stream Temperature"
-        )
-        self.hflux_3d = HfluxGraph(hflux_3d, "3D Modelled Stream Temperature")
-        self.hflux_subplots = HfluxGraph(
-            hflux_subplots, "Modelled Heat Flux and Radiation"
-        )
-        self.comparison_plot = HfluxGraph(comparison_plot, "Energy Models")
-        self.errorsfig1 = HfluxGraph(errorsfig1, "Modelled Temperature Residuals")
-        self.errorsfig2 = HfluxGraph(errorsfig2, "Stream Temperature")
-        if run_sens:
-            self.sensfig1 = HfluxGraph(sensfig1, "Sensitivity of Recorded Values")
-            self.sensfig2 = HfluxGraph(sensfig2, "Sensitivity of Inputs")
-
-    def savedata(self, path, run_sens, savepdf, savecsv, temp_mod, data_table, flux_data, rel_err, hflux_plots, errors_plots, sensitivity_plots):
         dt = datetime.datetime.now().strftime("%Y-%m-%d--%H%M%S")
         folder = "HF_" + dt
         path = os.path.join(path, folder)
@@ -666,21 +713,25 @@ class HfluxCalculations:
             self.savecsvs(path, temp_mod, data_table, flux_data, rel_err)
         if savepdf:
             self.savepdfs(path, run_sens, hflux_plots, errors_plots, sensitivity_plots)
-    
+
     def savecsvs(self, path, temp_mod, data_table, flux_data, rel_err):
         np.savetxt(f"{path}/temp_mod.csv", temp_mod, delimiter=",")
         np.savetxt(f"{path}/temp.csv", data_table.temp, delimiter=",")
         np.savetxt(f"{path}/rel_err.csv", rel_err, delimiter=",")
         np.savetxt(f"{path}/heatflux_data.csv", flux_data["heatflux"], delimiter=",")
         np.savetxt(f"{path}/solarflux_data.csv", flux_data["solarflux"], delimiter=",")
-        np.savetxt(f"{path}/solar_refl_data.csv", flux_data["solar_refl"], delimiter=",")
+        np.savetxt(
+            f"{path}/solar_refl_data.csv", flux_data["solar_refl"], delimiter=","
+        )
         np.savetxt(f"{path}/long_data.csv", flux_data["long"], delimiter=",")
         np.savetxt(f"{path}/atmflux_data.csv", flux_data["atmflux"], delimiter=",")
         np.savetxt(f"{path}/landflux_data.csv", flux_data["landflux"], delimiter=",")
         np.savetxt(f"{path}/backrad_data.csv", flux_data["backrad"], delimiter=",")
         np.savetxt(f"{path}/evap_data.csv", flux_data["evap"], delimiter=",")
         np.savetxt(f"{path}/sensible_data.csv", flux_data["sensible"], delimiter=",")
-        np.savetxt(f"{path}/conduction_data.csv", flux_data["conduction"], delimiter=",")
+        np.savetxt(
+            f"{path}/conduction_data.csv", flux_data["conduction"], delimiter=","
+        )
 
     def savepdfs(self, pdfpath, run_sens, hflux_plots, errors_plots, sensitivity_plots):
         """
@@ -696,13 +747,13 @@ class HfluxCalculations:
         """
         hflux_pdf = PdfPages(os.path.join(pdfpath, "hflux.pdf"))
         errors_pdf = PdfPages(os.path.join(pdfpath, "hflux_errors.pdf"))
-        
+
         for fig in hflux_plots:
             hflux_pdf.savefig(fig)
 
         for fig in errors_plots:
             errors_pdf.savefig(fig)
-        
+
         hflux_pdf.close()
         errors_pdf.close()
 
@@ -711,7 +762,7 @@ class HfluxCalculations:
             for fig in sensitivity_plots:
                 sensitivity_pdf.savefig(fig)
             sensitivity_pdf.close()
-        
+
     def change_settings(self, data_table, settings_input):
         """
         Changes the data_table from our excel file based on the user's input
@@ -727,7 +778,6 @@ class HfluxCalculations:
         eq2 = settings_input[2]
         eq3 = settings_input[3]
         eq4 = settings_input[4]
-        print(data_table.settings)
 
         if eq1 != "":
             data_table.settings["solution method"] = int(eq1)
@@ -741,16 +791,36 @@ class HfluxCalculations:
         if eq4 != "":
             data_table.settings["sensible heat equation"] = int(eq4)
 
-        print(data_table.settings)
-    
     def change_sensitivities(self, data_table, settings_input):
         air_temp = int(settings_input[5])
         water_temp = int(settings_input[6])
         shade = int(settings_input[7])
 
-        data_table.met_data["Air Temperature"] = data_table.met_data["Air Temperature"] * (1 + (air_temp / 100.0))
-        data_table.t_l_data["Temperature"] = data_table.t_l_data["Temperature"] * (1 + (water_temp / 100.0))
-        data_table.shade_data["Shade "] = np.clip(data_table.shade_data["Shade "] * (1 + (shade / 100.0)), 0, 1)
+        data_table.met_data["Air Temperature"] = data_table.met_data[
+            "Air Temperature"
+        ] * (1 + (air_temp / 100.0))
+        data_table.t_l_data["Temperature"] = data_table.t_l_data["Temperature"] * (
+            1 + (water_temp / 100.0)
+        )
+        data_table.shade_data["Shade "] = np.clip(
+            data_table.shade_data["Shade "] * (1 + (shade / 100.0)), 0, 1
+        )
+
+
+class ProgressWindow(QWidget):
+    def __init__(self):
+        super().__init__()
+        self.setFixedHeight(100)
+        self.setFixedWidth(300)
+        self.setWindowTitle("Calculation Progress")
+        self._progress_bar = QProgressBar(self)
+        self._progress_bar.setGeometry(200, 80, 250, 20)
+        self._layout = QFormLayout()
+        self._layout.addRow(self._progress_bar)
+        self.setLayout(self._layout)
+
+        self.show()
+
 
 # Subclass QMainWindow to customize your application's main window
 class MainWindow(QWidget):
@@ -771,7 +841,7 @@ class MainWindow(QWidget):
         self.setFixedHeight(GUI_HEIGHT)
 
         ### Creating the logo and title banner
-        pixmap = QPixmap(os.path.join(os.getcwd(),  "Demo", "hlfux_logo.png"))
+        pixmap = QPixmap(os.path.join(os.getcwd(), "Demo", "hlfux_logo.png"))
         hflux_logo = QLabel()
         hflux_logo.setPixmap(pixmap)
 
@@ -866,7 +936,9 @@ class MainWindow(QWidget):
             sens2 (SensitivitySlider): The second sensitivityslider
             sens3 (SensitivitySlider): The third sensitivityslider
         """
-        form.addRow(QLabel("\nInput Sliders: Values Represent Percent Changes to the Parameter"))
+        form.addRow(
+            QLabel("\nInput Sliders: Values Represent Percent Changes to the Parameter")
+        )
         sens1 = SensitivitySlider(
             QLabel("Air Temperature: 0"),
             min=-50,
@@ -972,9 +1044,46 @@ class MainWindow(QWidget):
         Returns:
             None
         """
+        self.pwindow = ProgressWindow()
+        self.hflux_thread = QThread()
         self.hf = HfluxCalculations(settings_input)
-        self.hf.hflux()
+        self.hf.moveToThread(self.hflux_thread)
 
+        self.hflux_thread.started.connect(self.hf.run)
+        self.hf.finished.connect(self.hflux_thread.quit)
+
+        self.hf.finished.connect(self.hf.deleteLater)
+        self.hf.finished.connect(self.delete_window)
+        self.hflux_thread.finished.connect(self.hflux_thread.deleteLater)
+
+        self.hf.progress.connect(self.hflux_update)
+        self.hf.figure_progress.connect(self.display_figures)
+
+        self.hflux_thread.start()
+
+    def display_figures(self, figs):
+        self.hflux_residual = HfluxGraph(figs[1], "2D Modelled Stream Temperature")
+        self.hflux_3d = HfluxGraph(figs[2], "3D Modelled Stream Temperature")
+        self.hflux_subplots = HfluxGraph(figs[3], "Modelled Heat Flux and Radiation")
+        self.comparison_plot = HfluxGraph(figs[4], "Energy Models")
+        self.errorsfig1 = HfluxGraph(figs[5], "Modelled Temperature Residuals")
+        self.errorsfig2 = HfluxGraph(figs[6], "Stream Temperature")
+        if figs[0]:
+            self.sensfig1 = HfluxGraph(figs[7], "Sensitivity of Recorded Values")
+            self.sensfig2 = HfluxGraph(figs[8], "Sensitivity of Inputs")
+
+    def hflux_update(self, value):
+        value_string, progress_val = value[: value.find(",")], int(
+            value[value.find(",") + 2 :]
+        )
+        self.pwindow._layout.removeRow(1)
+        self.pwindow._layout.addRow(QLabel(value_string))
+        self.pwindow._progress_bar.setValue(progress_val)
+
+    def delete_window(self):
+        self.hflux_update("Finished!, 100")
+        time.sleep(1)
+        self.pwindow.close()
 
 
 app = QApplication(sys.argv)
