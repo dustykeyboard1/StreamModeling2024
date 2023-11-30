@@ -29,7 +29,7 @@ def commandLine_execution():
     file_path = input("Please enter the entire file: \n")
     if make_plots:
         save_path = input(
-            "Please enter the name of the sub directory to save the plots."
+            "Please enter the name of the sub directory to save the plots: \n"
         )
 
     if is_file:
