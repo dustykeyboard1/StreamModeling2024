@@ -920,13 +920,16 @@ class HeatFlux:
         """
         return (root_mean_squared_error / (np.max(temp) - np.min(temp))) * 100
 
-    def create_hlux_plots(self, temp_mod, flux_data, return_graphs=False):
+    def create_hlux_plots(
+        self, temp_mod, flux_data, sub_directory_path, return_graphs=False
+    ):
         """
         Main method for creating and saving heat flux plots.
 
         Args:
             temp_mod (ndarray): ndarray containing the time component.
             flux_data ({ndarray}): dictionary containing other ndarrays for plotting.
+            sub_directory_path (str): path for where to save the plots within the results directory.
 
         Returns:
             None.
@@ -936,7 +939,11 @@ class HeatFlux:
         hflux_subplots = self.make_subplots(flux_data)
         comparison_plot = self.make_comparison_plot(flux_data)
         self.plc.save_plots(
-            hflux_resiudal, hflux_3d, hflux_subplots, comparison_plot, path="hflux",
+            hflux_resiudal,
+            hflux_3d,
+            hflux_subplots,
+            comparison_plot,
+            path=f"{sub_directory_path}/hflux",
         )
         if return_graphs:
             return hflux_resiudal, hflux_3d, hflux_subplots, comparison_plot

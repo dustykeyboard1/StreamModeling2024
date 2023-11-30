@@ -14,7 +14,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 
-class HfluxSens:
+class   HfluxSens:
     def __init__(self, root_dir):
         self.plc = Plotting()
         self.root_dir = root_dir
