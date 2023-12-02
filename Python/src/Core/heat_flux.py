@@ -943,7 +943,7 @@ class HeatFlux:
             hflux_3d,
             hflux_subplots,
             comparison_plot,
-            path=f"{sub_directory_path}/hflux",
+            path=os.path.join(sub_directory_path, "hflux")
         )
         if return_graphs:
             return hflux_resiudal, hflux_3d, hflux_subplots, comparison_plot
