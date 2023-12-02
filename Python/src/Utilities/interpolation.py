@@ -51,4 +51,4 @@ def interpolation(x, y, xq, method="linear"):
     if method == "pchip":
         return scipy.interpolate.PchipInterpolator(x, y)(xq)
     else:
-        return scipy.interpolate.interp1d(x, y, method)(xq)
+        return scipy.interpolate.interp1d(x, y, method, fill_value="extrapolate")(xq)

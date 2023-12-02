@@ -409,6 +409,10 @@ class HeatFlux:
         dist_mod = self.data_table.dist_mod
         r = len(dist_mod)
         dt = max(time_mod) / (timesteps - 1)
+        print()
+        print("timesteps: ", timesteps)
+        print("r: ", r)
+        print()
 
         if not output_suppression:
             print("...done!\n")
@@ -836,7 +840,9 @@ class HeatFlux:
             result = interpolation(dist_mod, temp_mod[:, i], dist_temp)
             result_list.append(result)
         temp_dx = np.array(result_list).transpose()
-
+        print("temp_dx shape: ")
+        print(temp_dx.shape)
+        print()
         # Performs linear interpolation using time_mod, temp_dx, time_temp at each time step.
         # Stores in temp_dt.
         result_list = []
