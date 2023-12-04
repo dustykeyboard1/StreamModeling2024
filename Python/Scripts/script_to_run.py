@@ -22,7 +22,6 @@ from Python.src.Heat_Flux.hflux_sens import HfluxSens
 from Python.src.Utilities.data_table_class import DataTable
 from Python.src.Plotting.hflux_errors_plotting import create_hflux_errors_plots
 
-
 def script_to_run():
     """
     Script to run the program.
@@ -56,7 +55,7 @@ def script_to_run():
     time_temp = data_table.time_temp
     time_mod = data_table.time_mod
 
-    heat_flux.create_hlux_plots(temp_mod, flux_data, "Recent_Run")
+    heat_flux.create_hlux_plots(temp_mod, flux_data)
 
     create_hflux_errors_plots(
         (temp - temp_dt), dist_temp, temp, temp_mod, dist_mod, time_temp, time_mod

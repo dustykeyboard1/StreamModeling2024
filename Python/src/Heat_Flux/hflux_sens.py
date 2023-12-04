@@ -401,7 +401,7 @@ class HfluxSens:
         change = self.calculate_change(sens)
         fig2 = self.plc.make_bar_charts(change)
 
-        self.plc.save_plots(fig, fig2, path="Recent_run/hflux_sens")
+        self.plc.save_plots(fig, fig2, path="hflux_sens")
 
         if return_graphs:
             return fig, fig2

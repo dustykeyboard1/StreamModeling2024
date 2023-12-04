@@ -921,7 +921,7 @@ class HeatFlux:
         return (root_mean_squared_error / (np.max(temp) - np.min(temp))) * 100
 
     def create_hlux_plots(
-        self, temp_mod, flux_data, sub_directory_path, return_graphs=False
+        self, temp_mod, flux_data, sub_directory_path="", return_graphs=False
     ):
         """
         Main method for creating and saving heat flux plots.

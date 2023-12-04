@@ -151,5 +151,4 @@ def commandLine_execution():
 
 
 if __name__ == "__main__":
-    print(os.getcwd())
     commandLine_execution()
