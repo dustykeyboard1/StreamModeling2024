@@ -604,7 +604,7 @@ class HfluxCalculations(QObject):
             )
 
             sens = hflux_sens.create_new_results(
-                temp_mod, high_low_dict, output_suppression=True, multithread=False
+                temp_mod, high_low_dict, output_suppression=True, multithread=True
             )
             sensfig1, sensfig2 = hflux_sens.make_sens_plots(
                 data_table, sens, return_graphs=True
@@ -648,48 +648,6 @@ class HfluxCalculations(QObject):
             )
 
         self.finished.emit()
-
-    # def create_graphs(
-    #     self,
-    #     run_sens,
-    #     hflux_residual,
-    #     hflux_3d,
-    #     hflux_subplots,
-    #     comparison_plot,
-    #     errorsfig1,
-    #     errorsfig2,
-    #     sensfig1,
-    #     sensfig2,
-    # ):
-    #     """
-    #     Displays the graphs created in hflux
-
-    #     Args:
-    #         hflux_residual (Figure): A 2D graph of stream temperature
-    #         hflux_3d (Figure): A 3D graph of stream temperature
-    #         hflux_subplots (Figure): A graph with several subplots showing various radiation values
-    #         comparison_plot (Figure): A graph with the above radiation values on a single axis
-    #         errorsfig1 (Figure): A graph displaying the modelled temperature residuals
-    #         errorsfig2 (Figure): A graph displaying the Stream Temperature over time compared to our model
-    #         sensfig1 (Figure): A graph detailing the sensitivity of various recorded values
-    #         sensfig2 (Figure): A graph detailing the sensitivity of various input values
-
-    #     Returns:
-    #         None
-    #     """
-    #     self.hflux_residual = HfluxGraph(
-    #         hflux_residual, "2D Modelled Stream Temperature"
-    #     )
-    #     self.hflux_3d = HfluxGraph(hflux_3d, "3D Modelled Stream Temperature")
-    #     self.hflux_subplots = HfluxGraph(
-    #         hflux_subplots, "Modelled Heat Flux and Radiation"
-    #     )
-    #     self.comparison_plot = HfluxGraph(comparison_plot, "Energy Models")
-    #     self.errorsfig1 = HfluxGraph(errorsfig1, "Modelled Temperature Residuals")
-    #     self.errorsfig2 = HfluxGraph(errorsfig2, "Stream Temperature")
-    #     if run_sens:
-    #         self.sensfig1 = HfluxGraph(sensfig1, "Sensitivity of Recorded Values")
-    #         self.sensfig2 = HfluxGraph(sensfig2, "Sensitivity of Inputs")
 
     def savedata(
         self,
@@ -810,7 +768,7 @@ class HfluxCalculations(QObject):
 class ProgressWindow(QWidget):
     def __init__(self):
         super().__init__()
-        self.setFixedHeight(100)
+        self.setFixedHeight(90)
         self.setFixedWidth(300)
         self.setWindowTitle("Calculation Progress")
         self._progress_bar = QProgressBar(self)
@@ -818,7 +776,6 @@ class ProgressWindow(QWidget):
         self._layout = QFormLayout()
         self._layout.addRow(self._progress_bar)
         self.setLayout(self._layout)
-
         self.show()
 
 
