@@ -14,7 +14,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 
-class   HfluxSens:
+class HfluxSens:
     def __init__(self, root_dir):
         self.plc = Plotting()
         self.root_dir = root_dir
@@ -58,7 +58,7 @@ class   HfluxSens:
             print("Beginning Multi-threaded calls to hflux...")
 
         cpu_count = multiprocessing.cpu_count()
-        with ProcessPoolExecutor(max_workers=cpu_count//2) as executor:
+        with ProcessPoolExecutor(max_workers=cpu_count // 2) as executor:
             for result, _, _, _ in executor.map(
                 HfluxSens.heat_flux_wrapper, input_data_list
             ):
@@ -229,7 +229,9 @@ class   HfluxSens:
         )
         return high_low_values
 
-    def create_new_results(self, base_result, high_low_dict, output_suppression, multithread=True):
+    def create_new_results(
+        self, base_result, high_low_dict, output_suppression, multithread=True
+    ):
         """
         Creates and returns a new sensitiviity dictionary
 
@@ -253,11 +255,15 @@ class   HfluxSens:
 
         if multithread:
             results = self.multithreading_call(
-                output_suppression, input_data_list=new_data_list, base_result=base_result
+                output_suppression,
+                input_data_list=new_data_list,
+                base_result=base_result,
             )
         else:
             results = self.singlethread_call(
-                output_suppression, input_data_list=new_data_list, base_result=base_result
+                output_suppression,
+                input_data_list=new_data_list,
+                base_result=base_result,
             )
 
         temp_mod_base = results[0]
@@ -395,7 +401,7 @@ class   HfluxSens:
         change = self.calculate_change(sens)
         fig2 = self.plc.make_bar_charts(change)
 
-        self.plc.save_plots(fig, fig2, path="hflux_sens")
+        self.plc.save_plots(fig, fig2, path="Recent_run/hflux_sens")
 
         if return_graphs:
             return fig, fig2

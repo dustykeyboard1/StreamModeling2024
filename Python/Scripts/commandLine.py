@@ -14,6 +14,7 @@ sys.path.append(root_dir)
 from Python.src.Core.heat_flux import HeatFlux
 from Python.src.Utilities.data_table_class import DataTable
 
+
 def run_heat_flux(input_path, output_path, make_plots, plot_folder_path):
     """
     Run hflux calculations on a given input file.
@@ -44,18 +45,25 @@ def run_heat_flux(input_path, output_path, make_plots, plot_folder_path):
     np.savetxt(f"{output_path}/temp.csv", data_table.temp, delimiter=",")
     np.savetxt(f"{output_path}/rel_err.csv", rel_err, delimiter=",")
     np.savetxt(f"{output_path}/heatflux_data.csv", flux_data["heatflux"], delimiter=",")
-    np.savetxt(f"{output_path}/solarflux_data.csv", flux_data["solarflux"], delimiter=",")
-    np.savetxt(f"{output_path}/solar_refl_data.csv", flux_data["solar_refl"], delimiter=",")
+    np.savetxt(
+        f"{output_path}/solarflux_data.csv", flux_data["solarflux"], delimiter=","
+    )
+    np.savetxt(
+        f"{output_path}/solar_refl_data.csv", flux_data["solar_refl"], delimiter=","
+    )
     np.savetxt(f"{output_path}/long_data.csv", flux_data["long"], delimiter=",")
     np.savetxt(f"{output_path}/atmflux_data.csv", flux_data["atmflux"], delimiter=",")
     np.savetxt(f"{output_path}/landflux_data.csv", flux_data["landflux"], delimiter=",")
     np.savetxt(f"{output_path}/backrad_data.csv", flux_data["backrad"], delimiter=",")
     np.savetxt(f"{output_path}/evap_data.csv", flux_data["evap"], delimiter=",")
     np.savetxt(f"{output_path}/sensible_data.csv", flux_data["sensible"], delimiter=",")
-    np.savetxt(f"{output_path}/conduction_data.csv", flux_data["conduction"], delimiter=",")
+    np.savetxt(
+        f"{output_path}/conduction_data.csv", flux_data["conduction"], delimiter=","
+    )
 
     if make_plots:
         heat_flux.create_hlux_plots(temp_mod, flux_data, plot_folder_path)
+
 
 def commandLine_execution():
     """
@@ -64,27 +72,41 @@ def commandLine_execution():
     Return: None
     """
     # inform the restriction of the data location
-    print('''\nBefore entering the name of the input file/folder,\nplease make sure this file/folder is in the '''+"\x1B[4m" + '\x1B[1m' +
-          '''Data folder'''+"\x1B[0m"+''' of the program!\n''')
-    
+    print(
+        """\nBefore entering the name of the input file/folder,\nplease make sure this file/folder is in the """
+        + "\x1B[4m"
+        + "\x1B[1m"
+        + """Data folder"""
+        + "\x1B[0m"
+        + """ of the program!\n"""
+    )
+
     # store name of the input data
     input_name = input("Enter the name of the input file/folder: ")
     input_path = os.path.join(os.getcwd(), "Data", input_name)
 
     # make sure the input file/folder the user entered exists
     while not os.path.exists(input_path):
-        print("Input file/folder" + '\x1B[1m' +" doesn't exist"+"\x1B[0m"+"!\n")
-        input_name = input("Enter the"+ '\x1B[1m' + " correct " +"\x1B[0m"+"name of the input file/folder: ")
+        print("Input file/folder" + "\x1B[1m" + " doesn't exist" + "\x1B[0m" + "!\n")
+        input_name = input(
+            "Enter the"
+            + "\x1B[1m"
+            + " correct "
+            + "\x1B[0m"
+            + "name of the input file/folder: "
+        )
         input_path = os.path.join(os.getcwd(), "Data", input_name)
 
     # store the name of the output folder
     output_folder = input("\nEnter the name of the folder to save result data in: ")
     output_path = os.path.join(os.getcwd(), "Results", output_folder)
     os.mkdir(output_path)
-    
-    # store whether the user wants plots and if so prepare to store plots 
+
+    # store whether the user wants plots and if so prepare to store plots
     plot_folder_path = ""
-    make_plots = bool(int(input("\nEnter 1 to save result plots or 0 to ignore plots: ")))
+    make_plots = bool(
+        int(input("\nEnter 1 to save result plots or 0 to ignore plots: "))
+    )
     print()
     if make_plots:
         plot_folder_name = input("Name of the folder to save the plots in: ")
@@ -95,7 +117,7 @@ def commandLine_execution():
         # store multiple sets of output in their own folders
         file_list = os.listdir(input_path)
         for file in file_list:
-            print('\x1B[1m' + "Running " + file + "...\n" + "\x1B[0m")
+            print("\x1B[1m" + "Running " + file + "...\n" + "\x1B[0m")
             file_path = os.path.join(input_path, file)
             file_output_path = os.path.join(output_path, file.rsplit(".")[0])
             os.mkdir(file_output_path)
@@ -105,17 +127,29 @@ def commandLine_execution():
                 file_plot_folder_path = os.path.join(file_output_path, plot_folder_name)
                 os.mkdir(file_plot_folder_path)
 
-            run_heat_flux(file_path, file_output_path, make_plots, file_plot_folder_path)
+            run_heat_flux(
+                file_path, file_output_path, make_plots, file_plot_folder_path
+            )
 
-            print('\x1B[1m' + "Finished " + file + '!\n' +"\x1B[0m")
+            print("\x1B[1m" + "Finished " + file + "!\n" + "\x1B[0m")
     else:
         if make_plots:
-            plot_folder_path = os.path.join(os.getcwd(), "Results", output_folder, plot_folder_name)
+            plot_folder_path = os.path.join(
+                os.getcwd(), "Results", output_folder, plot_folder_name
+            )
             os.mkdir(plot_folder_path)
 
         run_heat_flux(input_path, output_path, make_plots, plot_folder_path)
 
-    print("See results data/plots in the" + '\x1B[1m' + " Results " +"\x1B[0m" + "folder.\n")
+    print(
+        "See results data/plots in the"
+        + "\x1B[1m"
+        + " Results "
+        + "\x1B[0m"
+        + "folder.\n"
+    )
+
 
 if __name__ == "__main__":
+    print(os.getcwd())
     commandLine_execution()
