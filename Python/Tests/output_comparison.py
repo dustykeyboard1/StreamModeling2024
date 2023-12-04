@@ -1,6 +1,5 @@
 import os
 
-
 def main():
     ### We are starting in the StreamModelling2024 directory, so these two lines
     ### Give us the output locations of our files
@@ -50,6 +49,8 @@ def compare_files(mat, py, output, filename):
                 + str(len(mat) - len(py))
                 + " more entries than matlab output"
             )
+    
+    incorrect_value = False
 
     for i in range(len(mat)):
         mat_val = float(mat[i])
@@ -66,6 +67,10 @@ def compare_files(mat, py, output, filename):
                 + str(abs(mat_val - py_val))
                 + "\n"
             )
+            incorrect_value = True
+
+    assert(not incorrect_value)
+    
 
 
 if __name__ == "__main__":
