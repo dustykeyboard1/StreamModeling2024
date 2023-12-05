@@ -1,4 +1,5 @@
 import sys
+from sys import platform
 import os
 import numpy as np
 import datetime
@@ -1073,7 +1074,11 @@ class MainWindow(QWidget):
 
 
 app = QApplication(sys.argv)
-app.setStyle("Breeze")
+print(QtWidgets.QStyleFactory.keys())
+if sys.platform.lower() == "darwin":
+    app.setStyle("Fusion")
+if sys.platform.lower() == "win32":
+    app.setStyle("Fusion")
 window = MainWindow()
 window.show()
 sys.exit(app.exec())
