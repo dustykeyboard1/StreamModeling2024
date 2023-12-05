@@ -13,6 +13,8 @@ if sys.platform.lower() == 'darwin':
     matplotlib.use("TkAgg")
 else:
     matplotlib.use("QtAgg")
+
+os.environ['QT_MAC_WANTS_LAYER'] = '1'
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg
 from matplotlib.figure import Figure
 from matplotlib.backends.backend_pdf import PdfPages
@@ -601,6 +603,7 @@ class HfluxCalculations(QObject):
             self.finished.emit()
 
         try:
+            matplotlib.use("QtAgg")
             (
                 hflux_resiudal,
                 hflux_3d,
