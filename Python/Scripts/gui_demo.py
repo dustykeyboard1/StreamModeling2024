@@ -1073,12 +1073,8 @@ class MainWindow(QWidget):
         self.pwindow.close()
 
 
-app = QApplication(sys.argv)
-print(QtWidgets.QStyleFactory.keys())
-if sys.platform.lower() == "darwin":
-    app.setStyle("Fusion")
-if sys.platform.lower() == "win32":
-    app.setStyle("Fusion")
+app = QApplication(sys.argv)    
+app.setStyle("Fusion")
 window = MainWindow()
 window.show()
 sys.exit(app.exec())
