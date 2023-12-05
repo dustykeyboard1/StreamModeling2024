@@ -9,7 +9,7 @@ from PySide6 import QtCore, QtWidgets
 
 import matplotlib
 
-matplotlib.use("TkAgg")
+matplotlib.use("Qt5Agg")
 os.environ['QT_MAC_WANTS_LAYER'] = '1'
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg
 from matplotlib.figure import Figure
@@ -599,7 +599,6 @@ class HfluxCalculations(QObject):
             self.finished.emit()
 
         try:
-            matplotlib.use("QtAgg")
             (
                 hflux_resiudal,
                 hflux_3d,
