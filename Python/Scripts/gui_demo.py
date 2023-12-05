@@ -9,7 +9,10 @@ from PySide6 import QtCore, QtWidgets
 
 import matplotlib
 
-matplotlib.use("QtAgg")
+if sys.platform.lower() == 'darwin':
+    matplotlib.use("TkAgg")
+else:
+    matplotlib.use("QtAgg")
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg
 from matplotlib.figure import Figure
 from matplotlib.backends.backend_pdf import PdfPages
@@ -628,7 +631,7 @@ class HfluxCalculations(QObject):
             )
 
             sens = hflux_sens.create_new_results(
-                temp_mod, high_low_dict, output_suppression=True, multithread=True
+                temp_mod, high_low_dict, output_suppression=True, multithread=False
             )
             sensfig1, sensfig2 = hflux_sens.make_sens_plots(
                 data_table, sens, return_graphs=True
@@ -1074,7 +1077,8 @@ class MainWindow(QWidget):
 
 
 app = QApplication(sys.argv)    
-app.setStyle("Fusion")
+if sys.platform.lower() == 'darwin':
+    app.setStyle("Fusion")
 window = MainWindow()
 window.show()
 sys.exit(app.exec())
