@@ -620,22 +620,18 @@ class HfluxCalculations(QObject):
 
 
         if run_sens:
-            try:
-                hflux_sens = HfluxSens(root_dir)
-                high_low_dict = hflux_sens.hflux_sens(
-                    data_table, [-0.01, 0.01], [-2, 2], [-0.1, 0.1], [-0.1, 0.1]
-                )
+            
+            hflux_sens = HfluxSens(root_dir)
+            high_low_dict = hflux_sens.hflux_sens(
+                data_table, [-0.01, 0.01], [-2, 2], [-0.1, 0.1], [-0.1, 0.1]
+            )
 
-                sens = hflux_sens.create_new_results(
-                    temp_mod, high_low_dict, output_suppression=True, multithread=True
-                )
-                sensfig1, sensfig2 = hflux_sens.make_sens_plots(
-                    data_table, sens, return_graphs=True
-                )
-            except:
-                self.progress.emit("HFLUX sensitivity error. Operation aborted, 100")
-                time.sleep(2)
-                self.finished.emit()
+            sens = hflux_sens.create_new_results(
+                temp_mod, high_low_dict, output_suppression=True, multithread=True
+            )
+            sensfig1, sensfig2 = hflux_sens.make_sens_plots(
+                data_table, sens, return_graphs=True
+            )
         else:
             sensfig1, sensfig2 = None, None
 
