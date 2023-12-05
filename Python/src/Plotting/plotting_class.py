@@ -348,6 +348,9 @@ class Plotting:
 
         print(f"Saving PDF to {pdf_path}...")
 
+        if not os.path.exists(pdf_path):
+            open(pdf_path, "w")
+
         plots_pdf = PdfPages(pdf_path)
         for fig in args:
             plots_pdf.savefig(fig)
