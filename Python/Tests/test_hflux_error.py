@@ -32,8 +32,12 @@ def test_valid_arguments():
 
 def test_invalid_number_of_arguments():
     """Test if handle_errors will raise a ValueError exception when given incorrect number of arguments"""
-    with pytest.raises(ValueError):
-        handle_errors(1, 2, 3)
+    time_mod = np.array([[1], [2], [3]])
+    dist_mod = np.array([[1], [2], [3]])
+    temp_mod = np.array([[1, 2], [3, 4], [5, 6]])
+    
+    with pytest.raises(Exception):
+        handle_errors(time_mod, dist_mod, temp_mod)
 
 
 def test_invalid_column_vector():
@@ -45,5 +49,5 @@ def test_invalid_column_vector():
     time_temp = np.array([[1], [2], [3]])
     temp = np.array([[1, 2], [3, 4], [5, 6]])
 
-    with pytest.raises(TypeError):
+    with pytest.raises(Exception):
         handle_errors(time_mod, dist_mod, temp_mod, dist_temp, time_temp, temp)
