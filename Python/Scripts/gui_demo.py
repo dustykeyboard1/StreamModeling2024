@@ -11,6 +11,7 @@ import matplotlib
 
 matplotlib.use("Qt5Agg")
 os.environ['QT_MAC_WANTS_LAYER'] = '1'
+os.environ['QT_API'] = 'PySide6'
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg
 from matplotlib.figure import Figure
 from matplotlib.backends.backend_pdf import PdfPages
