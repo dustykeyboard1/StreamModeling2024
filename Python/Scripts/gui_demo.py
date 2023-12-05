@@ -9,11 +9,7 @@ from PySide6 import QtCore, QtWidgets
 
 import matplotlib
 
-if sys.platform.lower() == 'darwin':
-    matplotlib.use("TkAgg")
-else:
-    matplotlib.use("QtAgg")
-
+matplotlib.use("TkAgg")
 os.environ['QT_MAC_WANTS_LAYER'] = '1'
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg
 from matplotlib.figure import Figure
