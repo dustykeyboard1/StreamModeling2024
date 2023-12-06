@@ -830,13 +830,13 @@ class MainWindow(QWidget):
         self.setFixedHeight(GUI_HEIGHT)
 
         ### Creating the logo and title banner
-        pixmap = QPixmap(os.path.join(os.getcwd(), "Demo", "hlfux_logo.png"))
-        hflux_logo = QLabel()
-        hflux_logo.setPixmap(pixmap)
+        # pixmap = QPixmap(os.path.join(os.getcwd(), "Demo", "hlfux_logo.png"))
+        # hflux_logo = QLabel()
+        # hflux_logo.setPixmap(pixmap)
 
         form = QFormLayout()
         form.addRow(TitleBanner("HFLUX Stream Temperature Solver"))
-        form.addRow(hflux_logo)
+        # form.addRow(hflux_logo)
 
         ### Creating the file input and browse button
         input_filename, browser = self.create_file_input("Required: Excel File", "Path")
