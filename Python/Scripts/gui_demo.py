@@ -513,8 +513,8 @@ class HfluxGraph(QtWidgets.QMainWindow):
 
 class HfluxCalculations(QObject):
     finished = Signal()
+    variable_progress = Signal(list)
     progress = Signal(str)
-    figure_progress = Signal(list)
 
     def __init__(self, settings_input):
         """
@@ -539,88 +539,64 @@ class HfluxCalculations(QObject):
         Returns:
             None
         """
-        try:
-            self.progress.emit("Beginning Calculations, 0")
-            run_sens = self._settings_input[-5]
-            display_graphs = self._settings_input[-4]
-            savepdf = self._settings_input[-3]
-            savecsv = self._settings_input[-2]
-            output_path = self._settings_input[-1]
-            filename = self._settings_input[0]
-            self.progress.emit("Reading Data, 3")
-            data_table = DataTable(filename)
-        except:
-            self.progress.emit("File Reading Error. Operation aborted, 100")
-            time.sleep(2)
-            self.finished.emit()
         
-        try:
-            self.progress.emit("Finished Data Reading, 5")
+        self.progress.emit("Beginning Calculations, 0")
+        run_sens = self._settings_input[-5]
+        display_graphs = self._settings_input[-4]
+        savepdf = self._settings_input[-3]
+        savecsv = self._settings_input[-2]
+        output_path = self._settings_input[-1]
+        filename = self._settings_input[0]
+        self.progress.emit("Reading Data, 3")
+        data_table = DataTable(filename)
+    
+        # self.progress.emit("File Reading Error. Operation aborted, 100")
+        # time.sleep(2)
+        # self.finished.emit()
 
-            data_table.output_suppression = 1
+        self.progress.emit("Finished Data Reading, 5")
 
-            self.progress.emit("Customizing Input, 6")
+        data_table.output_suppression = 1
 
-            self.change_settings(data_table, self._settings_input)
-            self.change_sensitivities(data_table, self._settings_input)
+        self.progress.emit("Customizing Input, 6")
 
-            self.progress.emit("Finished Customizing Input, 7")
-            self.progress.emit("Beginning Heat Flux Calculations, 8")
+        self.change_settings(data_table, self._settings_input)
+        self.change_sensitivities(data_table, self._settings_input)
 
-            heat_flux = HeatFlux(data_table)
-            # Use helper functions (hflux(), handle_errors() and sens())  to calculate values.
-            # Helper functions will also plot and display results.
-            temp_mod, matrix_data, node_data, flux_data = heat_flux.crank_nicolson_method()
-        except:
-            self.progress.emit("HFLUX calculation error. Operation aborted, 100")
-            time.sleep(2)
-            self.finished.emit()
-        
-        try:
-            self.progress.emit("Finished Heat Flux Calculations, 70")
-            self.progress.emit("Beginning Error Calculations, 71")
-            temp_dt = heat_flux.calculate_temp_dt(temp_mod)
+        self.progress.emit("Finished Customizing Input, 7")
+        self.progress.emit("Beginning Heat Flux Calculations, 8")
 
-            temp = data_table.temp.transpose()
-            rel_err = heat_flux.calculate_percent_relative_error(temp, temp_dt)
-            me = heat_flux.calculate_mean_residual_error(temp, temp_dt)
-            mae = heat_flux.calculate_mean_absolute_residual_error(temp, temp_dt)
-            mse = heat_flux.calculate_mean_square_error(temp, temp_dt)
-            rmse = heat_flux.calculate_root_mean_square_error(temp, temp_dt)
-            nrmse = heat_flux.calculate_normalized_root_mean_square_error(rmse, temp)
-            self.progress.emit("Finished Error Calculations, 80")
+        heat_flux = HeatFlux(data_table)
+        # Use helper functions (hflux(), handle_errors() and sens())  to calculate values.
+        # Helper functions will also plot and display results.
+        temp_mod, matrix_data, node_data, flux_data = heat_flux.crank_nicolson_method()
+    
+        # self.progress.emit("HFLUX calculation error. Operation aborted, 100")
+        # time.sleep(2)
+        # self.finished.emit()
+    
+    
+        self.progress.emit("Finished Heat Flux Calculations, 70")
+        self.progress.emit("Beginning Error Calculations, 71")
+        temp_dt = heat_flux.calculate_temp_dt(temp_mod)
 
-            dist_temp = data_table.dist_temp
-            dist_mod = data_table.dist_mod
-            time_temp = data_table.time_temp
-            time_mod = data_table.time_mod
-        except:
-            self.progress.emit("Error during HFLUX Errors. Operation aborted, 100")
-            time.sleep(2)
-            self.finished.emit()
+        temp = data_table.temp.transpose()
+        rel_err = heat_flux.calculate_percent_relative_error(temp, temp_dt)
+        me = heat_flux.calculate_mean_residual_error(temp, temp_dt)
+        mae = heat_flux.calculate_mean_absolute_residual_error(temp, temp_dt)
+        mse = heat_flux.calculate_mean_square_error(temp, temp_dt)
+        rmse = heat_flux.calculate_root_mean_square_error(temp, temp_dt)
+        nrmse = heat_flux.calculate_normalized_root_mean_square_error(rmse, temp)
+        self.progress.emit("Finished Error Calculations, 80")
 
-        try:
-            (
-                hflux_resiudal,
-                hflux_3d,
-                hflux_subplots,
-                comparison_plot,
-            ) = heat_flux.create_hlux_plots(temp_mod, flux_data, return_graphs=True)
-            errorsfig1, errorsfig2 = create_hflux_errors_plots(
-                (temp - temp_dt),
-                dist_temp,
-                temp,
-                temp_mod,
-                dist_mod,
-                time_temp,
-                time_mod,
-                return_graphs=True,
-            )
-        except:
-            self.progress.emit("HFLUX graph creation error. Operation aborted, 100")
-            time.sleep(2)
-            self.finished.emit()
-
+        dist_temp = data_table.dist_temp
+        dist_mod = data_table.dist_mod
+        time_temp = data_table.time_temp
+        time_mod = data_table.time_mod
+    
+        # self.progress.emit("Error during HFLUX Errors. Operation aborted, 100")
+        # time.sleep(2)
+        # self.finished.emit()
 
         if run_sens:
             
@@ -632,54 +608,29 @@ class HfluxCalculations(QObject):
             sens = hflux_sens.create_new_results(
                 temp_mod, high_low_dict, output_suppression=True, multithread=False
             )
-            sensfig1, sensfig2 = hflux_sens.make_sens_plots(
-                data_table, sens, return_graphs=True
-            )
         else:
-            sensfig1, sensfig2 = None, None
+            hflux_sens, high_low_dict, sens = None, None, None
 
         self.progress.emit("Calculations have finished!, 95")
         time.sleep(0.5)
-        self.progress.emit("Writing Output, 96")
-
-        try: 
-            if savecsv or savepdf:
-                self.savedata(
-                    output_path,
-                    run_sens,
-                    savepdf,
-                    savecsv,
-                    temp_mod,
-                    data_table,
-                    flux_data,
-                    rel_err,
-                    [hflux_resiudal, hflux_3d, hflux_subplots, comparison_plot],
-                    [errorsfig1, errorsfig2],
-                    [sensfig1, sensfig2],
-                )
-
-            self.progress.emit("Displaying Graphs, 99")
-            if display_graphs:
-                self.figure_progress.emit(
-                    [
-                        run_sens,
-                        hflux_resiudal,
-                        hflux_3d,
-                        hflux_subplots,
-                        comparison_plot,
-                        errorsfig1,
-                        errorsfig2,
-                        sensfig1,
-                        sensfig2,
-                    ]
-                )
-        except:
-            self.progress.emit("Output writing error. Operation aborted, 100")
-            time.sleep(2)
-            self.finished.emit()
-
+        self.variable_progress.emit([temp_mod,
+        flux_data,
+        temp,
+        temp_dt,
+        dist_temp,
+        dist_mod,
+        time_temp,
+        time_mod,
+        run_sens,
+        data_table,
+        sens,
+        savecsv,
+        savepdf,
+        output_path,
+        rel_err,
+        display_graphs,
+        heat_flux])
         self.finished.emit()
-        
 
     def savedata(
         self,
@@ -1033,74 +984,49 @@ class MainWindow(QWidget):
         Returns:
             None
         """
-        self._settings_input = settings_input
 
-        # self.progress.emit("Beginning Calculations, 0")
-        run_sens = self._settings_input[-5]
-        display_graphs = self._settings_input[-4]
-        savepdf = self._settings_input[-3]
-        savecsv = self._settings_input[-2]
-        output_path = self._settings_input[-1]
-        filename = self._settings_input[0]
-        # self.progress.emit("Reading Data, 3")
-        data_table = DataTable(filename)
-    
-        # self.progress.emit("File Reading Error. Operation aborted, 100")
-        # time.sleep(2)
-        # self.finished.emit()
-        # print("File Reading Error. Operation aborted, 100")
-    
-    
-        # self.progress.emit("Finished Data Reading, 5")
+        ###############################################################################
+        ###############################################################################
+        self.pwindow = ProgressWindow()
+        self.hflux_thread = QThread()
+        self.hf = HfluxCalculations(settings_input)
+        self.hf.moveToThread(self.hflux_thread)
 
-        data_table.output_suppression = 1
+        self.hflux_thread.started.connect(self.hf.run)
+        self.hf.finished.connect(self.hflux_thread.quit)
 
-        # self.progress.emit("Customizing Input, 6")
+        self.hf.finished.connect(self.hf.deleteLater)
+        self.hf.finished.connect(self.delete_window)
 
-        self.change_settings(data_table, self._settings_input)
-        self.change_sensitivities(data_table, self._settings_input)
+        self.hf.progress.connect(self.hflux_update)
+        self.hf.variable_progress.connect(self.io)
+        self.hflux_thread.start()
 
-        # self.progress.emit("Finished Customizing Input, 7")
-        # self.progress.emit("Beginning Heat Flux Calculations, 8")
-
-        heat_flux = HeatFlux(data_table)
-        # Use helper functions (hflux(), handle_errors() and sens())  to calculate values.
-        # Helper functions will also plot and display results.
-        temp_mod, matrix_data, node_data, flux_data = heat_flux.crank_nicolson_method()
-    
-        # self.progress.emit("HFLUX calculation error. Operation aborted, 100")
-        # time.sleep(2)
-        # self.finished.emit()
-        # print("HFLUX calculation error. Operation aborted, 100")
-    
-        # self.progress.emit("Finished Heat Flux Calculations, 70")
-        # self.progress.emit("Beginning Error Calculations, 71")
-        temp_dt = heat_flux.calculate_temp_dt(temp_mod)
-
-        temp = data_table.temp.transpose()
-        rel_err = heat_flux.calculate_percent_relative_error(temp, temp_dt)
-        me = heat_flux.calculate_mean_residual_error(temp, temp_dt)
-        mae = heat_flux.calculate_mean_absolute_residual_error(temp, temp_dt)
-        mse = heat_flux.calculate_mean_square_error(temp, temp_dt)
-        rmse = heat_flux.calculate_root_mean_square_error(temp, temp_dt)
-        nrmse = heat_flux.calculate_normalized_root_mean_square_error(rmse, temp)
-        # self.progress.emit("Finished Error Calculations, 80")
-
-        dist_temp = data_table.dist_temp
-        dist_mod = data_table.dist_mod
-        time_temp = data_table.time_temp
-        time_mod = data_table.time_mod
-        # self.progress.emit("Error during HFLUX Errors. Operation aborted, 100")
-        # time.sleep(2)
-        # self.finished.emit()
-        # print("Error during HFLUX Errors. Operation aborted, 100")
-
+    def io(self, data):
+        ### Data collection
+        temp_mod = data[0]
+        flux_data = data[1]
+        temp = data[2]
+        temp_dt = data[3]
+        dist_temp = data[4]
+        dist_mod = data[5]
+        time_temp = data[6]
+        time_mod = data[7]
+        run_sens = data[8]
+        data_table = data[9]
+        sens = data[10]
+        savecsv = data[11]
+        savepdf = data[12]
+        output_path = data[13]
+        rel_err = data[14]
+        display_graphs = data[15]
+        heat_flux = data[16]
         (
             hflux_resiudal,
             hflux_3d,
             hflux_subplots,
             comparison_plot,
-        ) = heat_flux.create_hlux_plots(temp_mod, flux_data, return_graphs=True)
+        ) = heat_flux.create_hlux_plots(temp_mod=temp_mod, flux_data=flux_data, sub_directory_path="", return_graphs=True)
         errorsfig1, errorsfig2 = create_hflux_errors_plots(
             (temp - temp_dt),
             dist_temp,
@@ -1111,31 +1037,14 @@ class MainWindow(QWidget):
             time_mod,
             return_graphs=True,
         )
-        # self.progress.emit("HFLUX graph creation error. Operation aborted, 100")
-        # time.sleep(2)
-        # self.finished.emit()
-        # print("HFLUX graph creation error. Operation aborted, 100")
-
 
         if run_sens:
-            
             hflux_sens = HfluxSens(root_dir)
-            high_low_dict = hflux_sens.hflux_sens(
-                data_table, [-0.01, 0.01], [-2, 2], [-0.1, 0.1], [-0.1, 0.1]
-            )
-
-            sens = hflux_sens.create_new_results(
-                temp_mod, high_low_dict, output_suppression=True, multithread=False
-            )
             sensfig1, sensfig2 = hflux_sens.make_sens_plots(
                 data_table, sens, return_graphs=True
             )
         else:
             sensfig1, sensfig2 = None, None
-
-        # self.progress.emit("Calculations have finished!, 95")
-        # time.sleep(0.5)
-        # self.progress.emit("Writing Output, 96")
 
         if savecsv or savepdf:
             self.savedata(
@@ -1152,7 +1061,6 @@ class MainWindow(QWidget):
                 [sensfig1, sensfig2],
             )
 
-        # self.progress.emit("Displaying Graphs, 99")
         if display_graphs:
             self.display_figures(
                 [
@@ -1167,14 +1075,7 @@ class MainWindow(QWidget):
                     sensfig2,
                 ]
             )
-        # self.progress.emit("Output writing error. Operation aborted, 100")
-        # time.sleep(2)
-        # self.finished.emit()
-        # print("Ouptut error")
-
-    # self.finished.emit()
         
-
     def savedata(
         self,
         path,
@@ -1289,25 +1190,6 @@ class MainWindow(QWidget):
         data_table.shade_data["Shade "] = np.clip(
             data_table.shade_data["Shade "] * (1 + (shade / 100.0)), 0, 1
         )
-
-        ###############################################################################
-        ###############################################################################
-        # self.pwindow = ProgressWindow()
-        # self.hflux_thread = QThread()
-        # self.hf = HfluxCalculations(settings_input)
-        # self.hf.moveToThread(self.hflux_thread)
-
-        # self.hflux_thread.started.connect(self.hf.run)
-        # self.hf.finished.connect(self.hflux_thread.quit)
-
-        # self.hf.finished.connect(self.hf.deleteLater)
-        # self.hf.finished.connect(self.delete_window)
-        # self.hflux_thread.finished.connect(self.hflux_thread.deleteLater)
-
-        # self.hf.progress.connect(self.hflux_update)
-        # self.hf.figure_progress.connect(self.display_figures)
-
-        # self.hflux_thread.start()
 
     def display_figures(self, figs):
         self.hflux_residual = HfluxGraph(figs[1], "2D Modelled Stream Temperature")
