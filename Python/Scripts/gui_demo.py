@@ -511,15 +511,22 @@ class HfluxGraph(QtWidgets.QMainWindow):
         self.setWindowTitle(figure_name)
         self.show()
 
+class SensitivitySignals(QObject):
+    finished = Signal()
+    result = Signal(object)
+
 class SensitivityTask(QRunnable):
     def __init__(self, array, name, result_array):
         super().__init__()
         self._array = array
         self._result_array = result_array
         self._name = name
+        self._signals = SensitivitySignals()
+        self.setAutoDelete(False)
     
     def run(self):
-        self._result_array.update({self._name : HfluxSens.heat_flux_wrapper(self._array)[0]})
+        result, _, _, _ = HfluxSens.heat_flux_wrapper(self._array)
+        self._result_array.update({self._name : result})  # Return the result of the processing
 
 class HfluxCalculations(QObject):
     finished = Signal()
@@ -637,11 +644,13 @@ class HfluxCalculations(QObject):
             task6 = SensitivityTask(data_array[6], "lowshade", self._sensitivity_results)
             task7 = SensitivityTask(data_array[7], "highshade", self._sensitivity_results)
             task_array = [task0, task1, task2, task3, task4, task5, task6, task7]
-            QThreadPool.globalInstance().setMaxThreadCount(9)
+
+            self.threadpool = QThreadPool.globalInstance()
+            self.threadpool.setMaxThreadCount(10)
             for task in task_array:
-                QThreadPool.globalInstance().start(task)
+                self.threadpool.start(task)
                 
-            QThreadPool.globalInstance().waitForDone()
+            self.threadpool.waitForDone()
             
             temp_mod_base = self._sensitivity_results["base"]
             temp_mod_lowdis = self._sensitivity_results["lowdis"]
@@ -652,8 +661,6 @@ class HfluxCalculations(QObject):
             temp_mod_highvts = self._sensitivity_results["highvts"]
             temp_mod_lowshade = self._sensitivity_results["lowshade"]
             temp_mod_highshade = self._sensitivity_results["highshade"]
-
-            print(temp_mod_lowdis.shape)
 
             base = {"temp": temp_mod_base, "mean": np.mean(temp_mod_base, axis=1)}
             lowdis = {"temp": temp_mod_lowdis, "mean": np.mean(temp_mod_lowdis, axis=1)}
