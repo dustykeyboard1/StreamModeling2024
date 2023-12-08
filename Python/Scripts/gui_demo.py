@@ -4,19 +4,20 @@ import os
 import numpy as np
 import datetime
 import time
+from concurrent.futures import ProcessPoolExecutor
+import multiprocessing
 
 from PySide6 import QtCore, QtWidgets
 
 import matplotlib
 
 matplotlib.use("QtAgg")
-os.environ['QT_MAC_WANTS_LAYER'] = '1'
 os.environ['QT_API'] = 'PySide6'
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg
 from matplotlib.figure import Figure
 from matplotlib.backends.backend_pdf import PdfPages
 
-from PySide6.QtCore import Qt, QDir, QThread, QObject, Signal
+from PySide6.QtCore import Qt, QDir, QThread, QThreadPool, QRunnable, QObject, Signal
 from PySide6.QtWidgets import (
     QFileDialog,
     QSlider,
@@ -510,6 +511,15 @@ class HfluxGraph(QtWidgets.QMainWindow):
         self.setWindowTitle(figure_name)
         self.show()
 
+class SensitivityTask(QRunnable):
+    def __init__(self, array, name, result_array):
+        super().__init__()
+        self._array = array
+        self._result_array = result_array
+        self._name = name
+    
+    def run(self):
+        self._result_array.update({self._name : HfluxSens.heat_flux_wrapper(self._array)[0]})
 
 class HfluxCalculations(QObject):
     finished = Signal()
@@ -528,6 +538,7 @@ class HfluxCalculations(QObject):
         """
         super().__init__()
         self._settings_input = settings_input
+        self._sensitivity_results = {}
 
     def run(self):
         """
@@ -599,15 +610,88 @@ class HfluxCalculations(QObject):
         # self.finished.emit()
 
         if run_sens:
-            
             hflux_sens = HfluxSens(root_dir)
             high_low_dict = hflux_sens.hflux_sens(
                 data_table, [-0.01, 0.01], [-2, 2], [-0.1, 0.1], [-0.1, 0.1]
             )
 
-            sens = hflux_sens.create_new_results(
-                temp_mod, high_low_dict, output_suppression=True, multithread=False
-            )
+            self._sensitivity_results.update({"base" : temp_mod})
+
+            data_array = [
+                high_low_dict["input_data_lowdis"],
+                high_low_dict["input_data_highdis"],
+                high_low_dict["input_data_lowT_L"],
+                high_low_dict["input_data_highT_L"],
+                high_low_dict["input_data_lowvts"],
+                high_low_dict["input_data_highvts"],
+                high_low_dict["input_data_lowshade"],
+                high_low_dict["input_data_highshade"],
+            ]
+
+            task0 = SensitivityTask(data_array[0], "lowdis", self._sensitivity_results)
+            task1 = SensitivityTask(data_array[1], "highdis", self._sensitivity_results)
+            task2 = SensitivityTask(data_array[2], "lowT_L", self._sensitivity_results)
+            task3 = SensitivityTask(data_array[3], "highT_L", self._sensitivity_results)
+            task4 = SensitivityTask(data_array[4], "lowvts", self._sensitivity_results)
+            task5 = SensitivityTask(data_array[5], "highvts", self._sensitivity_results)
+            task6 = SensitivityTask(data_array[6], "lowshade", self._sensitivity_results)
+            task7 = SensitivityTask(data_array[7], "highshade", self._sensitivity_results)
+            task_array = [task0, task1, task2, task3, task4, task5, task6, task7]
+            QThreadPool.globalInstance().setMaxThreadCount(9)
+            for task in task_array:
+                QThreadPool.globalInstance().start(task)
+                
+            QThreadPool.globalInstance().waitForDone()
+            
+            temp_mod_base = self._sensitivity_results["base"]
+            temp_mod_lowdis = self._sensitivity_results["lowdis"]
+            temp_mod_highdis = self._sensitivity_results["highdis"]
+            temp_mod_lowT_L = self._sensitivity_results["lowT_L"]
+            temp_mod_highT_L = self._sensitivity_results["highT_L"]
+            temp_mod_lowvts = self._sensitivity_results["lowvts"]
+            temp_mod_highvts = self._sensitivity_results["highvts"]
+            temp_mod_lowshade = self._sensitivity_results["lowshade"]
+            temp_mod_highshade = self._sensitivity_results["highshade"]
+
+            print(temp_mod_lowdis.shape)
+
+            base = {"temp": temp_mod_base, "mean": np.mean(temp_mod_base, axis=1)}
+            lowdis = {"temp": temp_mod_lowdis, "mean": np.mean(temp_mod_lowdis, axis=1)}
+            highdis = {"temp": temp_mod_highdis, "mean": np.mean(temp_mod_highdis, axis=1)}
+            lowT_L = {"temp": temp_mod_lowT_L, "mean": np.mean(temp_mod_lowT_L, axis=1)}
+            highT_L = {"temp": temp_mod_highT_L, "mean": np.mean(temp_mod_highT_L, axis=1)}
+            lowvts = {"temp": temp_mod_lowvts, "mean": np.mean(temp_mod_lowvts, axis=1)}
+            highvts = {"temp": temp_mod_highvts, "mean": np.mean(temp_mod_highvts, axis=1)}
+            lowshade = {
+                "temp": temp_mod_lowshade,
+                "mean": np.mean(temp_mod_lowshade, axis=1),
+            }
+            highshade = {
+                "temp": temp_mod_highshade,
+                "mean": np.mean(temp_mod_highshade, axis=1),
+            }
+
+            # Store structures in dictionary
+            sens = {
+                "dis_l": high_low_dict["dis_data_low"],
+                "dis_h": high_low_dict["dis_data_high"],
+                "TL_l": high_low_dict["t_l_data_low"],
+                "TL_h": high_low_dict["t_l_data_high"],
+                "vts_l": high_low_dict["vts_low"],
+                "vts_h": high_low_dict["vts_high"],
+                "sh_l": high_low_dict["shade_data_low"],
+                "sh_h": high_low_dict["shade_data_high"],
+                "base": base,
+                "lowdis": lowdis,
+                "highdis": highdis,
+                "lowT_L": lowT_L,
+                "highT_L": highT_L,
+                "lowvts": lowvts,
+                "highvts": highvts,
+                "lowshade": lowshade,
+                "highshade": highshade,
+            }
+
         else:
             hflux_sens, high_low_dict, sens = None, None, None
 
@@ -630,6 +714,7 @@ class HfluxCalculations(QObject):
         rel_err,
         display_graphs,
         heat_flux])
+
         self.finished.emit()
 
     def change_settings(self, data_table, settings_input):
