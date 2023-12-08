@@ -1,6 +1,9 @@
-pandas==2.1.0
-scipy==1.11.2
-pyside6==6.5.2
+pandas==2.1.2
+numpy==1.26.1
+matplotlib==3.8.1
+PySide6==6.6.0
+scipy==1.11.3
+pytz==2023.3.post1
 kaleido==0.2.1
-matplotlib==3.5.2
-numpy==1.23.2
+
+
