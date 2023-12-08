@@ -16,6 +16,19 @@ The customer had a program written in MATLAB, which is used to model stream temp
 - Beta: Major changes from Alpha. Classes were created, multi threading was introduced and matrix multiplication was used. Extremely large time improvement from Alpha
 - Version 1: The most recent and up-to-date code base. This includes a GUI and Command Line function for executing the program.
 
+# 🚀 Directory Structure 🚀
+
+    StreamModeling2024/Python/
+    ├── src/
+    │   ├── Core/
+    │   ├── Heat_Flux/
+    │   └── Utilities/
+    ├── Tests/
+    ├── Scripts/
+    ├── Data/
+    ├── MATLAB/
+    └── requirements.txt
+
 # 💥 VERSION 1 FEATURES 💥
 - A fully functioning GUI for MacOS and Windows
 - Command Line features for easy execution
@@ -32,6 +45,8 @@ The customer had a program written in MATLAB, which is used to model stream temp
 # 🖇️ INSTALLATION STEPS 🖇️
 - Open your terminal on your operating system
 - Clone the repository into you're desired location.
+- In your terminal execute the command: `pip install requirements.txt`
+  - You should see the packages being installed
 - Change directory into the Python Folder
 
 # 🧪DATA PREPARATION🧪: 
