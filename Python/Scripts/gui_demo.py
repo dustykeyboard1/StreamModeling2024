@@ -9,7 +9,7 @@ from PySide6 import QtCore, QtWidgets
 
 import matplotlib
 
-matplotlib.use("Qt5Agg")
+matplotlib.use("QtAgg")
 os.environ['QT_MAC_WANTS_LAYER'] = '1'
 os.environ['QT_API'] = 'PySide6'
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg
@@ -550,9 +550,9 @@ class HfluxCalculations(QObject):
             self.progress.emit("Reading Data, 3")
             data_table = DataTable(filename)
         except:
-                self.progress.emit("File Reading Error. Operation aborted, 100")
-                time.sleep(2)
-                self.finished.emit()
+            self.progress.emit("File Reading Error. Operation aborted, 100")
+            time.sleep(2)
+            self.finished.emit()
         
         try:
             self.progress.emit("Finished Data Reading, 5")
@@ -830,13 +830,13 @@ class MainWindow(QWidget):
         self.setFixedHeight(GUI_HEIGHT)
 
         ### Creating the logo and title banner
-        # pixmap = QPixmap(os.path.join(os.getcwd(), "Demo", "hlfux_logo.png"))
-        # hflux_logo = QLabel()
-        # hflux_logo.setPixmap(pixmap)
+        pixmap = QPixmap(os.path.join(os.getcwd(), "Demo", "hlfux_logo.png"))
+        hflux_logo = QLabel()
+        hflux_logo.setPixmap(pixmap)
 
         form = QFormLayout()
         form.addRow(TitleBanner("HFLUX Stream Temperature Solver"))
-        # form.addRow(hflux_logo)
+        form.addRow(hflux_logo)
 
         ### Creating the file input and browse button
         input_filename, browser = self.create_file_input("Required: Excel File", "Path")
@@ -1033,22 +1033,281 @@ class MainWindow(QWidget):
         Returns:
             None
         """
-        self.pwindow = ProgressWindow()
-        self.hflux_thread = QThread()
-        self.hf = HfluxCalculations(settings_input)
-        self.hf.moveToThread(self.hflux_thread)
+        self._settings_input = settings_input
 
-        self.hflux_thread.started.connect(self.hf.run)
-        self.hf.finished.connect(self.hflux_thread.quit)
+        # self.progress.emit("Beginning Calculations, 0")
+        run_sens = self._settings_input[-5]
+        display_graphs = self._settings_input[-4]
+        savepdf = self._settings_input[-3]
+        savecsv = self._settings_input[-2]
+        output_path = self._settings_input[-1]
+        filename = self._settings_input[0]
+        # self.progress.emit("Reading Data, 3")
+        data_table = DataTable(filename)
+    
+        # self.progress.emit("File Reading Error. Operation aborted, 100")
+        # time.sleep(2)
+        # self.finished.emit()
+        # print("File Reading Error. Operation aborted, 100")
+    
+    
+        # self.progress.emit("Finished Data Reading, 5")
 
-        self.hf.finished.connect(self.hf.deleteLater)
-        self.hf.finished.connect(self.delete_window)
-        self.hflux_thread.finished.connect(self.hflux_thread.deleteLater)
+        data_table.output_suppression = 1
 
-        self.hf.progress.connect(self.hflux_update)
-        self.hf.figure_progress.connect(self.display_figures)
+        # self.progress.emit("Customizing Input, 6")
 
-        self.hflux_thread.start()
+        self.change_settings(data_table, self._settings_input)
+        self.change_sensitivities(data_table, self._settings_input)
+
+        # self.progress.emit("Finished Customizing Input, 7")
+        # self.progress.emit("Beginning Heat Flux Calculations, 8")
+
+        heat_flux = HeatFlux(data_table)
+        # Use helper functions (hflux(), handle_errors() and sens())  to calculate values.
+        # Helper functions will also plot and display results.
+        temp_mod, matrix_data, node_data, flux_data = heat_flux.crank_nicolson_method()
+    
+        # self.progress.emit("HFLUX calculation error. Operation aborted, 100")
+        # time.sleep(2)
+        # self.finished.emit()
+        # print("HFLUX calculation error. Operation aborted, 100")
+    
+        # self.progress.emit("Finished Heat Flux Calculations, 70")
+        # self.progress.emit("Beginning Error Calculations, 71")
+        temp_dt = heat_flux.calculate_temp_dt(temp_mod)
+
+        temp = data_table.temp.transpose()
+        rel_err = heat_flux.calculate_percent_relative_error(temp, temp_dt)
+        me = heat_flux.calculate_mean_residual_error(temp, temp_dt)
+        mae = heat_flux.calculate_mean_absolute_residual_error(temp, temp_dt)
+        mse = heat_flux.calculate_mean_square_error(temp, temp_dt)
+        rmse = heat_flux.calculate_root_mean_square_error(temp, temp_dt)
+        nrmse = heat_flux.calculate_normalized_root_mean_square_error(rmse, temp)
+        # self.progress.emit("Finished Error Calculations, 80")
+
+        dist_temp = data_table.dist_temp
+        dist_mod = data_table.dist_mod
+        time_temp = data_table.time_temp
+        time_mod = data_table.time_mod
+        # self.progress.emit("Error during HFLUX Errors. Operation aborted, 100")
+        # time.sleep(2)
+        # self.finished.emit()
+        # print("Error during HFLUX Errors. Operation aborted, 100")
+
+        (
+            hflux_resiudal,
+            hflux_3d,
+            hflux_subplots,
+            comparison_plot,
+        ) = heat_flux.create_hlux_plots(temp_mod, flux_data, return_graphs=True)
+        errorsfig1, errorsfig2 = create_hflux_errors_plots(
+            (temp - temp_dt),
+            dist_temp,
+            temp,
+            temp_mod,
+            dist_mod,
+            time_temp,
+            time_mod,
+            return_graphs=True,
+        )
+        # self.progress.emit("HFLUX graph creation error. Operation aborted, 100")
+        # time.sleep(2)
+        # self.finished.emit()
+        # print("HFLUX graph creation error. Operation aborted, 100")
+
+
+        if run_sens:
+            
+            hflux_sens = HfluxSens(root_dir)
+            high_low_dict = hflux_sens.hflux_sens(
+                data_table, [-0.01, 0.01], [-2, 2], [-0.1, 0.1], [-0.1, 0.1]
+            )
+
+            sens = hflux_sens.create_new_results(
+                temp_mod, high_low_dict, output_suppression=True, multithread=False
+            )
+            sensfig1, sensfig2 = hflux_sens.make_sens_plots(
+                data_table, sens, return_graphs=True
+            )
+        else:
+            sensfig1, sensfig2 = None, None
+
+        # self.progress.emit("Calculations have finished!, 95")
+        # time.sleep(0.5)
+        # self.progress.emit("Writing Output, 96")
+
+        if savecsv or savepdf:
+            self.savedata(
+                output_path,
+                run_sens,
+                savepdf,
+                savecsv,
+                temp_mod,
+                data_table,
+                flux_data,
+                rel_err,
+                [hflux_resiudal, hflux_3d, hflux_subplots, comparison_plot],
+                [errorsfig1, errorsfig2],
+                [sensfig1, sensfig2],
+            )
+
+        # self.progress.emit("Displaying Graphs, 99")
+        if display_graphs:
+            self.display_figures(
+                [
+                    run_sens,
+                    hflux_resiudal,
+                    hflux_3d,
+                    hflux_subplots,
+                    comparison_plot,
+                    errorsfig1,
+                    errorsfig2,
+                    sensfig1,
+                    sensfig2,
+                ]
+            )
+        # self.progress.emit("Output writing error. Operation aborted, 100")
+        # time.sleep(2)
+        # self.finished.emit()
+        # print("Ouptut error")
+
+    # self.finished.emit()
+        
+
+    def savedata(
+        self,
+        path,
+        run_sens,
+        savepdf,
+        savecsv,
+        temp_mod,
+        data_table,
+        flux_data,
+        rel_err,
+        hflux_plots,
+        errors_plots,
+        sensitivity_plots,
+    ):
+        dt = datetime.datetime.now().strftime("%Y-%m-%d--%H%M%S")
+        folder = "HF_" + dt
+        path = os.path.join(path, folder)
+        os.mkdir(path)
+        if savecsv:
+            self.savecsvs(path, temp_mod, data_table, flux_data, rel_err)
+        if savepdf:
+            self.savepdfs(path, run_sens, hflux_plots, errors_plots, sensitivity_plots)
+
+    def savecsvs(self, path, temp_mod, data_table, flux_data, rel_err):
+        np.savetxt(f"{path}/temp_mod.csv", temp_mod, delimiter=",")
+        np.savetxt(f"{path}/temp.csv", data_table.temp, delimiter=",")
+        np.savetxt(f"{path}/rel_err.csv", rel_err, delimiter=",")
+        np.savetxt(f"{path}/heatflux_data.csv", flux_data["heatflux"], delimiter=",")
+        np.savetxt(f"{path}/solarflux_data.csv", flux_data["solarflux"], delimiter=",")
+        np.savetxt(
+            f"{path}/solar_refl_data.csv", flux_data["solar_refl"], delimiter=","
+        )
+        np.savetxt(f"{path}/long_data.csv", flux_data["long"], delimiter=",")
+        np.savetxt(f"{path}/atmflux_data.csv", flux_data["atmflux"], delimiter=",")
+        np.savetxt(f"{path}/landflux_data.csv", flux_data["landflux"], delimiter=",")
+        np.savetxt(f"{path}/backrad_data.csv", flux_data["backrad"], delimiter=",")
+        np.savetxt(f"{path}/evap_data.csv", flux_data["evap"], delimiter=",")
+        np.savetxt(f"{path}/sensible_data.csv", flux_data["sensible"], delimiter=",")
+        np.savetxt(
+            f"{path}/conduction_data.csv", flux_data["conduction"], delimiter=","
+        )
+
+    def savepdfs(self, pdfpath, run_sens, hflux_plots, errors_plots, sensitivity_plots):
+        """
+        Saves hflux graphs to pdfs
+
+        Args:
+            hflux_plots (array): An array of hflux plots
+            errors_plots (array): An array of hflux_errors plots
+            sensitivity_plots (array): An array of sensitivity plots
+
+        Returns:
+            None
+        """
+        hflux_pdf = PdfPages(os.path.join(pdfpath, "hflux.pdf"))
+        errors_pdf = PdfPages(os.path.join(pdfpath, "hflux_errors.pdf"))
+
+        for fig in hflux_plots:
+            hflux_pdf.savefig(fig)
+
+        for fig in errors_plots:
+            errors_pdf.savefig(fig)
+
+        hflux_pdf.close()
+        errors_pdf.close()
+
+        if run_sens:
+            sensitivity_pdf = PdfPages(os.path.join(pdfpath, "hflux_sens.pdf"))
+            for fig in sensitivity_plots:
+                sensitivity_pdf.savefig(fig)
+            sensitivity_pdf.close()
+
+    def change_settings(self, data_table, settings_input):
+        """
+        Changes the data_table from our excel file based on the user's input
+
+        Args:
+            data_table (DataTable): the data table that contains all information in the user's Excel file
+            settings_input (array): An array of input from the user detailing which methods they want
+
+        Returns:
+            None
+        """
+        eq1 = settings_input[1]
+        eq2 = settings_input[2]
+        eq3 = settings_input[3]
+        eq4 = settings_input[4]
+
+        if eq1 != "":
+            data_table.settings["solution method"] = int(eq1)
+
+        if eq2 != "":
+            data_table.settings["shortwave radiation method"] = int(eq2)
+
+        if eq3 != "":
+            data_table.settings["latent heat flux equation"] = int(eq3)
+
+        if eq4 != "":
+            data_table.settings["sensible heat equation"] = int(eq4)
+
+    def change_sensitivities(self, data_table, settings_input):
+        air_temp = int(settings_input[5])
+        water_temp = int(settings_input[6])
+        shade = int(settings_input[7])
+
+        data_table.met_data["Air Temperature"] = data_table.met_data[
+            "Air Temperature"
+        ] * (1 + (air_temp / 100.0))
+        data_table.t_l_data["Temperature"] = data_table.t_l_data["Temperature"] * (
+            1 + (water_temp / 100.0)
+        )
+        data_table.shade_data["Shade "] = np.clip(
+            data_table.shade_data["Shade "] * (1 + (shade / 100.0)), 0, 1
+        )
+
+        ###############################################################################
+        ###############################################################################
+        # self.pwindow = ProgressWindow()
+        # self.hflux_thread = QThread()
+        # self.hf = HfluxCalculations(settings_input)
+        # self.hf.moveToThread(self.hflux_thread)
+
+        # self.hflux_thread.started.connect(self.hf.run)
+        # self.hf.finished.connect(self.hflux_thread.quit)
+
+        # self.hf.finished.connect(self.hf.deleteLater)
+        # self.hf.finished.connect(self.delete_window)
+        # self.hflux_thread.finished.connect(self.hflux_thread.deleteLater)
+
+        # self.hf.progress.connect(self.hflux_update)
+        # self.hf.figure_progress.connect(self.display_figures)
+
+        # self.hflux_thread.start()
 
     def display_figures(self, figs):
         self.hflux_residual = HfluxGraph(figs[1], "2D Modelled Stream Temperature")
