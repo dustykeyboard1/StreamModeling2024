@@ -632,78 +632,6 @@ class HfluxCalculations(QObject):
         heat_flux])
         self.finished.emit()
 
-    def savedata(
-        self,
-        path,
-        run_sens,
-        savepdf,
-        savecsv,
-        temp_mod,
-        data_table,
-        flux_data,
-        rel_err,
-        hflux_plots,
-        errors_plots,
-        sensitivity_plots,
-    ):
-        dt = datetime.datetime.now().strftime("%Y-%m-%d--%H%M%S")
-        folder = "HF_" + dt
-        path = os.path.join(path, folder)
-        os.mkdir(path)
-        if savecsv:
-            self.savecsvs(path, temp_mod, data_table, flux_data, rel_err)
-        if savepdf:
-            self.savepdfs(path, run_sens, hflux_plots, errors_plots, sensitivity_plots)
-
-    def savecsvs(self, path, temp_mod, data_table, flux_data, rel_err):
-        np.savetxt(f"{path}/temp_mod.csv", temp_mod, delimiter=",")
-        np.savetxt(f"{path}/temp.csv", data_table.temp, delimiter=",")
-        np.savetxt(f"{path}/rel_err.csv", rel_err, delimiter=",")
-        np.savetxt(f"{path}/heatflux_data.csv", flux_data["heatflux"], delimiter=",")
-        np.savetxt(f"{path}/solarflux_data.csv", flux_data["solarflux"], delimiter=",")
-        np.savetxt(
-            f"{path}/solar_refl_data.csv", flux_data["solar_refl"], delimiter=","
-        )
-        np.savetxt(f"{path}/long_data.csv", flux_data["long"], delimiter=",")
-        np.savetxt(f"{path}/atmflux_data.csv", flux_data["atmflux"], delimiter=",")
-        np.savetxt(f"{path}/landflux_data.csv", flux_data["landflux"], delimiter=",")
-        np.savetxt(f"{path}/backrad_data.csv", flux_data["backrad"], delimiter=",")
-        np.savetxt(f"{path}/evap_data.csv", flux_data["evap"], delimiter=",")
-        np.savetxt(f"{path}/sensible_data.csv", flux_data["sensible"], delimiter=",")
-        np.savetxt(
-            f"{path}/conduction_data.csv", flux_data["conduction"], delimiter=","
-        )
-
-    def savepdfs(self, pdfpath, run_sens, hflux_plots, errors_plots, sensitivity_plots):
-        """
-        Saves hflux graphs to pdfs
-
-        Args:
-            hflux_plots (array): An array of hflux plots
-            errors_plots (array): An array of hflux_errors plots
-            sensitivity_plots (array): An array of sensitivity plots
-
-        Returns:
-            None
-        """
-        hflux_pdf = PdfPages(os.path.join(pdfpath, "hflux.pdf"))
-        errors_pdf = PdfPages(os.path.join(pdfpath, "hflux_errors.pdf"))
-
-        for fig in hflux_plots:
-            hflux_pdf.savefig(fig)
-
-        for fig in errors_plots:
-            errors_pdf.savefig(fig)
-
-        hflux_pdf.close()
-        errors_pdf.close()
-
-        if run_sens:
-            sensitivity_pdf = PdfPages(os.path.join(pdfpath, "hflux_sens.pdf"))
-            for fig in sensitivity_plots:
-                sensitivity_pdf.savefig(fig)
-            sensitivity_pdf.close()
-
     def change_settings(self, data_table, settings_input):
         """
         Changes the data_table from our excel file based on the user's input
@@ -746,7 +674,6 @@ class HfluxCalculations(QObject):
         data_table.shade_data["Shade "] = np.clip(
             data_table.shade_data["Shade "] * (1 + (shade / 100.0)), 0, 1
         )
-
 
 class ProgressWindow(QWidget):
     def __init__(self):
@@ -1148,49 +1075,6 @@ class MainWindow(QWidget):
                 sensitivity_pdf.savefig(fig)
             sensitivity_pdf.close()
 
-    def change_settings(self, data_table, settings_input):
-        """
-        Changes the data_table from our excel file based on the user's input
-
-        Args:
-            data_table (DataTable): the data table that contains all information in the user's Excel file
-            settings_input (array): An array of input from the user detailing which methods they want
-
-        Returns:
-            None
-        """
-        eq1 = settings_input[1]
-        eq2 = settings_input[2]
-        eq3 = settings_input[3]
-        eq4 = settings_input[4]
-
-        if eq1 != "":
-            data_table.settings["solution method"] = int(eq1)
-
-        if eq2 != "":
-            data_table.settings["shortwave radiation method"] = int(eq2)
-
-        if eq3 != "":
-            data_table.settings["latent heat flux equation"] = int(eq3)
-
-        if eq4 != "":
-            data_table.settings["sensible heat equation"] = int(eq4)
-
-    def change_sensitivities(self, data_table, settings_input):
-        air_temp = int(settings_input[5])
-        water_temp = int(settings_input[6])
-        shade = int(settings_input[7])
-
-        data_table.met_data["Air Temperature"] = data_table.met_data[
-            "Air Temperature"
-        ] * (1 + (air_temp / 100.0))
-        data_table.t_l_data["Temperature"] = data_table.t_l_data["Temperature"] * (
-            1 + (water_temp / 100.0)
-        )
-        data_table.shade_data["Shade "] = np.clip(
-            data_table.shade_data["Shade "] * (1 + (shade / 100.0)), 0, 1
-        )
-
     def display_figures(self, figs):
         self.hflux_residual = HfluxGraph(figs[1], "2D Modelled Stream Temperature")
         self.hflux_3d = HfluxGraph(figs[2], "3D Modelled Stream Temperature")
@@ -1214,7 +1098,6 @@ class MainWindow(QWidget):
         self.hflux_update("Finished!, 100")
         time.sleep(1)
         self.pwindow.close()
-
 
 app = QApplication(sys.argv)    
 if sys.platform.lower() == 'darwin':
