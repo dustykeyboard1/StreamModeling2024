@@ -565,71 +565,75 @@ class HfluxCalculations(QObject):
         Returns:
             None
         """
-        
-        self.progress.emit("Beginning Calculations, 0")
-        run_sens = self._settings_input[-5]
-        display_graphs = self._settings_input[-4]
-        savepdf = self._settings_input[-3]
-        savecsv = self._settings_input[-2]
-        output_path = self._settings_input[-1]
-        filename = self._settings_input[0]
-        self.progress.emit("Reading Data, 3")
-        data_table = DataTable(filename)
-    
-        # self.progress.emit("File Reading Error. Operation aborted, 100")
-        # time.sleep(2)
-        # self.finished.emit()
+        try:
+            self.progress.emit("Beginning Calculations, 0")
+            run_sens = self._settings_input[-5]
+            display_graphs = self._settings_input[-4]
+            savepdf = self._settings_input[-3]
+            savecsv = self._settings_input[-2]
+            output_path = self._settings_input[-1]
+            filename = self._settings_input[0]
+            self.progress.emit("Reading Data, 3")
+            data_table = DataTable(filename)
+        except:
+            self.progress.emit("File Reading Error. Operation aborted, 100")
+            time.sleep(2)
+            self.finished.emit()
 
         self.progress.emit("Finished Data Reading, 5")
-
         data_table.output_suppression = 1
-
-        self.progress.emit("Customizing Input, 6")
 
         self.change_settings(data_table, self._settings_input)
         self.change_sensitivities(data_table, self._settings_input)
 
-        self.progress.emit("Finished Customizing Input, 7")
         self.progress.emit("Beginning Heat Flux Calculations, 8")
 
-        heat_flux = HeatFlux(data_table)
-        # Use helper functions (hflux(), handle_errors() and sens())  to calculate values.
-        # Helper functions will also plot and display results.
-        temp_mod, matrix_data, node_data, flux_data = heat_flux.crank_nicolson_method()
+        try:
+            heat_flux = HeatFlux(data_table)
+            temp_mod, matrix_data, node_data, flux_data = heat_flux.crank_nicolson_method()
+        except:
+            self.progress.emit("HFLUX calculation error. Operation aborted, 100")
+            time.sleep(2)
+            self.finished.emit()
     
-        # self.progress.emit("HFLUX calculation error. Operation aborted, 100")
-        # time.sleep(2)
-        # self.finished.emit()
-    
-    
-        self.progress.emit("Finished Heat Flux Calculations, 70")
-        self.progress.emit("Beginning Error Calculations, 71")
-        temp_dt = heat_flux.calculate_temp_dt(temp_mod)
+        if run_sens:
+            self.progress.emit("Finished Heat Flux Calculations, 20")
+        else:
+            self.progress.emit("Finished Heat Flux Calculations, 70")
 
-        temp = data_table.temp.transpose()
-        rel_err = heat_flux.calculate_percent_relative_error(temp, temp_dt)
-        me = heat_flux.calculate_mean_residual_error(temp, temp_dt)
-        mae = heat_flux.calculate_mean_absolute_residual_error(temp, temp_dt)
-        mse = heat_flux.calculate_mean_square_error(temp, temp_dt)
-        rmse = heat_flux.calculate_root_mean_square_error(temp, temp_dt)
-        nrmse = heat_flux.calculate_normalized_root_mean_square_error(rmse, temp)
-        self.progress.emit("Finished Error Calculations, 80")
+        try:
+            temp_dt = heat_flux.calculate_temp_dt(temp_mod)
+            temp = data_table.temp.transpose()
+            rel_err = heat_flux.calculate_percent_relative_error(temp, temp_dt)
+            me = heat_flux.calculate_mean_residual_error(temp, temp_dt)
+            mae = heat_flux.calculate_mean_absolute_residual_error(temp, temp_dt)
+            mse = heat_flux.calculate_mean_square_error(temp, temp_dt)
+            rmse = heat_flux.calculate_root_mean_square_error(temp, temp_dt)
+            nrmse = heat_flux.calculate_normalized_root_mean_square_error(rmse, temp)
+        except:
+            self.progress.emit("Error during HFLUX Errors. Operation aborted, 100")
+            time.sleep(2)
+            self.finished.emit()
+
+        if run_sens:
+            self.progress.emit("Finished Error Calculations, 25")
+        else:
+            self.progress.emit("Finished Error Calculations, 95")
 
         dist_temp = data_table.dist_temp
         dist_mod = data_table.dist_mod
         time_temp = data_table.time_temp
         time_mod = data_table.time_mod
-    
-        # self.progress.emit("Error during HFLUX Errors. Operation aborted, 100")
-        # time.sleep(2)
-        # self.finished.emit()
-
+        print(os.cpu_count())
+        
         if run_sens:
             hflux_sens = HfluxSens(root_dir)
             high_low_dict = hflux_sens.hflux_sens(
                 data_table, [-0.01, 0.01], [-2, 2], [-0.1, 0.1], [-0.1, 0.1]
             )
+            self.progress.emit("Starting Sensitivity Calculations, 30")
             sens = hflux_sens.create_new_results(temp_mod, high_low_dict, output_suppression=False, multithread=True)
+            self.progress.emit("Finished Sensitivity Calculations, 95")
         else:
             hflux_sens, high_low_dict, sens = None, None, None
 
@@ -652,6 +656,7 @@ class HfluxCalculations(QObject):
         rel_err,
         display_graphs,
         heat_flux])
+        self.progress.emit("Writing to Output, 98")
 
         self.finished.emit()
 
@@ -935,8 +940,6 @@ class MainWindow(QWidget):
             None
         """
 
-        ###############################################################################
-        ###############################################################################
         self.pwindow = ProgressWindow()
         self.hflux_thread = QThread()
         self.hf = HfluxCalculations(settings_input)
