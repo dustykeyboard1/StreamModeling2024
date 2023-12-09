@@ -14,7 +14,7 @@ from PySide6 import QtCore, QtWidgets
 import matplotlib
 
 matplotlib.use("QtAgg")
-os.environ['QT_API'] = 'PySide6'
+os.environ["QT_API"] = "PySide6"
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg
 from matplotlib.figure import Figure
 from matplotlib.backends.backend_pdf import PdfPages
@@ -513,6 +513,7 @@ class HfluxGraph(QtWidgets.QMainWindow):
         self.setWindowTitle(figure_name)
         self.show()
 
+
 # class SensitivitySignals(QObject):
 #     finished = Signal()
 #     result = Signal(object)
@@ -527,7 +528,7 @@ class HfluxGraph(QtWidgets.QMainWindow):
 #         self._name = name
 #         self._signals = SensitivitySignals()
 #         self.setAutoDelete(True)
-    
+
 #     def run(self):
 #         print(f"Working in thread {self._name}")
 #         result, _, _, _ = HfluxSens.heat_flux_wrapper(self._array)
@@ -590,12 +591,17 @@ class HfluxCalculations(QObject):
 
         try:
             heat_flux = HeatFlux(data_table)
-            temp_mod, matrix_data, node_data, flux_data = heat_flux.crank_nicolson_method()
+            (
+                temp_mod,
+                matrix_data,
+                node_data,
+                flux_data,
+            ) = heat_flux.crank_nicolson_method()
         except:
             self.progress.emit("HFLUX calculation error. Operation aborted, 100")
             time.sleep(2)
             self.finished.emit()
-    
+
         if run_sens:
             self.progress.emit("Finished Heat Flux Calculations, 20")
         else:
@@ -625,37 +631,43 @@ class HfluxCalculations(QObject):
         time_temp = data_table.time_temp
         time_mod = data_table.time_mod
         print(os.cpu_count())
-        
+
         if run_sens:
             hflux_sens = HfluxSens(root_dir)
             high_low_dict = hflux_sens.hflux_sens(
                 data_table, [-0.01, 0.01], [-2, 2], [-0.1, 0.1], [-0.1, 0.1]
             )
             self.progress.emit("Starting Sensitivity Calculations, 30")
-            sens = hflux_sens.create_new_results(temp_mod, high_low_dict, output_suppression=False, multithread=True)
+            sens = hflux_sens.create_new_results(
+                temp_mod, high_low_dict, output_suppression=False, multithread=True
+            )
             self.progress.emit("Finished Sensitivity Calculations, 95")
         else:
             hflux_sens, high_low_dict, sens = None, None, None
 
         self.progress.emit("Calculations have finished!, 95")
         time.sleep(0.5)
-        self.variable_progress.emit([temp_mod,
-        flux_data,
-        temp,
-        temp_dt,
-        dist_temp,
-        dist_mod,
-        time_temp,
-        time_mod,
-        run_sens,
-        data_table,
-        sens,
-        savecsv,
-        savepdf,
-        output_path,
-        rel_err,
-        display_graphs,
-        heat_flux])
+        self.variable_progress.emit(
+            [
+                temp_mod,
+                flux_data,
+                temp,
+                temp_dt,
+                dist_temp,
+                dist_mod,
+                time_temp,
+                time_mod,
+                run_sens,
+                data_table,
+                sens,
+                savecsv,
+                savepdf,
+                output_path,
+                rel_err,
+                display_graphs,
+                heat_flux,
+            ]
+        )
         self.progress.emit("Writing to Output, 98")
 
         self.finished.emit()
@@ -702,6 +714,7 @@ class HfluxCalculations(QObject):
         data_table.shade_data["Shade "] = np.clip(
             data_table.shade_data["Shade "] * (1 + (shade / 100.0)), 0, 1
         )
+
 
 class ProgressWindow(QWidget):
     def __init__(self):
@@ -979,7 +992,12 @@ class MainWindow(QWidget):
             hflux_3d,
             hflux_subplots,
             comparison_plot,
-        ) = heat_flux.create_hlux_plots(temp_mod=temp_mod, flux_data=flux_data, sub_directory_path="", return_graphs=True)
+        ) = heat_flux.create_hlux_plots(
+            temp_mod=temp_mod,
+            flux_data=flux_data,
+            sub_directory_path="",
+            return_graphs=True,
+        )
         errorsfig1, errorsfig2 = create_hflux_errors_plots(
             (temp - temp_dt),
             dist_temp,
@@ -1028,7 +1046,7 @@ class MainWindow(QWidget):
                     sensfig2,
                 ]
             )
-        
+
     def savedata(
         self,
         path,
@@ -1125,10 +1143,11 @@ class MainWindow(QWidget):
         time.sleep(1)
         self.pwindow.close()
 
-if __name__=="__main__":
+
+if __name__ == "__main__":
     multiprocessing.freeze_support()
-    app = QApplication(sys.argv)    
-    if sys.platform.lower() == 'darwin':
+    app = QApplication(sys.argv)
+    if sys.platform.lower() == "darwin":
         app.setStyle("Fusion")
     window = MainWindow()
     window.show()
