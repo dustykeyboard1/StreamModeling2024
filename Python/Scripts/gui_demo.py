@@ -1,48 +1,43 @@
 import sys
 from sys import platform
-import logging
 import os
 import numpy as np
 import datetime
 import time
-from concurrent.futures import ProcessPoolExecutor
-import multiprocessing
-from multiprocessing import freeze_support
 
-from PySide6 import QtCore, QtWidgets
-
-import matplotlib
-
-matplotlib.use("QtAgg")
-os.environ["QT_API"] = "PySide6"
-from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg
-from matplotlib.figure import Figure
-from matplotlib.backends.backend_pdf import PdfPages
-
-from PySide6.QtCore import Qt, QDir, QThread, QThreadPool, QRunnable, QObject, Signal
+from PySide6 import QtCore
+from PySide6 import QtWidgets
+from PySide6.QtCore import Qt, QDir, QThread, QObject, Signal
 from PySide6.QtWidgets import (
     QFileDialog,
     QSlider,
     QCheckBox,
     QApplication,
-    QMainWindow,
     QPushButton,
-    QGridLayout,
     QLabel,
     QWidget,
-    QVBoxLayout,
     QLineEdit,
     QFormLayout,
     QHBoxLayout,
+    QVBoxLayout,
     QProgressBar,
 )
 from PySide6.QtGui import QPixmap
+
+### Matplotlib
+import matplotlib
+
+matplotlib.use("QtAgg")
+from matplotlib.backends.backend_qt5agg import (
+    FigureCanvasQTAgg,
+    NavigationToolbar2QT as NavigationToolbar,
+)
+from matplotlib.backends.backend_pdf import PdfPages
 
 # Dynamically find and set the root directory.
 root_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
 sys.path.append(root_dir)
 
-from Python.src.Core.hflux_errors import handle_errors
 from Python.src.Core.heat_flux import HeatFlux
 from Python.src.Heat_Flux.hflux_sens import HfluxSens
 from Python.src.Utilities.data_table_class import DataTable
@@ -56,6 +51,7 @@ LINEEDIT_WIDTH = 310
 FILE_INPUT_TEXT_WIDTH = 250
 BROWSE_BUTTON_WIDTH = 60
 ERROR_COLOR = "red"
+MAX_ERROR_VALUE_LENGTH = 20
 
 
 class TitleBanner(QLabel):
@@ -294,11 +290,11 @@ class SubmitButton(QPushButton):
         for l in self._settings:
             value = l.get_text()
             if value != "1" and value != "2" and value != "":
-                if len(value) > 20:
+                if len(value) > MAX_ERROR_VALUE_LENGTH:
                     self._form.addRow(
                         ErrorMessage(
                             "Incorrect Value: "
-                            + value[:20]
+                            + value[:MAX_ERROR_VALUE_LENGTH]
                             + "... in setting: "
                             + l.get_label()
                         )
@@ -509,36 +505,22 @@ class HfluxGraph(QtWidgets.QMainWindow):
         """
         super(HfluxGraph, self).__init__()
         sc = FigureCanvasQTAgg(figure=figure)
-        self.setCentralWidget(sc)
+        toolbar = NavigationToolbar(sc, self)
+
+        layout = QVBoxLayout()
+        layout.addWidget(toolbar)
+        layout.addWidget(sc)
+
+        widget = QWidget()
+        widget.setLayout(layout)
+        self.setCentralWidget(widget)
         self.setWindowTitle(figure_name)
         self.show()
 
 
-# class SensitivitySignals(QObject):
-#     finished = Signal()
-#     result = Signal(object)
-
-# class SensitivityTask(QRunnable):
-#     # finished = Signal()
-#     # result = Signal(object)
-#     def __init__(self, array, name, result_array):
-#         super().__init__()
-#         self._array = array
-#         self._result_array = result_array
-#         self._name = name
-#         self._signals = SensitivitySignals()
-#         self.setAutoDelete(True)
-
-#     def run(self):
-#         print(f"Working in thread {self._name}")
-#         result, _, _, _ = HfluxSens.heat_flux_wrapper(self._array)
-#         self._result_array.update({self._name : result})  # Return the result of the processing
-#         # self.result.emit(result)
-#         print(f"Done with thread {self._name}")
-
-
 class HfluxCalculations(QObject):
     finished = Signal()
+    additional_finished = Signal()
     variable_progress = Signal(list)
     progress = Signal(str)
 
@@ -630,7 +612,6 @@ class HfluxCalculations(QObject):
         dist_mod = data_table.dist_mod
         time_temp = data_table.time_temp
         time_mod = data_table.time_mod
-        print(os.cpu_count())
 
         if run_sens:
             hflux_sens = HfluxSens(root_dir)
@@ -645,7 +626,7 @@ class HfluxCalculations(QObject):
         else:
             hflux_sens, high_low_dict, sens = None, None, None
 
-        self.progress.emit("Calculations have finished!, 95")
+        self.progress.emit("Calculations have finished. Writing to output!, 95")
         time.sleep(0.5)
         self.variable_progress.emit(
             [
@@ -668,8 +649,6 @@ class HfluxCalculations(QObject):
                 heat_flux,
             ]
         )
-        self.progress.emit("Writing to Output, 98")
-
         self.finished.emit()
 
     def change_settings(self, data_table, settings_input):
@@ -962,7 +941,6 @@ class MainWindow(QWidget):
         self.hf.finished.connect(self.hflux_thread.quit)
 
         self.hf.finished.connect(self.hf.deleteLater)
-        self.hf.finished.connect(self.delete_window)
 
         self.hf.progress.connect(self.hflux_update)
         self.hf.variable_progress.connect(self.io)
@@ -1145,7 +1123,6 @@ class MainWindow(QWidget):
 
 
 if __name__ == "__main__":
-    multiprocessing.freeze_support()
     app = QApplication(sys.argv)
     if sys.platform.lower() == "darwin":
         app.setStyle("Fusion")
