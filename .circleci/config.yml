@@ -35,8 +35,7 @@ jobs:
           name: Run tests
           command: pytest ./Python/Tests
       - codecov/upload:
-        file: '/Users/michaelscoleri/Desktop/Coding/School/SeniorSem/StreamModeling2024/Python/CodeCoverageReports/coverage.xml'
-        token: ${ea6b0921-7cb4-4fe8-91fe-24ced7f65b8c}
+        token: ${CODECOV_TOKEN}
 
 # Invoke jobs via workflows
 # See: https://circleci.com/docs/configuration-reference/#workflows
