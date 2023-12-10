@@ -15,6 +15,10 @@ orbs:
 # Define a job to be invoked later in a workflow.
 # See: https://circleci.com/docs/configuration-reference/#jobs
 jobs:
+  build:
+      steps:
+        - codecov/upload:
+            file: {{/Users/michaelscoleri/Desktop/Coding/School/SeniorSem/StreamModeling2024/Python/CodeCoverageReports}}
   build-and-test: 
     # These next lines defines a Docker executors: https://circleci.com/docs/executor-types/
     # A list of available CircleCI Docker convenience images are available here: https://circleci.com/developer/images/image/cimg/python
