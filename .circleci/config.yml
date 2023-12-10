@@ -15,10 +15,6 @@ orbs:
 # Define a job to be invoked later in a workflow.
 # See: https://circleci.com/docs/configuration-reference/#jobs
 jobs:
-  build:
-      steps:
-        - codecov/upload:
-            file: {{ coverage_report_filepath }}
   build-and-test: 
     # These next lines defines a Docker executors: https://circleci.com/docs/executor-types/
     # A list of available CircleCI Docker convenience images are available here: https://circleci.com/developer/images/image/cimg/python
@@ -37,7 +33,10 @@ jobs:
           command: pip install pytest
       - run:
           name: Run tests
-          command: pytest ./Python/Tests  
+          command: pytest ./Python/Tests
+      - codecov/upload:
+        file: '/Users/michaelscoleri/Desktop/Coding/School/SeniorSem/StreamModeling2024/Python/CodeCoverageReports/coverage.xml'
+        token: ${ea6b0921-7cb4-4fe8-91fe-24ced7f65b8c}
 
 # Invoke jobs via workflows
 # See: https://circleci.com/docs/configuration-reference/#workflows
