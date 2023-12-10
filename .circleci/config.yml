@@ -30,7 +30,7 @@ jobs:
           pip-dependency-file: Python/requirements.txt
       - run:
           name: Install pytest  
-          command: pip install pytest
+          command: pip install pytest pytest-cov
       - run:
           name: Run tests
           command: pytest --cov=./ --cov-report=xml ./Python/Tests
