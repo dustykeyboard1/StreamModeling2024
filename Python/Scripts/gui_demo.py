@@ -44,7 +44,7 @@ from Python.src.Utilities.data_table_class import DataTable
 from Python.src.Plotting.hflux_errors_plotting import create_hflux_errors_plots
 from Python.src.Heat_Flux.hflux_sens import HfluxSens
 
-STARTER_ROWS = 19
+STARTER_ROWS = 18
 GUI_WIDTH = 500
 GUI_HEIGHT = 747
 LINEEDIT_WIDTH = 310
@@ -728,7 +728,7 @@ class MainWindow(QWidget):
         self.setFixedHeight(GUI_HEIGHT)
 
         ### Creating the logo and title banner
-        pixmap = QPixmap(os.path.join(os.getcwd(), "Demo", "hlfux_logo.png"))
+        pixmap = QPixmap(os.path.join(os.path.dirname(os.path.abspath(__file__)), "hflux_logo.png"))
         hflux_logo = QLabel()
         hflux_logo.setPixmap(pixmap)
 
