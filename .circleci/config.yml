@@ -34,6 +34,9 @@ jobs:
       - run:
           name: Run tests
           command: pytest --cov=./ --cov-report=xml ./Python/Tests
+      - store_artifacts:
+          path: coverage.xml
+          destination: coverage_report
       - codecov/upload:
           token: CODECOV_TOKEN
 
