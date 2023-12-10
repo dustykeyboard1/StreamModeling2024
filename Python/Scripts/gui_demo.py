@@ -44,7 +44,7 @@ from Python.src.Utilities.data_table_class import DataTable
 from Python.src.Plotting.hflux_errors_plotting import create_hflux_errors_plots
 from Python.src.Heat_Flux.hflux_sens import HfluxSens
 
-STARTER_ROWS = 18
+STARTER_ROWS = 19
 GUI_WIDTH = 500
 GUI_HEIGHT = 747
 LINEEDIT_WIDTH = 310
@@ -870,7 +870,7 @@ class MainWindow(QWidget):
             graphs (QCheckBox): The checkbox corresponding to whether the user wants the graphs to display
             pdf (QCheckBox): The cehckbox corresponding to whether the user wants to save the graphs to a PDF
         """
-        form.addRow(QLabel("\nOutput Options"))
+        form.addRow(QLabel("\nOutput Options (The GUI may momentarily freeze when saving data. Please be patient :)"))
 
         sens = QCheckBox("Run Sensitivity Calculations")
         graphs = QCheckBox("Display Graphs")
@@ -941,6 +941,7 @@ class MainWindow(QWidget):
         self.hf.finished.connect(self.hflux_thread.quit)
 
         self.hf.finished.connect(self.hf.deleteLater)
+        self.hf.findished.connect(self.delete_window)
 
         self.hf.progress.connect(self.hflux_update)
         self.hf.variable_progress.connect(self.io)
