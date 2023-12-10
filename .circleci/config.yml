@@ -33,7 +33,7 @@ jobs:
           command: pip install pytest
       - run:
           name: Run tests
-          command: pytest ./Python/Tests
+          command: pytest --cov=./ --cov-report=xml ./Python/Tests
       - codecov/upload:
         token: ${CODECOV_TOKEN}
 
