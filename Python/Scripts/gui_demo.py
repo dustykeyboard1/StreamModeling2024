@@ -626,7 +626,7 @@ class HfluxCalculations(QObject):
         else:
             hflux_sens, high_low_dict, sens = None, None, None
 
-        self.progress.emit("Calculations have finished. Writing to output!, 95")
+        self.progress.emit("Creating Graphs and Writing to Output!, 95")
         time.sleep(0.5)
         self.variable_progress.emit(
             [
@@ -939,9 +939,8 @@ class MainWindow(QWidget):
 
         self.hflux_thread.started.connect(self.hf.run)
         self.hf.finished.connect(self.hflux_thread.quit)
-
         self.hf.finished.connect(self.hf.deleteLater)
-        self.hf.findished.connect(self.delete_window)
+        self.hflux_thread.finished.connect(self.hflux_thread.deleteLater)
 
         self.hf.progress.connect(self.hflux_update)
         self.hf.variable_progress.connect(self.io)
@@ -995,6 +994,8 @@ class MainWindow(QWidget):
             )
         else:
             sensfig1, sensfig2 = None, None
+
+        self.delete_window()
 
         if savecsv or savepdf:
             self.savedata(
@@ -1119,7 +1120,6 @@ class MainWindow(QWidget):
 
     def delete_window(self):
         self.hflux_update("Finished!, 100")
-        time.sleep(1)
         self.pwindow.close()
 
 
