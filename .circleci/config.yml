@@ -39,7 +39,7 @@ jobs:
           path: coverage.xml
           destination: coverage_report
       - codecov/upload:
-          name: CodeCov Upload
+          upload_name: CodeCov Upload
           file: coverage.xml
           token: CODECOV_TOKEN
 
