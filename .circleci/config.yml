@@ -35,7 +35,7 @@ jobs:
           name: Run tests
           command: pytest --cov=./ --cov-report=xml ./Python/Tests
       - codecov/upload:
-        token: ${CODECOV_TOKEN}
+          token: ${CODECOV_TOKEN}
 
 # Invoke jobs via workflows
 # See: https://circleci.com/docs/configuration-reference/#workflows
