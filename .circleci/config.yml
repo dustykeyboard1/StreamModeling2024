@@ -38,6 +38,7 @@ jobs:
           path: coverage.xml
           destination: coverage_report
       - codecov/upload:
+          file: coverage.xml
           token: CODECOV_TOKEN
 
 # Invoke jobs via workflows
