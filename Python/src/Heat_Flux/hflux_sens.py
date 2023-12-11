@@ -57,13 +57,22 @@ class HfluxSens:
             print()
             print("Beginning Multi-threaded calls to hflux...")
 
-        cpu_count = multiprocessing.cpu_count()
-        with ProcessPoolExecutor(max_workers=cpu_count // 2) as executor:
-            for result, _, _, _ in executor.map(
-                HfluxSens.heat_flux_wrapper, input_data_list
-            ):
-                results.append(result)
-            executor.shutdown()
+        try:
+            cpu_count = multiprocessing.cpu_count()
+            with ProcessPoolExecutor(max_workers=cpu_count // 4) as executor:
+                for result, _, _, _ in executor.map(
+                    HfluxSens.heat_flux_wrapper, input_data_list
+                ):
+                    results.append(result)
+                executor.shutdown()
+        except:
+            cpu_count = multiprocessing.cpu_count()
+            with ProcessPoolExecutor(max_workers=cpu_count // 8) as executor:
+                for result, _, _, _ in executor.map(
+                    HfluxSens.heat_flux_wrapper, input_data_list
+                ):
+                    results.append(result)
+                executor.shutdown()
 
         if not output_suppression:
             print("...closed multithreading executer...")
@@ -400,8 +409,10 @@ class HfluxSens:
 
         change = self.calculate_change(sens)
         fig2 = self.plc.make_bar_charts(change)
-
-        self.plc.save_plots(fig, fig2, path="hflux_sens")
-
+        
         if return_graphs:
             return fig, fig2
+        
+        self.plc.save_plots(fig, fig2, path="hflux_sens")
+
+        
