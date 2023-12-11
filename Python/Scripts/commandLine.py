@@ -13,6 +13,7 @@ sys.path.append(root_dir)
 
 from Python.src.Core.heat_flux import HeatFlux
 from Python.src.Utilities.data_table_class import DataTable
+from Python.src.Plotting.hflux_errors_plotting import create_hflux_errors_plots
 
 
 def run_heat_flux(input_path, output_path, make_plots, plot_folder_path):
@@ -30,12 +31,14 @@ def run_heat_flux(input_path, output_path, make_plots, plot_folder_path):
     temp_dt = heat_flux.calculate_temp_dt(temp_mod)
     temp = data_table.temp.transpose()
     rel_err = heat_flux.calculate_percent_relative_error(temp, temp_dt)
-    me = heat_flux.calculate_mean_residual_error(temp, temp_dt)
-    mae = heat_flux.calculate_mean_absolute_residual_error(temp, temp_dt)
-    mse = heat_flux.calculate_mean_square_error(temp, temp_dt)
-    rmse = heat_flux.calculate_root_mean_square_error(temp, temp_dt)
-    nrmse = heat_flux.calculate_normalized_root_mean_square_error(rmse, temp)
 
+    # examples calls to the error calculation methods
+    # rmse = heat_flux.calculate_root_mean_square_error(temp, temp_dt)
+    # nrmse = heat_flux.calculate_normalized_root_mean_square_error(rmse, temp)
+    # me = heat_flux.calculate_mean_residual_error(temp, temp_dt)
+    # mae = heat_flux.calculate_mean_absolute_residual_error(temp, temp_dt)
+    # mse = heat_flux.calculate_mean_square_error(temp, temp_dt)
+    
     dist_temp = data_table.dist_temp
     dist_mod = data_table.dist_mod
     time_temp = data_table.time_temp
@@ -63,6 +66,16 @@ def run_heat_flux(input_path, output_path, make_plots, plot_folder_path):
 
     if make_plots:
         heat_flux.create_hlux_plots(temp_mod, flux_data, plot_folder_path)
+        create_hflux_errors_plots(
+            (temp - temp_dt),
+            dist_temp,
+            temp,
+            temp_mod,
+            dist_mod,
+            time_temp,
+            time_mod,
+            plot_folder_path,
+        )
 
 
 def commandLine_execution():
