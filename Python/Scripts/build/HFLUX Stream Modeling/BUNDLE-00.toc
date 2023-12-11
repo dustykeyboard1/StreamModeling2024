@@ -1,4 +1,0 @@
-([('HFLUX Stream Modeling',
-   '/Users/violetshi/bin/StreamModeling2024/Python/Scripts/dist/HFLUX Stream '
-   'Modeling',
-   'EXECUTABLE')],)
