@@ -334,7 +334,7 @@ class Plotting:
         plt.tight_layout()
         return fig
 
-    def save_plots(self, *args, path):
+    def save_plots(self, *args, file_name, path=""):
         """
         Takes a list of figures and saves them to a pdf.
 
@@ -345,15 +345,13 @@ class Plotting:
             None
         """
         # file_path = r"C:\\Users\\galla\Documents\\Hamilton\Senior Year\Senior Year First Semester\\Comp Sci Seminar\\StreamModeling2024\\Python"
-        pdf_path = os.path.join(os.getcwd(), "Results", "PDFs", f"{path}.pdf")
-        print(pdf_path)
+        if path == "":
+            pdf_path = os.path.join(os.getcwd(), "Results", "PDFs", f"{file_name}.pdf")
+        else:
+            pdf_path = os.path.join(path, f"{file_name}.pdf")
+
         print(f"Saving PDF to {pdf_path}...")
-
-        if not os.path.exists(pdf_path):
-            # open(pdf_path, "w")
-            pdf_path = os.path.join(os.getcwd(), "Python", "Results", "PDFs", f"{path}.pdf")
-        print(pdf_path)
-
+        
         plots_pdf = PdfPages(pdf_path)
         for fig in args:
             plots_pdf.savefig(fig)

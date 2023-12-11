@@ -65,7 +65,7 @@ def run_heat_flux(input_path, output_path, make_plots, plot_folder_path):
     )
 
     if make_plots:
-        heat_flux.create_hlux_plots(temp_mod, flux_data, plot_folder_path)
+        heat_flux.create_hlux_plots(temp_mod, flux_data, sub_directory_path=plot_folder_path, return_graphs=False)
         create_hflux_errors_plots(
             (temp - temp_dt),
             dist_temp,
@@ -74,7 +74,8 @@ def run_heat_flux(input_path, output_path, make_plots, plot_folder_path):
             dist_mod,
             time_temp,
             time_mod,
-            plot_folder_path,
+            plot_path=plot_folder_path,
+            return_graphs=False
         )
 
 

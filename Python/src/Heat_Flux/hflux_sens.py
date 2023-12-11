@@ -413,6 +413,6 @@ class HfluxSens:
         if return_graphs:
             return fig, fig2
         
-        self.plc.save_plots(fig, fig2, path="hflux_sens")
+        self.plc.save_plots(fig, fig2, file_name="hflux_sens")
 
         

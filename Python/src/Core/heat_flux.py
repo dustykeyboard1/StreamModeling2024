@@ -947,7 +947,8 @@ class HeatFlux:
             hflux_3d,
             hflux_subplots,
             comparison_plot,
-            path=os.path.join(sub_directory_path, "hflux")
+            file_name="hflux",
+            path=sub_directory_path
         )
         
 

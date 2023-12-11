@@ -14,6 +14,7 @@ def create_hflux_errors_plots(
     dist_mod,
     time_temp,
     time_mod,
+    plot_path="",
     return_graphs=False,
 ):
     """
@@ -46,5 +47,5 @@ def create_hflux_errors_plots(
     if return_graphs:
         return fig1, fig2
     
-    plc.save_plots(fig1, fig2, path="hflux_errors")
+    plc.save_plots(fig1, fig2, file_name="hflux_errors", path=plot_path)
     
