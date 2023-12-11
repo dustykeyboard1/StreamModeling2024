@@ -509,7 +509,7 @@ class HfluxGraph(QtWidgets.QMainWindow):
         Returns:
             None
         """
-        super(HfluxGraph, self).__init__()
+        super(HfluxGraph, self).__init__(None, QtCore.Qt.WindowStaysOnTopHint)
         sc = FigureCanvasQTAgg(figure=figure)
         toolbar = NavigationToolbar(sc, self)
 
