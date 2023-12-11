@@ -58,7 +58,7 @@ class HfluxSens:
             print("Beginning Multi-threaded calls to hflux...")
 
         cpu_count = multiprocessing.cpu_count()
-        with ProcessPoolExecutor(max_workers=cpu_count // 2) as executor:
+        with ProcessPoolExecutor(max_workers=cpu_count // 4) as executor:
             for result, _, _, _ in executor.map(
                 HfluxSens.heat_flux_wrapper, input_data_list
             ):

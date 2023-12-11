@@ -344,14 +344,15 @@ class Plotting:
         Return:
             None
         """
-        file_path = r"C:\\Users\\galla\Documents\\Hamilton\Senior Year\Senior Year First Semester\\Comp Sci Seminar\\StreamModeling2024\\Python"
-        pdf_path = os.path.join(file_path, "Results", "PDFs", f"{path}.pdf")
+        # file_path = r"C:\\Users\\galla\Documents\\Hamilton\Senior Year\Senior Year First Semester\\Comp Sci Seminar\\StreamModeling2024\\Python"
+        pdf_path = os.path.join(os.getcwd(), "Results", "PDFs", f"{path}.pdf")
         print(pdf_path)
         print(f"Saving PDF to {pdf_path}...")
 
         if not os.path.exists(pdf_path):
             # open(pdf_path, "w")
             pdf_path = os.path.join(os.getcwd(), "Python", "Results", "PDFs", f"{path}.pdf")
+        print(pdf_path)
 
         plots_pdf = PdfPages(pdf_path)
         for fig in args:

@@ -874,9 +874,9 @@ class MainWindow(QWidget):
 
         Returns:
             graphs (QCheckBox): The checkbox corresponding to whether the user wants the graphs to display
-            pdf (QCheckBox): The cehckbox corresponding to whether the user wants to save the graphs to a PDF
+            pdf (QCheckBox): The checkbox corresponding to whether the user wants to save the graphs to a PDF
         """
-        form.addRow(QLabel("\nOutput Options (The GUI may momentarily freeze when saving data. \nPlease be patient and do not interact with the GUI in this state:)"))
+        form.addRow(QLabel("\nOutput Options (The GUI may momentarily freeze when saving data. \nPlease be patient :)"))
 
         sens = QCheckBox("Run Sensitivity Calculations")
         graphs = QCheckBox("Display Graphs")
