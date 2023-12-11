@@ -49,14 +49,14 @@ The customer had a program written in MATLAB, which is used to model stream temp
   - You should see the packages being installed
 - Change directory into the Python Folder
 
-  # 💻 GUI Preparation 💻:
+# 💻 GUI Preparation 💻:
 To create the .exe file for the GUI the following commands must be executed: 
 For mac:
-    - $cd /your/path/to/StreamModeling2024/Python/Scripts/
-    - $python3 -m PyInstaller --onefile --paths='/your/path/to/SeniorSem/StreamModeling2024/Python' --add-data='/your/path/to/StreamModeling2024/Python/Scripts/hflux_logo.png':'.' gui_demo.py
-    - $cd dist
-    - $chmod +x gui_demo
-    - $./gui_demo
+- $cd /your/path/to/StreamModeling2024/Python/Scripts/
+- $python3 -m PyInstaller --onefile --paths='/your/path/to/SeniorSem/StreamModeling2024/Python' --add-data='/your/path/to/StreamModeling2024/Python/Scripts/hflux_logo.png':'.' gui_demo.py
+- $cd dist
+- $chmod +x gui_demo
+- $./gui_demo
 
 # 🧪DATA PREPARATION🧪: 
 As of right now, the program only accepts data in the form of Excel files, containing multiple sheets. 
