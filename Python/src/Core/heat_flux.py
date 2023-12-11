@@ -938,6 +938,10 @@ class HeatFlux:
         hflux_3d = self.hlfux_3d_plot(temp_mod)
         hflux_subplots = self.make_subplots(flux_data)
         comparison_plot = self.make_comparison_plot(flux_data)
+
+        if return_graphs:
+            return hflux_resiudal, hflux_3d, hflux_subplots, comparison_plot
+
         self.plc.save_plots(
             hflux_resiudal,
             hflux_3d,
@@ -945,8 +949,7 @@ class HeatFlux:
             comparison_plot,
             path=os.path.join(sub_directory_path, "hflux")
         )
-        if return_graphs:
-            return hflux_resiudal, hflux_3d, hflux_subplots, comparison_plot
+        
 
     def flux_residual_plot(self, temp_mod):
         """
