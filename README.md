@@ -53,15 +53,15 @@ The customer had a program written in MATLAB, which is used to model stream temp
 To create the .exe file for the GUI the following commands must be executed: 
 
 For mac:
-- $cd /your/path/to/StreamModeling2024/Python/Scripts/
-- $python3 -m PyInstaller --onefile --paths='/your/path/to/SeniorSem/StreamModeling2024/Python' --add-data='/your/path/to/StreamModeling2024/Python/Scripts/hflux_logo.png':'.'  -w --name='HFLUX Stream Modeling' gui_demo.py
-- $cd dist
-- $chmod +x gui_demo
-- $./gui_demo'
+- `$cd /your/path/to/StreamModeling2024/Python/Scripts/`
+- `$python3 -m PyInstaller --onefile --paths='/your/path/to/SeniorSem/StreamModeling2024/Python' --add-data='/your/path/to/StreamModeling2024/Python/Scripts/hflux_logo.png':'.'  -w --name='HFLUX Stream Modeling' gui_demo.py`
+- `$cd dist`
+- `$chmod +x gui_demo`
+- `$./gui_demo`
 
 For Windows:
-- cd /your/path/to/StreamModeling2024/Python/Scripts/
-- $py -m PyInstaller --onefile --paths='/your/path/to/SeniorSem/StreamModeling2024/Python' --add-data='/your/path/to/StreamModeling2024/Python/Scripts/hflux_logo.png':'.' -w --name='HFLUX Stream Modeling' gui_demo.py
+- `cd /your/path/to/StreamModeling2024/Python/Scripts/`
+- `$py -m PyInstaller --onefile --paths='/your/path/to/SeniorSem/StreamModeling2024/Python' --add-data='/your/path/to/StreamModeling2024/Python/Scripts/hflux_logo.png':'.' -w --name='HFLUX Stream Modeling' gui_demo.py`
 
 The executable will be located in the 'dist' folder within the Scripts directory. You are free to move it to whereever you would like on your computer and run it from there!
 Enjoy!
