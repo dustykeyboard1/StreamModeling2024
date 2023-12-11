@@ -5,6 +5,8 @@ import numpy as np
 import datetime
 import time
 
+import multiprocessing
+
 from PySide6 import QtCore
 from PySide6 import QtWidgets
 from PySide6.QtCore import Qt, QDir, QThread, QObject, Signal
@@ -38,13 +40,17 @@ from matplotlib.backends.backend_pdf import PdfPages
 root_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
 sys.path.append(root_dir)
 
+script_dir = os.path.dirname(os.path.abspath(__file__))
+src_core_heat_flux_path = os.path.join(script_dir, '..', 'src', 'Core')
+sys.path.append(src_core_heat_flux_path)
+
 from Python.src.Core.heat_flux import HeatFlux
 from Python.src.Heat_Flux.hflux_sens import HfluxSens
 from Python.src.Utilities.data_table_class import DataTable
 from Python.src.Plotting.hflux_errors_plotting import create_hflux_errors_plots
 from Python.src.Heat_Flux.hflux_sens import HfluxSens
 
-STARTER_ROWS = 18
+STARTER_ROWS = 19
 GUI_WIDTH = 500
 GUI_HEIGHT = 747
 LINEEDIT_WIDTH = 310
@@ -870,7 +876,7 @@ class MainWindow(QWidget):
             graphs (QCheckBox): The checkbox corresponding to whether the user wants the graphs to display
             pdf (QCheckBox): The cehckbox corresponding to whether the user wants to save the graphs to a PDF
         """
-        form.addRow(QLabel("\nOutput Options (The GUI may momentarily freeze when saving data. Please be patient :)"))
+        form.addRow(QLabel("\nOutput Options (The GUI may momentarily freeze when saving data. \nPlease be patient and do not interact with the GUI in this state:)"))
 
         sens = QCheckBox("Run Sensitivity Calculations")
         graphs = QCheckBox("Display Graphs")
@@ -1124,6 +1130,7 @@ class MainWindow(QWidget):
 
 
 if __name__ == "__main__":
+    multiprocessing.freeze_support()
     app = QApplication(sys.argv)
     if sys.platform.lower() == "darwin":
         app.setStyle("Fusion")

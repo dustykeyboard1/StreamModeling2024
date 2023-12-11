@@ -118,7 +118,8 @@ def handle_errors(time_mod, time_temp, temp, temp_dt, temp_mod, dist_temp, dist_
 
         plt.tight_layout()
 
-        pdf_path = os.path.join(os.getcwd(), "Results", "PDFs", "hflux_errors.pdf")
+        file_path = r"C:\\Users\\galla\Documents\\Hamilton\Senior Year\Senior Year First Semester\\Comp Sci Seminar\\StreamModeling2024\\Python"
+        pdf_path = os.path.join(file_path, "Results", "PDFs", "hflux_errors.pdf")
         plots_pdf = PdfPages(pdf_path)
 
         # CITE: https://www.geeksforgeeks.org/save-multiple-matplotlib-figures-in-single-pdf-file-using-python/
